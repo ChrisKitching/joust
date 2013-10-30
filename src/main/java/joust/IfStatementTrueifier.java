@@ -1,8 +1,8 @@
-package optimiser;
+package joust;
 
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeTranslator;
-import static optimiser.Optimiser.treeMaker;
+import static joust.Optimiser.treeMaker;
 
 /**
  * A dummy module to replace all `if (something) {stuff}` statements with `if (true) {stuff}`.

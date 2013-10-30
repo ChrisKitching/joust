@@ -1,0 +1,67 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>cdk23</groupId>
+  <artifactId>JOUST</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <name>JOUST</name>
+  <url>https://bitbucket.org/ckitching/javac-opt/overview</url>
+  <inceptionYear>2013</inceptionYear>
+  <description>Java Optimisation Using Syntax Trees</description>
+
+  <!--<scm>
+    <connection>scm:hg:https://bitbucket.org/ckitching/javac-opt</connection>
+    <developerConnection>scm:hg:ssh://ckitching@bitbucket.org/ckitching/javac-opt</developerConnection>
+    <url>https://bitbucket.org/ckitching/javac-opt</url>
+  </scm>-->
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.8.2</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>sun.jdk</groupId>
+      <artifactId>tools</artifactId>
+      <version>1.5.0</version>
+      <scope>system</scope>
+      <systemPath>${java.home}/../lib/tools.jar</systemPath>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.1</version>
+        <configuration>
+            <forceJavacCompilerUse>true</forceJavacCompilerUse>
+            <source>1.7</source>
+            <target>1.7</target>
+            <showWarnings>true</showWarnings>
+            <!-- Stop the annotation processor from annotating the annotation processor-->
+            <compilerArgument>-proc:none</compilerArgument>
+            <showDeprecation>true</showDeprecation>
+        </configuration>
+      </plugin>
+    </plugins>
+
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+        </resource>
+      </resources>
+    </build>
+</project>

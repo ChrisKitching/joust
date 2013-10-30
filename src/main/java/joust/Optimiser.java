@@ -1,4 +1,4 @@
-package optimiser;
+package joust;
 
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
