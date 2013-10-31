@@ -50,7 +50,7 @@
             <source>1.7</source>
             <target>1.7</target>
             <showWarnings>true</showWarnings>
-            <!-- Stop the annotation processor from annotating the annotation processor-->
+            <!-- Stop the annotation processor from annotation processing the annotation processor -->
             <compilerArgument>-proc:none</compilerArgument>
             <showDeprecation>true</showDeprecation>
         </configuration>
@@ -61,7 +61,7 @@
       <resource>
         <directory>src/main/resources</directory>
         <filtering>true</filtering>
-        </resource>
-      </resources>
-    </build>
+      </resource>
+    </resources>
+  </build>
 </project>
