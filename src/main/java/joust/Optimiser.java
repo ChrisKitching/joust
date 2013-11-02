@@ -7,6 +7,8 @@ import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.TreeTranslator;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -23,6 +25,8 @@ import java.util.Set;
 @SupportedAnnotationTypes("*")
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class Optimiser extends AbstractProcessor {
+    private static Logger logger = LogManager.getLogger();
+
     public static Trees mTrees;
 
     // Factory class, internal to the compiler, used to manufacture parse tree nodes.
@@ -44,19 +48,21 @@ public class Optimiser extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> typeElements, RoundEnvironment roundEnvironment) {
         if (roundEnvironment.processingOver()) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Optimiser has concluded.");
+            logger.info("Optimiser has concluded.");
             return false;
         }
 
+        logger.info("Optimiser starting.");
+
         Set<? extends Element> elements = roundEnvironment.getRootElements();
         for (Element each : elements) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Element:"+each);
+            logger.debug("Element: {}", each);
             if (each.getKind() == ElementKind.CLASS) {
                 // Another magic cast to a compiler-internal type to get us the power we need.
                 // The JCTree type gives us access to the entire AST, rather than just the methods.
                 JCTree tree = (JCTree) mTrees.getTree(each);
                 TreeTranslator visitor = new IfStatementTrueifier();
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Visiting.");
+                logger.debug("Visiting.");
                 tree.accept(visitor);
             }
         }
