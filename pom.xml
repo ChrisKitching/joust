@@ -97,6 +97,28 @@
         </configuration>
       </plugin>
 
+      <!-- Call a shell script to clean up the integration testing environment before a run. -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.2.1</version>
+        <executions>
+          <execution>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <workingDirectory>${project.build.testOutputDirectory}</workingDirectory>
+          <executable>/bin/sh</executable>
+          <arguments>
+            <argument>${project.build.testOutputDirectory}/pre-integration-test.sh</argument>
+          </arguments>
+        </configuration>
+      </plugin>
+
       <!-- For unit tests. -->
       <plugin>
       <groupId>org.apache.maven.plugins</groupId>
