@@ -7,6 +7,8 @@ import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.TreeTranslator;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
+import joust.translators.ConstFoldTranslator;
+import joust.utils.LogUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,6 +37,9 @@ public class Optimiser extends AbstractProcessor {
     @Override
     public synchronized void init(ProcessingEnvironment env) {
         super.init(env);
+
+        // So we can log those fatal errors...
+        LogUtils.init(processingEnv);
 
         mTrees = Trees.instance(env);
 
