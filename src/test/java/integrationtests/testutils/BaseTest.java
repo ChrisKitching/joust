@@ -18,6 +18,10 @@ public abstract class BaseTest {
         mTestOutput.append('\n');
     }
 
+    protected void print(Object o) {
+        print(o.toString());
+    }
+
     /**
      * The method to be overridden in each test case.
      */
