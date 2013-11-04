@@ -66,9 +66,12 @@ public class Optimiser extends AbstractProcessor {
                 // Another magic cast to a compiler-internal type to get us the power we need.
                 // The JCTree type gives us access to the entire AST, rather than just the methods.
                 JCTree tree = (JCTree) mTrees.getTree(each);
-                TreeTranslator visitor = new IfStatementTrueifier();
-                logger.debug("Visiting.");
-                tree.accept(visitor);
+
+                ConstFoldTranslator constFold;
+                do {
+                    constFold = new ConstFoldTranslator();
+                    tree.accept(constFold);
+                } while (constFold.makingChanges());
             }
         }
 
