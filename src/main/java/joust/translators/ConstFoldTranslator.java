@@ -823,6 +823,12 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(charLValue < longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(charLValue < doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(charLValue < floatRValue);
                     default:
                         return null;
                 }
@@ -838,6 +844,12 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(intLValue < longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(intLValue < doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(intLValue < floatRValue);
                     default:
                         return null;
                 }
@@ -853,6 +865,54 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(longLValue < longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(longLValue < doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(longLValue < floatRValue);
+                    default:
+                        return null;
+                }
+            case DOUBLE_LITERAL:
+                double doubleLValue = (Double) leftPayload;
+                switch (rightKind) {
+                    case CHAR_LITERAL:
+                        char charRValue = (Character) rightPayload;
+                        return treeMaker.Literal(doubleLValue < charRValue);
+                    case INT_LITERAL:
+                        int intRValue = (Integer) rightPayload;
+                        return treeMaker.Literal(doubleLValue < intRValue);
+                    case LONG_LITERAL:
+                        long longRValue = (Long) rightPayload;
+                        return treeMaker.Literal(doubleLValue < longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(doubleLValue < doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(doubleLValue < floatRValue);
+                    default:
+                        return null;
+                }
+            case FLOAT_LITERAL:
+                float floatLValue = (Float) leftPayload;
+                switch (rightKind) {
+                    case CHAR_LITERAL:
+                        char charRValue = (Character) rightPayload;
+                        return treeMaker.Literal(floatLValue < charRValue);
+                    case INT_LITERAL:
+                        int intRValue = (Integer) rightPayload;
+                        return treeMaker.Literal(floatLValue < intRValue);
+                    case LONG_LITERAL:
+                        long longRValue = (Long) rightPayload;
+                        return treeMaker.Literal(floatLValue < longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(floatLValue < doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(floatLValue < floatRValue);
                     default:
                         return null;
                 }
@@ -895,6 +955,12 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(charLValue > longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(charLValue > doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(charLValue > floatRValue);
                     default:
                         return null;
                 }
@@ -910,6 +976,12 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(intLValue > longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(intLValue > doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(intLValue > floatRValue);
                     default:
                         return null;
                 }
@@ -925,6 +997,54 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(longLValue > longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(longLValue > doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(longLValue > floatRValue);
+                    default:
+                        return null;
+                }
+            case DOUBLE_LITERAL:
+                double doubleLValue = (Double) leftPayload;
+                switch (rightKind) {
+                    case CHAR_LITERAL:
+                        char charRValue = (Character) rightPayload;
+                        return treeMaker.Literal(doubleLValue > charRValue);
+                    case INT_LITERAL:
+                        int intRValue = (Integer) rightPayload;
+                        return treeMaker.Literal(doubleLValue > intRValue);
+                    case LONG_LITERAL:
+                        long longRValue = (Long) rightPayload;
+                        return treeMaker.Literal(doubleLValue > longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(doubleLValue > doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(doubleLValue > floatRValue);
+                    default:
+                        return null;
+                }
+            case FLOAT_LITERAL:
+                float floatLValue = (Float) leftPayload;
+                switch (rightKind) {
+                    case CHAR_LITERAL:
+                        char charRValue = (Character) rightPayload;
+                        return treeMaker.Literal(floatLValue > charRValue);
+                    case INT_LITERAL:
+                        int intRValue = (Integer) rightPayload;
+                        return treeMaker.Literal(floatLValue > intRValue);
+                    case LONG_LITERAL:
+                        long longRValue = (Long) rightPayload;
+                        return treeMaker.Literal(floatLValue > longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(floatLValue > doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(floatLValue > floatRValue);
                     default:
                         return null;
                 }
@@ -967,6 +1087,12 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(charLValue <= longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(charLValue <= doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(charLValue <= floatRValue);
                     default:
                         return null;
                 }
@@ -982,6 +1108,12 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(intLValue <= longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(intLValue <= doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(intLValue <= floatRValue);
                     default:
                         return null;
                 }
@@ -997,6 +1129,54 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(longLValue <= longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(longLValue <= doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(longLValue <= floatRValue);
+                    default:
+                        return null;
+                }
+            case DOUBLE_LITERAL:
+                double doubleLValue = (Double) leftPayload;
+                switch (rightKind) {
+                    case CHAR_LITERAL:
+                        char charRValue = (Character) rightPayload;
+                        return treeMaker.Literal(doubleLValue <= charRValue);
+                    case INT_LITERAL:
+                        int intRValue = (Integer) rightPayload;
+                        return treeMaker.Literal(doubleLValue <= intRValue);
+                    case LONG_LITERAL:
+                        long longRValue = (Long) rightPayload;
+                        return treeMaker.Literal(doubleLValue <= longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(doubleLValue <= doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(doubleLValue <= floatRValue);
+                    default:
+                        return null;
+                }
+            case FLOAT_LITERAL:
+                float floatLValue = (Float) leftPayload;
+                switch (rightKind) {
+                    case CHAR_LITERAL:
+                        char charRValue = (Character) rightPayload;
+                        return treeMaker.Literal(floatLValue <= charRValue);
+                    case INT_LITERAL:
+                        int intRValue = (Integer) rightPayload;
+                        return treeMaker.Literal(floatLValue <= intRValue);
+                    case LONG_LITERAL:
+                        long longRValue = (Long) rightPayload;
+                        return treeMaker.Literal(floatLValue <= longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(floatLValue <= doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(floatLValue <= floatRValue);
                     default:
                         return null;
                 }
@@ -1039,6 +1219,12 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(charLValue >= longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(charLValue >= doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(charLValue >= floatRValue);
                     default:
                         return null;
                 }
@@ -1054,6 +1240,12 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(intLValue >= longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(intLValue >= doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(intLValue >= floatRValue);
                     default:
                         return null;
                 }
@@ -1069,6 +1261,54 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(longLValue >= longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(longLValue >= doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(longLValue >= floatRValue);
+                    default:
+                        return null;
+                }
+            case DOUBLE_LITERAL:
+                double doubleLValue = (Double) leftPayload;
+                switch (rightKind) {
+                    case CHAR_LITERAL:
+                        char charRValue = (Character) rightPayload;
+                        return treeMaker.Literal(doubleLValue >= charRValue);
+                    case INT_LITERAL:
+                        int intRValue = (Integer) rightPayload;
+                        return treeMaker.Literal(doubleLValue >= intRValue);
+                    case LONG_LITERAL:
+                        long longRValue = (Long) rightPayload;
+                        return treeMaker.Literal(doubleLValue >= longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(doubleLValue >= doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(doubleLValue >= floatRValue);
+                    default:
+                        return null;
+                }
+            case FLOAT_LITERAL:
+                float floatLValue = (Float) leftPayload;
+                switch (rightKind) {
+                    case CHAR_LITERAL:
+                        char charRValue = (Character) rightPayload;
+                        return treeMaker.Literal(floatLValue >= charRValue);
+                    case INT_LITERAL:
+                        int intRValue = (Integer) rightPayload;
+                        return treeMaker.Literal(floatLValue >= intRValue);
+                    case LONG_LITERAL:
+                        long longRValue = (Long) rightPayload;
+                        return treeMaker.Literal(floatLValue >= longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(floatLValue >= doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(floatLValue >= floatRValue);
                     default:
                         return null;
                 }
@@ -1111,6 +1351,15 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(charLValue + longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(charLValue + doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(charLValue + floatRValue);
+                    case STRING_LITERAL:
+                        double stringRValue = (Float) rightPayload;
+                        return treeMaker.Literal(charLValue + stringRValue);
                     default:
                         return null;
                 }
@@ -1126,6 +1375,15 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(intLValue + longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(intLValue + doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(intLValue + floatRValue);
+                    case STRING_LITERAL:
+                        double stringRValue = (Float) rightPayload;
+                        return treeMaker.Literal(intLValue + stringRValue);
                     default:
                         return null;
                 }
@@ -1141,6 +1399,87 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(longLValue + longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(longLValue + doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(longLValue + floatRValue);
+                    case STRING_LITERAL:
+                        double stringRValue = (Float) rightPayload;
+                        return treeMaker.Literal(longLValue + stringRValue);
+                    default:
+                        return null;
+                }
+            case DOUBLE_LITERAL:
+                double doubleLValue = (Double) leftPayload;
+                switch (rightKind) {
+                    case CHAR_LITERAL:
+                        char charRValue = (Character) rightPayload;
+                        return treeMaker.Literal(doubleLValue + charRValue);
+                    case INT_LITERAL:
+                        int intRValue = (Integer) rightPayload;
+                        return treeMaker.Literal(doubleLValue + intRValue);
+                    case LONG_LITERAL:
+                        long longRValue = (Long) rightPayload;
+                        return treeMaker.Literal(doubleLValue + longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(doubleLValue + doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(doubleLValue + floatRValue);
+                    case STRING_LITERAL:
+                        double stringRValue = (Float) rightPayload;
+                        return treeMaker.Literal(doubleLValue + stringRValue);
+                    default:
+                        return null;
+                }
+            case FLOAT_LITERAL:
+                float floatLValue = (Float) leftPayload;
+                switch (rightKind) {
+                    case CHAR_LITERAL:
+                        char charRValue = (Character) rightPayload;
+                        return treeMaker.Literal(floatLValue + charRValue);
+                    case INT_LITERAL:
+                        int intRValue = (Integer) rightPayload;
+                        return treeMaker.Literal(floatLValue + intRValue);
+                    case LONG_LITERAL:
+                        long longRValue = (Long) rightPayload;
+                        return treeMaker.Literal(floatLValue + longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(floatLValue + doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(floatLValue + floatRValue);
+                    case STRING_LITERAL:
+                        double stringRValue = (Float) rightPayload;
+                        return treeMaker.Literal(floatLValue + stringRValue);
+                    default:
+                        return null;
+                }
+            case STRING_LITERAL:
+                String stringLValue = (String) leftPayload;
+                switch (rightKind) {
+                    case CHAR_LITERAL:
+                        char charRValue = (Character) rightPayload;
+                        return treeMaker.Literal(stringLValue + charRValue);
+                    case INT_LITERAL:
+                        int intRValue = (Integer) rightPayload;
+                        return treeMaker.Literal(stringLValue + intRValue);
+                    case LONG_LITERAL:
+                        long longRValue = (Long) rightPayload;
+                        return treeMaker.Literal(stringLValue + longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(stringLValue + doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(stringLValue + floatRValue);
+                    case STRING_LITERAL:
+                        double stringRValue = (Float) rightPayload;
+                        return treeMaker.Literal(stringLValue + stringRValue);
                     default:
                         return null;
                 }
@@ -1183,6 +1522,12 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(charLValue - longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(charLValue - doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(charLValue - floatRValue);
                     default:
                         return null;
                 }
@@ -1198,6 +1543,12 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(intLValue - longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(intLValue - doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(intLValue - floatRValue);
                     default:
                         return null;
                 }
@@ -1213,6 +1564,54 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(longLValue - longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(longLValue - doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(longLValue - floatRValue);
+                    default:
+                        return null;
+                }
+            case DOUBLE_LITERAL:
+                double doubleLValue = (Double) leftPayload;
+                switch (rightKind) {
+                    case CHAR_LITERAL:
+                        char charRValue = (Character) rightPayload;
+                        return treeMaker.Literal(doubleLValue - charRValue);
+                    case INT_LITERAL:
+                        int intRValue = (Integer) rightPayload;
+                        return treeMaker.Literal(doubleLValue - intRValue);
+                    case LONG_LITERAL:
+                        long longRValue = (Long) rightPayload;
+                        return treeMaker.Literal(doubleLValue - longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(doubleLValue - doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(doubleLValue - floatRValue);
+                    default:
+                        return null;
+                }
+            case FLOAT_LITERAL:
+                float floatLValue = (Float) leftPayload;
+                switch (rightKind) {
+                    case CHAR_LITERAL:
+                        char charRValue = (Character) rightPayload;
+                        return treeMaker.Literal(floatLValue - charRValue);
+                    case INT_LITERAL:
+                        int intRValue = (Integer) rightPayload;
+                        return treeMaker.Literal(floatLValue - intRValue);
+                    case LONG_LITERAL:
+                        long longRValue = (Long) rightPayload;
+                        return treeMaker.Literal(floatLValue - longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(floatLValue - doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(floatLValue - floatRValue);
                     default:
                         return null;
                 }
@@ -1255,6 +1654,12 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(charLValue * longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(charLValue * doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(charLValue * floatRValue);
                     default:
                         return null;
                 }
@@ -1270,6 +1675,12 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(intLValue * longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(intLValue * doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(intLValue * floatRValue);
                     default:
                         return null;
                 }
@@ -1285,6 +1696,54 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(longLValue * longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(longLValue * doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(longLValue * floatRValue);
+                    default:
+                        return null;
+                }
+            case DOUBLE_LITERAL:
+                double doubleLValue = (Double) leftPayload;
+                switch (rightKind) {
+                    case CHAR_LITERAL:
+                        char charRValue = (Character) rightPayload;
+                        return treeMaker.Literal(doubleLValue * charRValue);
+                    case INT_LITERAL:
+                        int intRValue = (Integer) rightPayload;
+                        return treeMaker.Literal(doubleLValue * intRValue);
+                    case LONG_LITERAL:
+                        long longRValue = (Long) rightPayload;
+                        return treeMaker.Literal(doubleLValue * longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(doubleLValue * doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(doubleLValue * floatRValue);
+                    default:
+                        return null;
+                }
+            case FLOAT_LITERAL:
+                float floatLValue = (Float) leftPayload;
+                switch (rightKind) {
+                    case CHAR_LITERAL:
+                        char charRValue = (Character) rightPayload;
+                        return treeMaker.Literal(floatLValue * charRValue);
+                    case INT_LITERAL:
+                        int intRValue = (Integer) rightPayload;
+                        return treeMaker.Literal(floatLValue * intRValue);
+                    case LONG_LITERAL:
+                        long longRValue = (Long) rightPayload;
+                        return treeMaker.Literal(floatLValue * longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(floatLValue * doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(floatLValue * floatRValue);
                     default:
                         return null;
                 }
@@ -1327,6 +1786,12 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(charLValue / longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(charLValue / doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(charLValue / floatRValue);
                     default:
                         return null;
                 }
@@ -1342,6 +1807,12 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(intLValue / longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(intLValue / doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(intLValue / floatRValue);
                     default:
                         return null;
                 }
@@ -1357,6 +1828,54 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(longLValue / longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(longLValue / doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(longLValue / floatRValue);
+                    default:
+                        return null;
+                }
+            case DOUBLE_LITERAL:
+                double doubleLValue = (Double) leftPayload;
+                switch (rightKind) {
+                    case CHAR_LITERAL:
+                        char charRValue = (Character) rightPayload;
+                        return treeMaker.Literal(doubleLValue / charRValue);
+                    case INT_LITERAL:
+                        int intRValue = (Integer) rightPayload;
+                        return treeMaker.Literal(doubleLValue / intRValue);
+                    case LONG_LITERAL:
+                        long longRValue = (Long) rightPayload;
+                        return treeMaker.Literal(doubleLValue / longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(doubleLValue / doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(doubleLValue / floatRValue);
+                    default:
+                        return null;
+                }
+            case FLOAT_LITERAL:
+                float floatLValue = (Float) leftPayload;
+                switch (rightKind) {
+                    case CHAR_LITERAL:
+                        char charRValue = (Character) rightPayload;
+                        return treeMaker.Literal(floatLValue / charRValue);
+                    case INT_LITERAL:
+                        int intRValue = (Integer) rightPayload;
+                        return treeMaker.Literal(floatLValue / intRValue);
+                    case LONG_LITERAL:
+                        long longRValue = (Long) rightPayload;
+                        return treeMaker.Literal(floatLValue / longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(floatLValue / doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(floatLValue / floatRValue);
                     default:
                         return null;
                 }
@@ -1399,6 +1918,12 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(charLValue % longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(charLValue % doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(charLValue % floatRValue);
                     default:
                         return null;
                 }
@@ -1414,6 +1939,12 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(intLValue % longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(intLValue % doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(intLValue % floatRValue);
                     default:
                         return null;
                 }
@@ -1429,6 +1960,55 @@ public class ConstFoldTranslator extends TreeTranslator {
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
                         return treeMaker.Literal(longLValue % longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(longLValue % doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(longLValue % floatRValue);
+                    default:
+                        return null;
+                }
+
+            case DOUBLE_LITERAL:
+                double doubleLValue = (Double) leftPayload;
+                switch (rightKind) {
+                    case CHAR_LITERAL:
+                        char charRValue = (Character) rightPayload;
+                        return treeMaker.Literal(doubleLValue % charRValue);
+                    case INT_LITERAL:
+                        int intRValue = (Integer) rightPayload;
+                        return treeMaker.Literal(doubleLValue % intRValue);
+                    case LONG_LITERAL:
+                        long longRValue = (Long) rightPayload;
+                        return treeMaker.Literal(doubleLValue % longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(doubleLValue % doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(doubleLValue % floatRValue);
+                    default:
+                        return null;
+                }
+            case FLOAT_LITERAL:
+                float floatLValue = (Float) leftPayload;
+                switch (rightKind) {
+                    case CHAR_LITERAL:
+                        char charRValue = (Character) rightPayload;
+                        return treeMaker.Literal(floatLValue % charRValue);
+                    case INT_LITERAL:
+                        int intRValue = (Integer) rightPayload;
+                        return treeMaker.Literal(floatLValue % intRValue);
+                    case LONG_LITERAL:
+                        long longRValue = (Long) rightPayload;
+                        return treeMaker.Literal(floatLValue % longRValue);
+                    case DOUBLE_LITERAL:
+                        double doubleRValue = (Double) rightPayload;
+                        return treeMaker.Literal(floatLValue % doubleRValue);
+                    case FLOAT_LITERAL:
+                        float floatRValue = (Float) rightPayload;
+                        return treeMaker.Literal(floatLValue % floatRValue);
                     default:
                         return null;
                 }
