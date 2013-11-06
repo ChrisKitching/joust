@@ -1,6 +1,6 @@
 package testinputs;
 
-import integrationtests.testutils.BaseTest;
+import testutils.BaseIntegrationTestCase;
 
 /**
  * Test of the dummy optimiser. Not actually possible for this test to ever pass, since the
@@ -8,7 +8,7 @@ import integrationtests.testutils.BaseTest;
  *
  * Useful tests will exist shortly.
  */
-public class testIfTrue extends BaseTest {
+public class testIfTrue extends BaseIntegrationTestCase {
     @Override
     protected void test() {
         if (this.getClass().getName().equals("testIfTrue")) {

@@ -93,7 +93,7 @@
         </executions>
         <configuration>
           <includes>
-            <include>integrationtests/*.java</include>
+            <include>tests/integrationtests/*.java</include>
           </includes>
         </configuration>
       </plugin>
@@ -127,7 +127,7 @@
           <version>2.12</version>
       <configuration>
         <includes>
-          <include>unittests/*.java</include>
+          <include>tests/unittests/*.java</include>
         </includes>
       </configuration>
       </plugin>

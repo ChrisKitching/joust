@@ -1,10 +1,10 @@
-package integrationtests.testutils;
+package testutils;
 
 /**
  * Interface specifying the method each test program is to implement. Provides the test harness with
  * a predictable entry point to run the test program after compilation.
  */
-public abstract class BaseTest {
+public abstract class BaseIntegrationTestCase {
     private StringBuilder mTestOutput = new StringBuilder(2048);
 
     /**

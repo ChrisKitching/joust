@@ -1,6 +1,6 @@
-package integrationtests;
+package tests.integrationtests;
 
-import integrationtests.testutils.BaseTest;
+import testutils.BaseIntegrationTestCase;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
@@ -16,7 +16,6 @@ import javax.tools.ToolProvider;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -104,11 +103,11 @@ public class ITCompilationUnitOutput {
         assertTrue(compileTarget(true));
 
         // Execute them both and collect their output...
-        Class<? extends BaseTest> optClass = null;
-        Class<? extends BaseTest> noOptClass = null;
+        Class<? extends BaseIntegrationTestCase> optClass = null;
+        Class<? extends BaseIntegrationTestCase> noOptClass = null;
         try {
-            optClass = (Class<? extends BaseTest>) sOptClassLoader.loadClass(mFullyQualifiedTestClassName);
-            noOptClass = (Class<? extends BaseTest>) sUnOptClassLoader.loadClass(mFullyQualifiedTestClassName);
+            optClass = (Class<? extends BaseIntegrationTestCase>) sOptClassLoader.loadClass(mFullyQualifiedTestClassName);
+            noOptClass = (Class<? extends BaseIntegrationTestCase>) sUnOptClassLoader.loadClass(mFullyQualifiedTestClassName);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -173,13 +172,13 @@ public class ITCompilationUnitOutput {
     }
 
     /**
-     * Given a class that extends BaseTest, run the test and collect the output.
+     * Given a class that extends BaseIntegrationTestCase, run the test and collect the output.
      *
      * @param targetClass
      * @return The output of the test referred to by this class.
      */
-    private String executeCompiledTest(Class<? extends BaseTest> targetClass) {
-        BaseTest t = null;
+    private String executeCompiledTest(Class<? extends BaseIntegrationTestCase> targetClass) {
+        BaseIntegrationTestCase t = null;
 
         try {
             t = targetClass.newInstance();
