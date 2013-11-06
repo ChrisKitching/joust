@@ -17,7 +17,7 @@ import static joust.Optimiser.treeMaker;
  * interesting optimisations are not hindered by the non-foldedness of constants when they
  * subsequently are run.
  * Unfortunately, doing things at this level means we have to deal with issues like brackets.
- * TODO: Lambdas should be able to make this less soul-destroyingly awful to look at.
+ * TODO: Lambdas might be able to make this less soul-destroyingly awful to look at.
  */
 public class ConstFoldTranslator extends TreeTranslator {
     private static Logger logger = LogManager.getLogger();
@@ -89,82 +89,88 @@ public class ConstFoldTranslator extends TreeTranslator {
             return;
         }
 
+        final Object leftPayload = ((JCLiteral) leftOperand).getValue();
+        final Kind leftKind = leftOperand.getKind();
+
+        final Object rightPayload = ((JCLiteral) rightOperand).getValue();
+        final Kind rightKind = rightOperand.getKind();
+
         mHasMadeAChange = true;
         switch (nodeTag) {
             case BITOR:
-                result = bitwiseOr((JCLiteral) leftOperand, (JCLiteral) rightOperand);
+                result = bitwiseOr(leftPayload, leftKind, rightPayload, rightKind);
                 logger.debug("{} OR {} -> {}", leftOperand, rightOperand, result);
                 break;
             case BITXOR:
-                result = bitwiseXor((JCLiteral) leftOperand, (JCLiteral) rightOperand);
+                result = bitwiseXor(leftPayload, leftKind, rightPayload, rightKind);
                 logger.debug("{} XOR {} -> {}", leftOperand, rightOperand, result);
                 break;
             case BITAND:
-                result = bitwiseAnd((JCLiteral) leftOperand, (JCLiteral) rightOperand);
+                result = bitwiseAnd(leftPayload, leftKind, rightPayload, rightKind);
                 logger.debug("{} AND {} -> {}", leftOperand, rightOperand, result);
                 break;
             case SL:
-                result = bitwiseLeftShift((JCLiteral) leftOperand, (JCLiteral) rightOperand);
+                result = bitwiseLeftShift(leftPayload, leftKind, rightPayload, rightKind);
                 logger.debug("{} << {} -> {}", leftOperand, rightOperand, result);
                 break;
             case SR:
-                result = bitwiseRightShift((JCLiteral) leftOperand, (JCLiteral) rightOperand);
+                result = bitwiseRightShift(leftPayload, leftKind, rightPayload, rightKind);
                 logger.debug("{} >> {} -> {}", leftOperand, rightOperand, result);
                 break;
             case USR:
-                result = bitwiseUnsignedRightShift((JCLiteral) leftOperand, (JCLiteral) rightOperand);
+                result = bitwiseUnsignedRightShift(leftPayload, leftKind, rightPayload, rightKind);
                 logger.debug("{} >>> {} -> {}", leftOperand, rightOperand, result);
                 break;
             case OR:
-                result = logicalOr((JCLiteral) leftOperand, (JCLiteral) rightOperand);
+                result = logicalOr(leftPayload, leftKind, rightPayload, rightKind);
                 logger.debug("{} || {} -> {}", leftOperand, rightOperand, result);
                 break;
             case AND:
-                result = logicalAnd((JCLiteral) leftOperand, (JCLiteral) rightOperand);
+                result = logicalAnd(leftPayload, leftKind, rightPayload, rightKind);
                 logger.debug("{} && {} -> {}", leftOperand, rightOperand, result);
                 break;
             case EQ:
-                result = logicalEq((JCLiteral) leftOperand, (JCLiteral) rightOperand);
+                result = logicalEq(leftPayload, leftKind, rightPayload, rightKind);
                 logger.debug("{} == {} -> {}", leftOperand, rightOperand, result);
                 break;
             case NE:
-                result = logicalNeq((JCLiteral) leftOperand, (JCLiteral) rightOperand);
+                result = logicalNeq(leftPayload, leftKind, rightPayload, rightKind);
                 logger.debug("{} != {} -> {}", leftOperand, rightOperand, result);
                 break;
             case LT:
-                result = logicalLt((JCLiteral) leftOperand, (JCLiteral) rightOperand);
+                result = logicalLt(leftPayload, leftKind, rightPayload, rightKind);
                 logger.debug("{} < {} -> {}", leftOperand, rightOperand, result);
                 break;
             case GT:
-                result = logicalGt((JCLiteral) leftOperand, (JCLiteral) rightOperand);
+                result = logicalGt(leftPayload, leftKind, rightPayload, rightKind);
                 logger.debug("{} > {} -> {}", leftOperand, rightOperand, result);
                 break;
             case LE:
-                result = logicalLe((JCLiteral) leftOperand, (JCLiteral) rightOperand);
+                result = logicalLe(leftPayload, leftKind, rightPayload, rightKind);
                 logger.debug("{} <= {} -> {}", leftOperand, rightOperand, result);
                 break;
             case GE:
-                result = logicalGe((JCLiteral) leftOperand, (JCLiteral) rightOperand);
+                result = logicalGe(leftPayload, leftKind, rightPayload, rightKind);
                 logger.debug("{} >= {} -> {}", leftOperand, rightOperand, result);
                 break;
             case PLUS:
-                result = arithmeticPlus((JCLiteral)  leftOperand, (JCLiteral) rightOperand);
+                result = arithmeticPlus(leftPayload, leftKind, rightPayload, rightKind);
                 logger.debug("{} + {} -> {}", leftOperand, rightOperand, result);
                 break;
             case MINUS:
-                result = arithmeticMinus((JCLiteral)  leftOperand, (JCLiteral) rightOperand);
+                result = arithmeticMinus(leftPayload, leftKind, rightPayload, rightKind);
                 logger.debug("{} - {} -> {}", leftOperand, rightOperand, result);
                 break;
             case MUL:
-                result = arithmeticMultiply((JCLiteral)  leftOperand, (JCLiteral) rightOperand);
+                result = arithmeticMultiply(leftPayload, leftKind, rightPayload, rightKind);
                 logger.debug("{} * {} -> {}", leftOperand, rightOperand, result);
                 break;
             case DIV:
-                result = arithmeticDivide((JCLiteral)  leftOperand, (JCLiteral) rightOperand);
+                result = arithmeticDivide(leftPayload, leftKind, rightPayload, rightKind);
                 logger.debug("{} / {} -> {}", leftOperand, rightOperand, result);
                 break;
             case MOD:
-                result = arithmeticModulo((JCLiteral)  leftOperand, (JCLiteral) rightOperand);
+                result = arithmeticModulo(leftPayload, leftKind, rightPayload, rightKind);
                 logger.debug("{} % {} -> {}", leftOperand, rightOperand, result);
                 break;
         }
@@ -189,17 +195,9 @@ public class ConstFoldTranslator extends TreeTranslator {
     /**
      * Create a Literal tree node representing the bitwise OR of the two input Literal nodes.
      *
-     * @param leftOperand Left operand to the OR.
-     * @param rightOperand Right operand to the OR.
      * @return A Literal node representing leftOperand | rightOperand, or null in case of error.
      */
-    private JCTree bitwiseOr(JCLiteral leftOperand, JCLiteral rightOperand) {
-        final Object leftPayload = leftOperand.getValue();
-        final Kind leftKind = leftOperand.getKind();
-
-        final Object rightPayload = rightOperand.getValue();
-        final Kind rightKind = rightOperand.getKind();
-
+    private JCTree bitwiseOr(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
             LogUtils.raiseCompilerError("Attempt to binary-bitwise-or non-numeric types: " + leftKind + ", " + rightKind);
@@ -261,17 +259,9 @@ public class ConstFoldTranslator extends TreeTranslator {
     /**
      * Create a Literal tree node representing the bitwise XOR of the two input Literal nodes.
      *
-     * @param leftOperand Left operand to the XOR.
-     * @param rightOperand Right operand to the XOR.
      * @return A Literal node representing leftOperand ^ rightOperand, or null in case of error.
      */
-    private JCTree bitwiseXor(JCLiteral leftOperand, JCLiteral rightOperand) {
-        final Object leftPayload = leftOperand.getValue();
-        final Kind leftKind = leftOperand.getKind();
-
-        final Object rightPayload = rightOperand.getValue();
-        final Kind rightKind = rightOperand.getKind();
-
+    private JCTree bitwiseXor(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
             LogUtils.raiseCompilerError("Attempt to binary-bitwise-xor non-numeric types: " + leftKind + ", " + rightKind);
@@ -332,18 +322,10 @@ public class ConstFoldTranslator extends TreeTranslator {
 
     /**
      * Create a Literal tree node representing the bitwise AND of the two input Literal nodes.
-     *
-     * @param leftOperand Left operand to the AND.
-     * @param rightOperand Right operand to the AND.
+     * 
      * @return A Literal node representing leftOperand & rightOperand, or null in case of error.
      */
-    private JCTree bitwiseAnd(JCLiteral leftOperand, JCLiteral rightOperand) {
-        final Object leftPayload = leftOperand.getValue();
-        final Kind leftKind = leftOperand.getKind();
-
-        final Object rightPayload = rightOperand.getValue();
-        final Kind rightKind = rightOperand.getKind();
-
+    private JCTree bitwiseAnd(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
             LogUtils.raiseCompilerError("Attempt to binary-bitwise-and non-numeric types: " + leftKind + ", " + rightKind);
@@ -405,17 +387,9 @@ public class ConstFoldTranslator extends TreeTranslator {
     /**
      * Create a Literal tree node representing the bitwise left shift of the two input Literal nodes.
      *
-     * @param leftOperand Left operand to the left shift.
-     * @param rightOperand Right operand to the left shift - the amount to shift by.
      * @return A Literal node representing leftOperand << rightOperand, or null in case of error.
      */
-    private JCTree bitwiseLeftShift(JCLiteral leftOperand, JCLiteral rightOperand) {
-        final Object leftPayload = leftOperand.getValue();
-        final Kind leftKind = leftOperand.getKind();
-
-        final Object rightPayload = rightOperand.getValue();
-        final Kind rightKind = rightOperand.getKind();
-
+    private JCTree bitwiseLeftShift(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
             LogUtils.raiseCompilerError("Attempt to binary-bitwise-left-shift non-numeric types: " + leftKind + ", " + rightKind);
@@ -477,17 +451,9 @@ public class ConstFoldTranslator extends TreeTranslator {
     /**
      * Create a Literal tree node representing the bitwise right shift of the two input Literal nodes.
      *
-     * @param leftOperand Left operand to the right shift.
-     * @param rightOperand Right operand to the right shift - the amount to shift by.
      * @return A Literal node representing leftOperand >> rightOperand, or null in case of error.
      */
-    private JCTree bitwiseRightShift(JCLiteral leftOperand, JCLiteral rightOperand) {
-        final Object leftPayload = leftOperand.getValue();
-        final Kind leftKind = leftOperand.getKind();
-
-        final Object rightPayload = rightOperand.getValue();
-        final Kind rightKind = rightOperand.getKind();
-
+    private JCTree bitwiseRightShift(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
             LogUtils.raiseCompilerError("Attempt to binary-bitwise-right-shift non-numeric types: " + leftKind + ", " + rightKind);
@@ -550,17 +516,9 @@ public class ConstFoldTranslator extends TreeTranslator {
     /**
      * Create a Literal tree node representing the unsigned bitwise right shift of the two input Literal nodes.
      *
-     * @param leftOperand Left operand to the unsigned right shift.
-     * @param rightOperand Right operand to the unsigned right shift - the amount to shift by.
      * @return A Literal node representing leftOperand >>> rightOperand, or null in case of error.
      */
-    private JCTree bitwiseUnsignedRightShift(JCLiteral leftOperand, JCLiteral rightOperand) {
-        final Object leftPayload = leftOperand.getValue();
-        final Kind leftKind = leftOperand.getKind();
-
-        final Object rightPayload = rightOperand.getValue();
-        final Kind rightKind = rightOperand.getKind();
-
+    private JCTree bitwiseUnsignedRightShift(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
             LogUtils.raiseCompilerError("Attempt to binary-bitwise-unsigned-right-shift non-numeric types: " + leftKind + ", " + rightKind);
@@ -622,17 +580,9 @@ public class ConstFoldTranslator extends TreeTranslator {
     /**
      * Create a Literal tree node representing the logical OR of the two input Literal nodes.
      *
-     * @param leftOperand Left operand to the OR.
-     * @param rightOperand Right operand to the OR.
      * @return A Literal node representing leftOperand || rightOperand, or null in case of error.
      */
-    private JCTree logicalOr(JCLiteral leftOperand, JCLiteral rightOperand) {
-        final Object leftPayload = leftOperand.getValue();
-        final Kind leftKind = leftOperand.getKind();
-
-        final Object rightPayload = rightOperand.getValue();
-        final Kind rightKind = rightOperand.getKind();
-
+    private JCTree logicalOr(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are boolean literals.
         if (!(leftKind == Kind.BOOLEAN_LITERAL && rightKind == Kind.BOOLEAN_LITERAL)) {
             LogUtils.raiseCompilerError("Attempt to binary-logical-or non-boolean types: " + leftKind + ", " + rightKind);
@@ -648,17 +598,9 @@ public class ConstFoldTranslator extends TreeTranslator {
     /**
      * Create a Literal tree node representing the logical AND of the two input Literal nodes.
      *
-     * @param leftOperand Left operand to the AND.
-     * @param rightOperand Right operand to the AND.
      * @return A Literal node representing leftOperand && rightOperand, or null in case of error.
      */
-    private JCTree logicalAnd(JCLiteral leftOperand, JCLiteral rightOperand) {
-        final Object leftPayload = leftOperand.getValue();
-        final Kind leftKind = leftOperand.getKind();
-
-        final Object rightPayload = rightOperand.getValue();
-        final Kind rightKind = rightOperand.getKind();
-
+    private JCTree logicalAnd(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are boolean literals.
         if (!(leftKind == Kind.BOOLEAN_LITERAL && rightKind == Kind.BOOLEAN_LITERAL)) {
             LogUtils.raiseCompilerError("Attempt to binary-logical-or non-boolean types: " + leftKind + ", " + rightKind);
@@ -674,17 +616,9 @@ public class ConstFoldTranslator extends TreeTranslator {
     /**
      * Create a Literal tree node representing the logical equals of the two input Literal nodes.
      *
-     * @param leftOperand Left operand to the EQ.
-     * @param rightOperand Right operand to the EQ.
      * @return A Literal node representing leftOperand == rightOperand, or null in case of error.
      */
-    private JCTree logicalEq(JCLiteral leftOperand, JCLiteral rightOperand) {
-        final Object leftPayload = leftOperand.getValue();
-        final Kind leftKind = leftOperand.getKind();
-
-        final Object rightPayload = rightOperand.getValue();
-        final Kind rightKind = rightOperand.getKind();
-
+    private JCTree logicalEq(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         if (rightKind != leftKind) {
             return treeMaker.Literal(false);
         }
@@ -733,17 +667,9 @@ public class ConstFoldTranslator extends TreeTranslator {
     /**
      * Create a Literal tree node representing the logical not-equals of the two input Literal nodes.
      *
-     * @param leftOperand Left operand to the NEQ.
-     * @param rightOperand Right operand to the NEQ.
      * @return A Literal node representing leftOperand != rightOperand, or null in case of error.
      */
-    private JCTree logicalNeq(JCLiteral leftOperand, JCLiteral rightOperand) {
-        final Object leftPayload = leftOperand.getValue();
-        final Kind leftKind = leftOperand.getKind();
-
-        final Object rightPayload = rightOperand.getValue();
-        final Kind rightKind = rightOperand.getKind();
-
+    private JCTree logicalNeq(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         if (rightKind != leftKind) {
             return treeMaker.Literal(false);
         }
@@ -792,17 +718,9 @@ public class ConstFoldTranslator extends TreeTranslator {
     /**
      * Create a Literal tree node representing l < r for two input Literal nodes.
      *
-     * @param leftOperand Left operand.
-     * @param rightOperand Right operand.
      * @return A Literal node representing leftOperand < rightOperand, or null in case of error.
      */
-    private JCTree logicalLt(JCLiteral leftOperand, JCLiteral rightOperand) {
-        final Object leftPayload = leftOperand.getValue();
-        final Kind leftKind = leftOperand.getKind();
-
-        final Object rightPayload = rightOperand.getValue();
-        final Kind rightKind = rightOperand.getKind();
-
+    private JCTree logicalLt(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
             LogUtils.raiseCompilerError("Attempt to lt non-numeric types: " + leftKind + ", " + rightKind);
@@ -924,17 +842,9 @@ public class ConstFoldTranslator extends TreeTranslator {
     /**
      * Create a Literal tree node representing l > r for two input Literal nodes.
      *
-     * @param leftOperand Left operand.
-     * @param rightOperand Right operand.
      * @return A Literal node representing leftOperand > rightOperand, or null in case of error.
      */
-    private JCTree logicalGt(JCLiteral leftOperand, JCLiteral rightOperand) {
-        final Object leftPayload = leftOperand.getValue();
-        final Kind leftKind = leftOperand.getKind();
-
-        final Object rightPayload = rightOperand.getValue();
-        final Kind rightKind = rightOperand.getKind();
-
+    private JCTree logicalGt(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
             LogUtils.raiseCompilerError("Attempt to gt non-numeric types: " + leftKind + ", " + rightKind);
@@ -1056,17 +966,9 @@ public class ConstFoldTranslator extends TreeTranslator {
     /**
      * Create a Literal tree node representing l <= r for two input Literal nodes.
      *
-     * @param leftOperand Left operand.
-     * @param rightOperand Right operand.
      * @return A Literal node representing leftOperand <= rightOperand, or null in case of error.
      */
-    private JCTree logicalLe(JCLiteral leftOperand, JCLiteral rightOperand) {
-        final Object leftPayload = leftOperand.getValue();
-        final Kind leftKind = leftOperand.getKind();
-
-        final Object rightPayload = rightOperand.getValue();
-        final Kind rightKind = rightOperand.getKind();
-
+    private JCTree logicalLe(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
             LogUtils.raiseCompilerError("Attempt to le non-numeric types: " + leftKind + ", " + rightKind);
@@ -1188,17 +1090,9 @@ public class ConstFoldTranslator extends TreeTranslator {
     /**
      * Create a Literal tree node representing l >= r from the operand nodes.
      *
-     * @param leftOperand Left operand.
-     * @param rightOperand Right operand.
      * @return A Literal node representing leftOperand >= rightOperand, or null in case of error.
      */
-    private JCTree logicalGe(JCLiteral leftOperand, JCLiteral rightOperand) {
-        final Object leftPayload = leftOperand.getValue();
-        final Kind leftKind = leftOperand.getKind();
-
-        final Object rightPayload = rightOperand.getValue();
-        final Kind rightKind = rightOperand.getKind();
-
+    private JCTree logicalGe(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
             LogUtils.raiseCompilerError("Attempt to ge non-numeric types: " + leftKind + ", " + rightKind);
@@ -1320,17 +1214,9 @@ public class ConstFoldTranslator extends TreeTranslator {
     /**
      * Create a Literal tree node representing the sum of the two input Literal nodes.
      *
-     * @param leftOperand Left operand to the addition.
-     * @param rightOperand Right operand to the addition.
      * @return A Literal node representing leftOperand + rightOperand, or null in case of error.
      */
-    private JCTree arithmeticPlus(JCLiteral leftOperand, JCLiteral rightOperand) {
-        final Object leftPayload = leftOperand.getValue();
-        final Kind leftKind = leftOperand.getKind();
-
-        final Object rightPayload = rightOperand.getValue();
-        final Kind rightKind = rightOperand.getKind();
-
+    private JCTree arithmeticPlus(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
             LogUtils.raiseCompilerError("Attempt to add non-numeric types: " + leftKind + ", " + rightKind);
@@ -1491,17 +1377,9 @@ public class ConstFoldTranslator extends TreeTranslator {
     /**
      * Create a Literal tree node representing the difference of the two input Literal nodes.
      *
-     * @param leftOperand Left operand to the subtraction.
-     * @param rightOperand Right operand to the subtraction.
      * @return A Literal node representing leftOperand - rightOperand, or null in case of error.
      */
-    private JCTree arithmeticMinus(JCLiteral leftOperand, JCLiteral rightOperand) {
-        final Object leftPayload = leftOperand.getValue();
-        final Kind leftKind = leftOperand.getKind();
-
-        final Object rightPayload = rightOperand.getValue();
-        final Kind rightKind = rightOperand.getKind();
-
+    private JCTree arithmeticMinus(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
             LogUtils.raiseCompilerError("Attempt to subtract non-numeric types: " + leftKind + ", " + rightKind);
@@ -1623,17 +1501,9 @@ public class ConstFoldTranslator extends TreeTranslator {
     /**
      * Create a Literal tree node representing the product of the two input Literal nodes.
      *
-     * @param leftOperand Left operand to the multiplication.
-     * @param rightOperand Right operand to the multiplication.
      * @return A Literal node representing leftOperand * rightOperand, or null in case of error.
      */
-    private JCTree arithmeticMultiply(JCLiteral leftOperand, JCLiteral rightOperand) {
-        final Object leftPayload = leftOperand.getValue();
-        final Kind leftKind = leftOperand.getKind();
-
-        final Object rightPayload = rightOperand.getValue();
-        final Kind rightKind = rightOperand.getKind();
-
+    private JCTree arithmeticMultiply(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
             LogUtils.raiseCompilerError("Attempt to multiply non-numeric types: " + leftKind + ", " + rightKind);
@@ -1755,17 +1625,9 @@ public class ConstFoldTranslator extends TreeTranslator {
     /**
      * Create a Literal tree node representing the quotient of the two input Literal nodes.
      *
-     * @param leftOperand Left operand to the division.
-     * @param rightOperand Right operand to the division.
      * @return A Literal node representing leftOperand / rightOperand, or null in case of error.
      */
-    private JCTree arithmeticDivide(JCLiteral leftOperand, JCLiteral rightOperand) {
-        final Object leftPayload = leftOperand.getValue();
-        final Kind leftKind = leftOperand.getKind();
-
-        final Object rightPayload = rightOperand.getValue();
-        final Kind rightKind = rightOperand.getKind();
-
+    private JCTree arithmeticDivide(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
             LogUtils.raiseCompilerError("Attempt to divide non-numeric types: " + leftKind + ", " + rightKind);
@@ -1887,17 +1749,9 @@ public class ConstFoldTranslator extends TreeTranslator {
     /**
      * Create a Literal tree node representing the modulo of the two input Literal nodes.
      *
-     * @param leftOperand Left operand to the modulo.
-     * @param rightOperand Right operand to the modulo.
      * @return A Literal node representing leftOperand % rightOperand, or null in case of error.
      */
-    private JCTree arithmeticModulo(JCLiteral leftOperand, JCLiteral rightOperand) {
-        final Object leftPayload = leftOperand.getValue();
-        final Kind leftKind = leftOperand.getKind();
-
-        final Object rightPayload = rightOperand.getValue();
-        final Kind rightKind = rightOperand.getKind();
-
+    private JCTree arithmeticModulo(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
             LogUtils.raiseCompilerError("Attempt to modulo non-numeric types: " + leftKind + ", " + rightKind);
