@@ -13,7 +13,7 @@ import javax.tools.JavaFileManager;
 /**
  * Base class for unit tests that require the ability to fabricate AST fragments as test inputs.
  */
-public class TreeFabricatingTest {
+public abstract class TreeFabricatingTest {
     private static Logger logger = LogManager.getLogger();
     // Factory class, internal to the compiler, used to manufacture parse tree nodes.
     protected static TreeMaker t;
