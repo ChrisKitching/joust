@@ -1969,7 +1969,9 @@ public class ConstFoldTranslator extends TreeTranslator {
      */
     private boolean kindIsNumeric(Kind k) {
         return k == Kind.LONG_LITERAL ||
-                k == Kind.INT_LITERAL  ||
-                k == Kind.CHAR_LITERAL;
+               k == Kind.INT_LITERAL  ||
+               k == Kind.CHAR_LITERAL  ||
+               k == Kind.FLOAT_LITERAL  ||
+               k == Kind.DOUBLE_LITERAL;
     }
 }
