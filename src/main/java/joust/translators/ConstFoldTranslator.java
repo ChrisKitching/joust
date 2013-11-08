@@ -19,7 +19,7 @@ import static joust.Optimiser.treeMaker;
  * Unfortunately, doing things at this level means we have to deal with issues like brackets.
  * TODO: Lambdas might be able to make this less soul-destroyingly awful to look at.
  */
-public class ConstFoldTranslator extends TreeTranslator {
+public class ConstFoldTranslator extends BaseTranslator {
     private static Logger logger = LogManager.getLogger();
 
     // Boolean to track if this visitor has made any changes to the tree this iteration.
