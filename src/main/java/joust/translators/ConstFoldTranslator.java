@@ -1244,7 +1244,7 @@ public class ConstFoldTranslator extends BaseTranslator {
                         float floatRValue = (Float) rightPayload;
                         return treeMaker.Literal(charLValue + floatRValue);
                     case STRING_LITERAL:
-                        double stringRValue = (Float) rightPayload;
+                        String stringRValue = (String) rightPayload;
                         return treeMaker.Literal(charLValue + stringRValue);
                     default:
                         return null;
@@ -1268,8 +1268,8 @@ public class ConstFoldTranslator extends BaseTranslator {
                         float floatRValue = (Float) rightPayload;
                         return treeMaker.Literal(intLValue + floatRValue);
                     case STRING_LITERAL:
-                        double stringRValue = (Float) rightPayload;
-                        return treeMaker.Literal(intLValue + stringRValue);
+                        String stringRValue = (String) rightPayload;
+                        return treeMaker.Literal(Integer.toString(intLValue) + stringRValue);
                     default:
                         return null;
                 }
@@ -1292,8 +1292,8 @@ public class ConstFoldTranslator extends BaseTranslator {
                         float floatRValue = (Float) rightPayload;
                         return treeMaker.Literal(longLValue + floatRValue);
                     case STRING_LITERAL:
-                        double stringRValue = (Float) rightPayload;
-                        return treeMaker.Literal(longLValue + stringRValue);
+                        String stringRValue = (String) rightPayload;
+                        return treeMaker.Literal(Long.toString(longLValue) + stringRValue);
                     default:
                         return null;
                 }
@@ -1316,8 +1316,8 @@ public class ConstFoldTranslator extends BaseTranslator {
                         float floatRValue = (Float) rightPayload;
                         return treeMaker.Literal(doubleLValue + floatRValue);
                     case STRING_LITERAL:
-                        double stringRValue = (Float) rightPayload;
-                        return treeMaker.Literal(doubleLValue + stringRValue);
+                        String stringRValue = (String) rightPayload;
+                        return treeMaker.Literal(Double.toString(doubleLValue) + stringRValue);
                     default:
                         return null;
                 }
@@ -1340,8 +1340,8 @@ public class ConstFoldTranslator extends BaseTranslator {
                         float floatRValue = (Float) rightPayload;
                         return treeMaker.Literal(floatLValue + floatRValue);
                     case STRING_LITERAL:
-                        double stringRValue = (Float) rightPayload;
-                        return treeMaker.Literal(floatLValue + stringRValue);
+                        String stringRValue = (String) rightPayload;
+                        return treeMaker.Literal(Float.toString(floatLValue) + stringRValue);
                     default:
                         return null;
                 }
@@ -1364,7 +1364,7 @@ public class ConstFoldTranslator extends BaseTranslator {
                         float floatRValue = (Float) rightPayload;
                         return treeMaker.Literal(stringLValue + floatRValue);
                     case STRING_LITERAL:
-                        double stringRValue = (Float) rightPayload;
+                        String stringRValue = (String) rightPayload;
                         return treeMaker.Literal(stringLValue + stringRValue);
                     default:
                         return null;
