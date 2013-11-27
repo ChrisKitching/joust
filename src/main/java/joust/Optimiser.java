@@ -4,9 +4,7 @@ import com.sun.source.util.Trees;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
-import com.sun.tools.javac.tree.TreeTranslator;
 import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.Name;
 import joust.translators.ConstFoldTranslator;
 import joust.utils.LogUtils;
 import org.apache.logging.log4j.LogManager;
@@ -21,7 +19,6 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
-import javax.tools.Diagnostic;
 import java.util.Set;
 
 @SupportedAnnotationTypes("*")
@@ -40,6 +37,12 @@ public class Optimiser extends AbstractProcessor {
 
         // So we can log those fatal errors...
         LogUtils.init(processingEnv);
+
+        // Parse command line options.
+        if (!OptimiserOptions.configureFromProcessingEnvironment(env)) {
+            LogUtils.raiseCompilerError("Optimiser aborted by command line argument processor.");
+            return;
+        }
 
         mTrees = Trees.instance(env);
 
