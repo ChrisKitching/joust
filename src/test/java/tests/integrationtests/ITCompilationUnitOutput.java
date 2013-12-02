@@ -95,8 +95,7 @@ public class ITCompilationUnitOutput {
      */
     @Test
     public void runTest() {
-        logger.debug("Test with name: {}", mTargetSource);
-        logger.debug("Starting test with classpath: {}", System.getProperty("java.class.path"));
+        logger.info(mTargetSource);
 
         // Create the compiled programs..
         assertTrue(compileTarget(false));
@@ -214,10 +213,6 @@ public class ITCompilationUnitOutput {
             optionList.add(mOptOutDir.getPath());
         } else {
             optionList.add(mNoOptOutDir.getPath());
-        }
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("Compiling with option list: {}", Arrays.toString(optionList.toArray()));
         }
 
         JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnostics, optionList, null, compilationTarget);
