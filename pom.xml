@@ -76,6 +76,13 @@
       <artifactId>jewelcli</artifactId>
       <version>0.8.6</version>
     </dependency>
+
+    <!-- Project Lombok. For magic. -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>1.12.2</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -93,12 +100,17 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.1</version>
         <configuration>
-          <forceJavacCompilerUse>true</forceJavacCompilerUse>
           <source>1.7</source>
           <target>1.7</target>
           <showWarnings>true</showWarnings>
-          <!-- Stop the annotation processor from annotation processing the annotation processor -->
-          <compilerArgument>-proc:none</compilerArgument>
+          <!-- Stop the annotation processor from annotation processing the annotation processor,
+               but allow Project Lombok, which is an annotation processor, annotation process the
+               annotation processor. -->
+          <annotationProcessors>
+            <annotationProcessor>
+              lombok.core.AnnotationProcessor
+            </annotationProcessor>
+          </annotationProcessors>
           <showDeprecation>true</showDeprecation>
           <compilerVersion>1.8</compilerVersion>
         </configuration>
@@ -181,4 +193,11 @@
       </resource>
     </resources>
   </build>
+
+  <repositories>
+    <repository>
+      <id>projectlombok.org</id>
+      <url>http://projectlombok.org/mavenrepo</url>
+    </repository>
+  </repositories>
 </project>

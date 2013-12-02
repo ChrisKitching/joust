@@ -1,13 +1,9 @@
 package joust.translators;
 
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeTranslator;
-import joust.Optimiser;
 import joust.utils.LogUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 
-import static com.sun.tools.javac.tree.JCTree.Tag.*;
 import static com.sun.tools.javac.tree.JCTree.*;
 import static joust.Optimiser.treeMaker;
 /**
@@ -19,9 +15,8 @@ import static joust.Optimiser.treeMaker;
  * Unfortunately, doing things at this level means we have to deal with issues like brackets.
  * TODO: Lambdas might be able to make this less soul-destroyingly awful to look at.
  */
-public class ConstFoldTranslator extends BaseTranslator {
-    private static Logger logger = LogManager.getLogger();
-
+public @Log4j2
+class ConstFoldTranslator extends BaseTranslator {
     // Boolean to track if this visitor has made any changes to the tree this iteration.
     private boolean mHasMadeAChange;
 
@@ -48,19 +43,19 @@ public class ConstFoldTranslator extends BaseTranslator {
         switch (nodeTag) {
             case POS:
                 result = expr;
-                logger.debug("+{} -> {}", expr, result);
+                log.debug("+{} -> {}", expr, result);
                 break;
             case NEG:
                 result = numericalNegate((JCLiteral) expr);
-                logger.debug("-{} -> {}", expr, result);
+                log.debug("-{} -> {}", expr, result);
                 break;
             case NOT:
                 result = logicalNegate((JCLiteral) expr);
-                logger.debug("!{} -> {}", expr, result);
+                log.debug("!{} -> {}", expr, result);
                 break;
             case COMPL:
                 result = bitwiseNegate((JCLiteral) expr);
-                logger.debug("~{} -> {}", expr, result);
+                log.debug("~{} -> {}", expr, result);
                 break;
             case PREINC:
                 LogUtils.raiseCompilerError("Attempt to pre-inc a literal!");
@@ -99,79 +94,79 @@ public class ConstFoldTranslator extends BaseTranslator {
         switch (nodeTag) {
             case BITOR:
                 result = bitwiseOr(leftPayload, leftKind, rightPayload, rightKind);
-                logger.debug("{} OR {} -> {}", leftOperand, rightOperand, result);
+                log.debug("{} OR {} -> {}", leftOperand, rightOperand, result);
                 break;
             case BITXOR:
                 result = bitwiseXor(leftPayload, leftKind, rightPayload, rightKind);
-                logger.debug("{} XOR {} -> {}", leftOperand, rightOperand, result);
+                log.debug("{} XOR {} -> {}", leftOperand, rightOperand, result);
                 break;
             case BITAND:
                 result = bitwiseAnd(leftPayload, leftKind, rightPayload, rightKind);
-                logger.debug("{} AND {} -> {}", leftOperand, rightOperand, result);
+                log.debug("{} AND {} -> {}", leftOperand, rightOperand, result);
                 break;
             case SL:
                 result = bitwiseLeftShift(leftPayload, leftKind, rightPayload, rightKind);
-                logger.debug("{} << {} -> {}", leftOperand, rightOperand, result);
+                log.debug("{} << {} -> {}", leftOperand, rightOperand, result);
                 break;
             case SR:
                 result = bitwiseRightShift(leftPayload, leftKind, rightPayload, rightKind);
-                logger.debug("{} >> {} -> {}", leftOperand, rightOperand, result);
+                log.debug("{} >> {} -> {}", leftOperand, rightOperand, result);
                 break;
             case USR:
                 result = bitwiseUnsignedRightShift(leftPayload, leftKind, rightPayload, rightKind);
-                logger.debug("{} >>> {} -> {}", leftOperand, rightOperand, result);
+                log.debug("{} >>> {} -> {}", leftOperand, rightOperand, result);
                 break;
             case OR:
                 result = logicalOr(leftPayload, leftKind, rightPayload, rightKind);
-                logger.debug("{} || {} -> {}", leftOperand, rightOperand, result);
+                log.debug("{} || {} -> {}", leftOperand, rightOperand, result);
                 break;
             case AND:
                 result = logicalAnd(leftPayload, leftKind, rightPayload, rightKind);
-                logger.debug("{} && {} -> {}", leftOperand, rightOperand, result);
+                log.debug("{} && {} -> {}", leftOperand, rightOperand, result);
                 break;
             case EQ:
                 result = logicalEq(leftPayload, leftKind, rightPayload, rightKind);
-                logger.debug("{} == {} -> {}", leftOperand, rightOperand, result);
+                log.debug("{} == {} -> {}", leftOperand, rightOperand, result);
                 break;
             case NE:
                 result = logicalNeq(leftPayload, leftKind, rightPayload, rightKind);
-                logger.debug("{} != {} -> {}", leftOperand, rightOperand, result);
+                log.debug("{} != {} -> {}", leftOperand, rightOperand, result);
                 break;
             case LT:
                 result = logicalLt(leftPayload, leftKind, rightPayload, rightKind);
-                logger.debug("{} < {} -> {}", leftOperand, rightOperand, result);
+                log.debug("{} < {} -> {}", leftOperand, rightOperand, result);
                 break;
             case GT:
                 result = logicalGt(leftPayload, leftKind, rightPayload, rightKind);
-                logger.debug("{} > {} -> {}", leftOperand, rightOperand, result);
+                log.debug("{} > {} -> {}", leftOperand, rightOperand, result);
                 break;
             case LE:
                 result = logicalLe(leftPayload, leftKind, rightPayload, rightKind);
-                logger.debug("{} <= {} -> {}", leftOperand, rightOperand, result);
+                log.debug("{} <= {} -> {}", leftOperand, rightOperand, result);
                 break;
             case GE:
                 result = logicalGe(leftPayload, leftKind, rightPayload, rightKind);
-                logger.debug("{} >= {} -> {}", leftOperand, rightOperand, result);
+                log.debug("{} >= {} -> {}", leftOperand, rightOperand, result);
                 break;
             case PLUS:
                 result = arithmeticPlus(leftPayload, leftKind, rightPayload, rightKind);
-                logger.debug("{} + {} -> {}", leftOperand, rightOperand, result);
+                log.debug("{} + {} -> {}", leftOperand, rightOperand, result);
                 break;
             case MINUS:
                 result = arithmeticMinus(leftPayload, leftKind, rightPayload, rightKind);
-                logger.debug("{} - {} -> {}", leftOperand, rightOperand, result);
+                log.debug("{} - {} -> {}", leftOperand, rightOperand, result);
                 break;
             case MUL:
                 result = arithmeticMultiply(leftPayload, leftKind, rightPayload, rightKind);
-                logger.debug("{} * {} -> {}", leftOperand, rightOperand, result);
+                log.debug("{} * {} -> {}", leftOperand, rightOperand, result);
                 break;
             case DIV:
                 result = arithmeticDivide(leftPayload, leftKind, rightPayload, rightKind);
-                logger.debug("{} / {} -> {}", leftOperand, rightOperand, result);
+                log.debug("{} / {} -> {}", leftOperand, rightOperand, result);
                 break;
             case MOD:
                 result = arithmeticModulo(leftPayload, leftKind, rightPayload, rightKind);
-                logger.debug("{} % {} -> {}", leftOperand, rightOperand, result);
+                log.debug("{} % {} -> {}", leftOperand, rightOperand, result);
                 break;
         }
     }
@@ -653,7 +648,7 @@ public class ConstFoldTranslator extends BaseTranslator {
                 boolean boolRValue = (Boolean) rightPayload;
                 return treeMaker.Literal(boolLValue == boolRValue);
             case STRING_LITERAL:
-                logger.warn("Comparing strings with == !");
+                log.warn("Comparing strings with == !");
                 return treeMaker.Literal(false);
             case NULL_LITERAL:
                 // Since null == null...
@@ -704,7 +699,7 @@ public class ConstFoldTranslator extends BaseTranslator {
                 boolean boolRValue = (Boolean) rightPayload;
                 return treeMaker.Literal(boolLValue != boolRValue);
             case STRING_LITERAL:
-                logger.warn("Comparing strings with == !");
+                log.warn("Comparing strings with == !");
                 return treeMaker.Literal(true);
             case NULL_LITERAL:
                 // Since null != null is false...

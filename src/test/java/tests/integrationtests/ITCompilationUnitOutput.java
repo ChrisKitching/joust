@@ -1,8 +1,7 @@
 package tests.integrationtests;
 
+import lombok.extern.log4j.Log4j2;
 import testutils.BaseIntegrationTestCase;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -35,9 +34,8 @@ import static org.junit.Assert.*;
  * compilation unit without the need for lots of boring boilerplate.
  */
 @RunWith(Parameterized.class)
-public class ITCompilationUnitOutput {
-    private static Logger logger = LogManager.getLogger();
-
+public @Log4j2
+class ITCompilationUnitOutput {
     public static final String TEST_INPUTS_DIR = "/testinputs/";
     public static final String OPT_DIR = "/compilationResults/opt/";
     public static final String UN_OPT_DIR = "/compilationResults/noOpt/";
@@ -95,7 +93,7 @@ public class ITCompilationUnitOutput {
      */
     @Test
     public void runTest() {
-        logger.info(mTargetSource);
+        log.info(mTargetSource);
 
         // Create the compiled programs..
         assertTrue(compileTarget(false));
@@ -116,14 +114,14 @@ public class ITCompilationUnitOutput {
         assertNotNull(noOptClass);
 
         String optOutput = executeCompiledTest(optClass);
-        logger.debug("Optimised output:\n{}", optOutput);
+        log.debug("Optimised output:\n{}", optOutput);
         String noOptOutput = executeCompiledTest(noOptClass);
-        logger.debug("Unoptimised output:\n{}", noOptOutput);
+        log.debug("Unoptimised output:\n{}", noOptOutput);
 
         // Not using an assertion directly so we can print extra debug information.
         if (!optOutput.equals(noOptOutput)) {
             // Print a bytecode diff for debugging...
-            if (logger.isDebugEnabled()) {
+            if (log.isDebugEnabled()) {
                 printBytecodeOfTest();
             }
 
@@ -137,12 +135,12 @@ public class ITCompilationUnitOutput {
      */
     private void printBytecodeOfTest() {
         try {
-            logger.debug("-------------- BYTECODE OF OPTIMISED TESTCASE --------------");
+            log.debug("-------------- BYTECODE OF OPTIMISED TESTCASE --------------");
             printBytecodeForDir(sOptOutDir);
-            logger.debug("-------------- BYTECODE OF UNOPTIMISED TESTCASE --------------");
+            log.debug("-------------- BYTECODE OF UNOPTIMISED TESTCASE --------------");
             printBytecodeForDir(sUnOptOutDir);
         } catch (IOException e) {
-            logger.debug("IOException dumping bytecode!");
+            log.debug("IOException dumping bytecode!");
             e.printStackTrace();
         }
     }

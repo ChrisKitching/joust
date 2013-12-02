@@ -8,8 +8,7 @@ import com.sun.tools.javac.util.Context;
 import joust.translators.AssertionStrippingTranslator;
 import joust.translators.ConstFoldTranslator;
 import joust.utils.LogUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -24,9 +23,7 @@ import java.util.Set;
 
 @SupportedAnnotationTypes("*")
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
-public class Optimiser extends AbstractProcessor {
-    private static Logger logger = LogManager.getLogger();
-
+public @Log4j2 class Optimiser extends AbstractProcessor {
     public static Trees mTrees;
 
     // Factory class, internal to the compiler, used to manufacture parse tree nodes.
@@ -57,15 +54,15 @@ public class Optimiser extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> typeElements, RoundEnvironment roundEnvironment) {
         if (roundEnvironment.processingOver()) {
-            logger.info("Optimiser has concluded.");
+            log.info("Optimiser has concluded.");
             return false;
         }
 
-        logger.info("Optimiser starting.");
+        log.info("Optimiser starting.");
 
         Set<? extends Element> elements = roundEnvironment.getRootElements();
         for (Element each : elements) {
-            logger.debug("Element: {}", each);
+            log.debug("Element: {}", each);
             if (each.getKind() == ElementKind.CLASS) {
                 // Another magic cast to a compiler-internal type to get us the power we need.
                 // The JCTree type gives us access to the entire AST, rather than just the methods.

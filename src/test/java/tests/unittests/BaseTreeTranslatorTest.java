@@ -4,8 +4,7 @@ import static com.sun.tools.javac.tree.JCTree.*;
 
 import com.sun.tools.javac.tree.JCTree;
 import joust.translators.BaseTranslator;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 
 import java.lang.reflect.Method;
 
@@ -17,8 +16,8 @@ import static org.junit.Assert.assertTrue;
  *
  * @param <T> The type of TreeTranslator under test.
  */
-public abstract class BaseTreeTranslatorTest<T extends BaseTranslator> extends TreeFabricatingTest {
-    private static Logger logger = LogManager.getLogger();
+public @Log4j2
+abstract class BaseTreeTranslatorTest<T extends BaseTranslator> extends TreeFabricatingTest {
 
     // The class of the tree translator type of interest.
     private final Class<T> mClass;
@@ -55,7 +54,7 @@ public abstract class BaseTreeTranslatorTest<T extends BaseTranslator> extends T
         // Check for insanity situations
         assertTrue(foundMethod);
 
-        logger.info("Result: {}  Expected: {}", translator.getResult(), expected);
+        log.info("Result: {}  Expected: {}", translator.getResult(), expected);
 
         // Ensure that the actual output matches the expected output.
         // TODO: It may become necessary to implement a proper comparator for JCTree objects.

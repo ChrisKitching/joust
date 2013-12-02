@@ -8,8 +8,7 @@ import com.sun.tools.javac.tree.JCTree;
 import joust.translators.ConstFoldTranslator;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -20,9 +19,8 @@ import org.junit.runner.RunWith;
  * Due to the JUnitParamsRunner, test X gets its param set from a method called parametersForX.
  */
 @RunWith(JUnitParamsRunner.class)
-public class ConstFoldTranslatorTest extends BaseTreeTranslatorTest<ConstFoldTranslator> {
-    private static Logger logger = LogManager.getLogger();
-
+public @Log4j2
+class ConstFoldTranslatorTest extends BaseTreeTranslatorTest<ConstFoldTranslator> {
     public ConstFoldTranslatorTest() {
         super(ConstFoldTranslator.class);
     }

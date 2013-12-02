@@ -2,19 +2,17 @@ package tests.unittests;
 
 import static org.junit.Assert.*;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class TestTest {
-    private static Logger logger = LogManager.getLogger();
-
+public @Log4j2
+class TestTest {
     @Test
     public void thisAlwaysPasses() {
-        logger.info("Unit test framework is alive!");
+        log.info("Unit test framework is alive!");
         assertTrue(true);
     }
 }
