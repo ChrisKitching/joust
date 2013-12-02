@@ -3,7 +3,7 @@ package tests.unittests;
 import static com.sun.tools.javac.tree.JCTree.*;
 
 import com.sun.tools.javac.tree.JCTree;
-import joust.translators.BaseTranslator;
+import joust.optimisers.translators.BaseTranslator;
 import lombok.extern.log4j.Log4j2;
 
 import java.lang.reflect.Method;

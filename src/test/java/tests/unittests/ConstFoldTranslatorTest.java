@@ -5,7 +5,7 @@ import static junitparams.JUnitParamsRunner.$;
 import static tests.unittests.constfold.BaseConstFoldTest.*;
 
 import com.sun.tools.javac.tree.JCTree;
-import joust.translators.ConstFoldTranslator;
+import joust.optimisers.translators.ConstFoldTranslator;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import lombok.extern.log4j.Log4j2;

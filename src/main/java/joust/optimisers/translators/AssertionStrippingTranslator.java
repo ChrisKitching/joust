@@ -1,4 +1,4 @@
-package joust.translators;
+package joust.optimisers.translators;
 
 import com.sun.tools.javac.tree.JCTree;
 
