@@ -5,6 +5,7 @@ import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
+import joust.translators.AssertionStrippingTranslator;
 import joust.translators.ConstFoldTranslator;
 import joust.utils.LogUtils;
 import org.apache.logging.log4j.LogManager;
@@ -69,6 +70,13 @@ public class Optimiser extends AbstractProcessor {
                 // Another magic cast to a compiler-internal type to get us the power we need.
                 // The JCTree type gives us access to the entire AST, rather than just the methods.
                 JCTree tree = (JCTree) mTrees.getTree(each);
+
+                // Strip assertions, if set. Operation neglects possibility of side effects on
+                // assertions. This defaults to disabled.
+                if (OptimiserOptions.stripAssertions) {
+                    AssertionStrippingTranslator stripper = new AssertionStrippingTranslator();
+                    tree.accept(stripper);
+                }
 
                 ConstFoldTranslator constFold;
                 do {
