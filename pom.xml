@@ -83,6 +83,27 @@
       <artifactId>lombok</artifactId>
       <version>1.12.2</version>
     </dependency>
+
+    <!-- xxHash for efficient non-cryptographic hashes (To spot classfile content collisions). -->
+    <dependency>
+      <groupId>net.jpountz.lz4</groupId>
+      <artifactId>lz4</artifactId>
+      <version>1.2.0</version>
+    </dependency>
+
+    <!-- Kyro, for efficient object serialisation. (Used for the disk cache). -->
+    <dependency>
+      <groupId>com.esotericsoftware.kryo</groupId>
+      <artifactId>kryo</artifactId>
+      <version>2.22</version>
+    </dependency>
+
+    <!-- jdbm2 - a key/value store for holding the contents of the disk cache. -->
+    <dependency>
+      <groupId>jdbm</groupId>
+      <artifactId>jdbm</artifactId>
+      <version>2.4</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -198,6 +219,11 @@
     <repository>
       <id>projectlombok.org</id>
       <url>http://projectlombok.org/mavenrepo</url>
+    </repository>
+
+    <repository>
+      <id>clojars.org</id>
+      <url>http://clojars.org/repo</url>
     </repository>
   </repositories>
 </project>
