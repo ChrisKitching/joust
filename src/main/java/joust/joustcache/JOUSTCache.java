@@ -20,6 +20,7 @@ import lombok.extern.log4j.Log4j2;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 /**
@@ -29,6 +30,8 @@ public @Log4j2
 class JOUSTCache {
     private static final String DATABASE_FILE_NAME = "joustCache";
     private static final int INITIAL_BUFFER_SIZE = 100000;
+
+    private static HashSet<ClassSymbol> loadedSymbols = new HashSet<>();
 
     // For serialising ClassInfo objects before putting them in the database.
     private static Kryo serialiser = new Kryo();
@@ -42,11 +45,10 @@ class JOUSTCache {
 
     private static HashMap<String, ClassInfo> classInfo = new HashMap<>();
 
-    /**
-     * Find all classes on the classpath and store a mapping of them. These are the possible targets
-     * we may need to find results for.
-     */
     public static void init() {
+        if (databaseRecordManager != null) {
+            return;
+        }
         try {
             databaseRecordManager = getOrCreateRecordManager();
         } catch (IOException e) {
@@ -120,9 +122,13 @@ class JOUSTCache {
      * @param sym ClassSymbol from which to load definitions.
      */
     public static void loadCachedInfoForClass(ClassSymbol sym) {
+        if (loadedSymbols.contains(sym)) {
+            return;
+        }
+
         byte[] payload = databaseMap.get(sym.fullname.toString());
         if (payload == null) {
-            log.warn("Unable to load cached info for class {}", sym.fullname.toString());
+            log.warn("No cached info for class {} seems to exist.", sym.fullname.toString());
             return;
         }
 
@@ -157,6 +163,8 @@ class JOUSTCache {
                      "Classinfo hash: {}\n", sym.fullname.toString(), classHash, cInfo.hash);
             return;
         }
+
+        loadedSymbols.add(sym);
 
         TreeInfoManager.populateFromClassInfo(cInfo);
     }

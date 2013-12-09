@@ -15,7 +15,9 @@ import joust.joustcache.ChecksumUtils;
 import joust.joustcache.JOUSTCache;
 import joust.joustcache.data.MethodInfo;
 import joust.optimisers.ConstFold;
+import joust.optimisers.SideEffects;
 import joust.optimisers.StripAssertions;
+import joust.treeinfo.EffectSet;
 import joust.utils.LogUtils;
 import joust.optimisers.utils.OptimisationPhaseManager;
 import lombok.extern.log4j.Log4j2;
@@ -66,11 +68,13 @@ public @Log4j2 class Optimiser extends AbstractProcessor {
 
         JOUSTCache.init();
         ChecksumUtils.init();
+        EffectSet.init();
 
         // Define when we run each optimisation.
         OptimisationPhaseManager.init(env);
         OptimisationPhaseManager.register(new StripAssertions(), AFTER, ANNOTATION_PROCESSING);
         OptimisationPhaseManager.register(new ConstFold(), AFTER, ANNOTATION_PROCESSING);
+        OptimisationPhaseManager.register(new SideEffects(), AFTER, ANALYZE);
 
         // The post-compilation pass to populate the disk cache with the results of classes processed
         // during this job. Needs to happen here so we can compute a checksum over the bytecode and
@@ -91,11 +95,8 @@ public @Log4j2 class Optimiser extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> typeElements, RoundEnvironment roundEnvironment) {
         if (roundEnvironment.processingOver()) {
-            log.info("Optimiser has concluded.");
             return false;
         }
-
-        log.info("Optimiser starting.");
 
         // Collect references to all the trees we're interested in. The actual optimisation occurs
         // in the various PhaseSpecificRunnables registered for execution later (Directly after this

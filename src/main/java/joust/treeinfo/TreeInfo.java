@@ -1,12 +1,15 @@
 package joust.treeinfo;
 
 
+import lombok.Data;
+
 /**
  * Used to store information related to a particular tree node.
  */
-public class TreeInfo {
+public @Data
+class TreeInfo {
     // The side effects of the corresponding tree node.
-    public EffectSet mEffectSet;
+    EffectSet mEffectSet;
 
     // TODO: Other related info...
 }

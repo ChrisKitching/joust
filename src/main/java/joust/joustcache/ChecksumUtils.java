@@ -21,6 +21,9 @@ public class ChecksumUtils {
     private static XXHash32 unsafeHasher;
 
     public static void init() {
+        if (jniHasher != null) {
+            return;
+        }
         // The instances of XXHash32 are thread safe, according to the documentation.
         jniHasher = XXHashFactory.nativeInstance().hash32();
         unsafeHasher = XXHashFactory.unsafeInstance().hash32();

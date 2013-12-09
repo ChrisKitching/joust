@@ -1,9 +1,12 @@
 package joust.treeinfo;
 
+import lombok.extern.log4j.Log4j2;
+
 /**
  * A class for representing the side effects of a particular tree node.
  */
-public class EffectSet {
+public @Log4j2
+class EffectSet {
     public static enum Effects {
         NONE (0),
         READ_LOCAL(1),
@@ -12,6 +15,18 @@ public class EffectSet {
         WRITE_GLOBAL(8),
         EXCEPTION (16),
         IO (32);
+
+        private static int ALL_EFFECTS = 0;
+
+        public static int getAllEffects() {
+            if (ALL_EFFECTS == 0) {
+                for (Effects e : values()) {
+                    ALL_EFFECTS |= e.maskValue;
+                }
+            }
+
+            return ALL_EFFECTS;
+        }
 
         public final int maskValue;
         Effects(int mask) {
@@ -38,7 +53,8 @@ public class EffectSet {
         }
 
         // We'll need to construct EffectSet singletons to contain every representable combination.
-        highestEffectBit = (highestEffectBit * 2) - 1;
+        highestEffectBit = (highestEffectBit * 2);
+        log.debug("Creating {} effect set elements", highestEffectBit);
 
         // highestEffectBit now holds the maximum EffectSet value representable. Build them all.
         sEffectSets = new EffectSet[highestEffectBit];
@@ -137,5 +153,11 @@ public class EffectSet {
 
     private EffectSet(final int mask) {
         effectMask = mask;
+    }
+
+
+    @Override
+    public String toString() {
+        return Integer.toString(effectMask, 2);
     }
 }

@@ -2,6 +2,7 @@ package joust.treeinfo;
 
 import static com.sun.tools.javac.tree.JCTree.*;
 
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;
 import joust.Optimiser;
 import joust.joustcache.JOUSTCache;
@@ -17,6 +18,10 @@ import java.util.HashMap;
 public @Log4j2
 class TreeInfoManager {
     private static HashMap<JCTree, TreeInfo> mTreeInfoMap = new HashMap<>();
+
+    // Maps method symbol hashes to the effect sets of their corresponding JCMethodDecl nodes, which
+    // may or may not actually *exist* in the parsed code.
+    private static HashMap<String, TreeInfo> mMethodInfoMap = new HashMap<>();
 
     /**
      * Ensures the TreeInfo node for the given JCTree exists and returns it. If no node exists, a
@@ -43,7 +48,10 @@ class TreeInfoManager {
 
         // If the tree node is a method declaration, we'll want to cache the EffectSet on disk for
         // use in future incremental compilation tasks.
-        if (tree instanceof JCTree.JCMethodDecl) {
+        if (tree instanceof JCMethodDecl) {
+            JCMethodDecl castTree = (JCMethodDecl) tree;
+
+            mMethodInfoMap.put(MethodInfo.getHashForMethod(castTree.sym), infoNode);
             JOUSTCache.registerMethodSideEffects(((JCTree.JCMethodDecl) tree).sym, effects);
         }
     }
@@ -60,24 +68,43 @@ class TreeInfoManager {
     }
 
     /**
+     * Get the EffectSet for the provided method symbol, or the set of all effects if no EffectSet
+     * can be found.
+     *
+     * @param sym MethodSymbol to seek effects for.
+     * @return The corresponding EffectSet from either the memory or disk cache, or the set of all
+     *         effects if no such EffectSet exists.
+     */
+    public static EffectSet getEffectsForMethod(Symbol.MethodSymbol sym) {
+        TreeInfo infoNode = mMethodInfoMap.get(MethodInfo.getHashForMethod(sym));
+        if (infoNode != null) {
+            return infoNode.mEffectSet;
+        }
+
+        // Attempt to find the missing info in the cache.
+        JOUSTCache.loadCachedInfoForClass((Symbol.ClassSymbol) sym.owner);
+
+        infoNode = mMethodInfoMap.get(MethodInfo.getHashForMethod(sym));
+        if (infoNode != null) {
+            return infoNode.mEffectSet;
+        }
+
+        log.warn("Unable to source side effects for method: {}. This will harm optimisation - such calls are taken to have all possible side effects!", sym);
+        return EffectSet.getEffectSet(EffectSet.Effects.getAllEffects());
+    }
+
+    /**
      * Populate the info structures from the given ClassInfo object. ClassInfo objects store class
      * and method granularity information that can meaningfully be cached between compilation units.
      * Assumes the hash checking has already taken place.
-     * By using a one-way hash to associate MethodInfo objects with MethodSymbols, we will be unable
-     * to map a MethodInfo to a MethodSymbol here if the associated method is not used in any of the
-     * compilation units under consideration. This has the most convenient property of causing us to
-     * be *unable* to redundantly load the MethodInfo relating to a method that is unused in the
-     * optimisation target.
      *
      * @param cInfo The ClassInfo object to parse.
      */
     public static void populateFromClassInfo(ClassInfo cInfo) {
         for (MethodInfo mI : cInfo.methodInfos) {
-            JCMethodDecl decl = Optimiser.methodTable.get(mI.getMethodHash());
-            if (decl != null) {
-                log.debug("Loaded EffectSet {} for method {}", mI.getEffectSet(), mI.getMethodHash());
-                registerEffects(decl, mI.getEffectSet());
-            }
+            TreeInfo infoNode = new TreeInfo();
+            infoNode.mEffectSet = mI.getEffectSet();
+            mMethodInfoMap.put(mI.getMethodHash(), infoNode);
         }
     }
 }

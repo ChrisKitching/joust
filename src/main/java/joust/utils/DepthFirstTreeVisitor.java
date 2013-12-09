@@ -18,12 +18,21 @@ class DepthFirstTreeVisitor extends Visitor {
 
     private void visit(List<? extends JCTree> trees) {
         for (List<? extends JCTree> l = trees; l.nonEmpty(); l = l.tail) {
-            l.head.accept(this);
+            if (l.head != null && !mMarked.contains(l.head)) {
+                log.trace("Visit statement: \n{}:{}", l.head, l.head.getClass().getName());
+                l.head.accept(this);
+            }
         }
     }
 
     private void visit(JCTree tree) {
         if (tree != null) {
+            if (mMarked.contains(tree)) {
+                return;
+            }
+
+            log.trace("Visit statement: \n{}:{}", tree, tree.getClass().getName());
+
             tree.accept(this);
         }
     }

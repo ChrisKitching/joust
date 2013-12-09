@@ -3,6 +3,8 @@ package joust.optimisers.utils;
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.TaskEvent;
 import com.sun.source.util.TaskListener;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import java.util.HashMap;
@@ -35,18 +37,23 @@ public abstract class OptimisationPhaseManager implements Runnable {
         }
 
         TaskListener listener = new TaskListener() {
+            Logger l = LogManager.getLogger();
+
             @Override
             public void finished(TaskEvent taskEvent) {
+                l.debug("finished event: {}", taskEvent);
                 runTasks(tasksAfter.get(taskEvent.getKind()));
             }
 
             @Override
             public void started(TaskEvent taskEvent) {
+                l.debug("started event: {}", taskEvent);
                 runTasks(tasksBefore.get(taskEvent.getKind()));
             }
 
             private void runTasks(LinkedList<OptimisationRunnable> runnables) {
                 for (OptimisationRunnable r : runnables) {
+                    l.debug("Running {}", r.getClass().getName());
                     r.run();
                 }
             }
