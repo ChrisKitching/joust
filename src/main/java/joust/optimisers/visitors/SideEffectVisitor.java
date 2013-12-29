@@ -6,6 +6,7 @@ import com.sun.tools.javac.util.List;
 import joust.treeinfo.EffectSet;
 import joust.treeinfo.TreeInfoManager;
 import joust.utils.DepthFirstTreeVisitor;
+import joust.utils.TreeUtils;
 import lombok.extern.log4j.Log4j2;
 
 import static com.sun.tools.javac.tree.JCTree.*;
@@ -306,7 +307,7 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
         // LHS is presumably a VarSymbol...
         VarSymbol varSym = (VarSymbol) ((JCIdent) that.lhs).sym;
 
-        if (isLocalVariable(varSym)) {
+        if (TreeUtils.isLocalVariable(varSym)) {
             TreeInfoManager.registerEffects(that, rhsEffects.union(EffectSet.getEffectSet(Effects.WRITE_LOCAL, Effects.READ_LOCAL)));
         } else if (varSym.owner instanceof ClassSymbol) {
             TreeInfoManager.registerEffects(that, rhsEffects.union(EffectSet.getEffectSet(Effects.WRITE_GLOBAL, Effects.WRITE_GLOBAL)));
@@ -335,7 +336,7 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
                 varSym = (VarSymbol) ((JCFieldAccess) that.arg).sym;
             }
 
-            if (isLocalVariable(varSym)) {
+            if (TreeUtils.isLocalVariable(varSym)) {
                 TreeInfoManager.registerEffects(that, EffectSet.getEffectSet(Effects.WRITE_LOCAL, Effects.READ_LOCAL));
             } else {
                 TreeInfoManager.registerEffects(that, EffectSet.getEffectSet(Effects.WRITE_GLOBAL, Effects.READ_GLOBAL));
@@ -361,7 +362,7 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
 
         EffectSet nodeEffects = TreeInfoManager.getEffects(that.index);
 
-        if (isLocalVariable(that.indexed)) {
+        if (TreeUtils.isLocalVariable(that.indexed)) {
             nodeEffects.union(Effects.READ_LOCAL);
         } else {
             nodeEffects.union(Effects.READ_GLOBAL);
@@ -386,7 +387,7 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
         Symbol sym = that.sym;
 
         if (sym instanceof VarSymbol) {
-            if (isLocalVariable(sym)) {
+            if (TreeUtils.isLocalVariable(sym)) {
                 TreeInfoManager.registerEffects(that, EffectSet.getEffectSet(Effects.READ_LOCAL));
             } else {
                 TreeInfoManager.registerEffects(that, EffectSet.getEffectSet(Effects.READ_GLOBAL));
@@ -469,7 +470,7 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
             initEffects = EffectSet.getEffectSet(Effects.NONE);
         }
 
-        if (isLocalVariable(jcVariableDecl.sym)) {
+        if (TreeUtils.isLocalVariable(jcVariableDecl.sym)) {
             TreeInfoManager.registerEffects(jcVariableDecl, initEffects.union(EffectSet.getEffectSet(Effects.WRITE_LOCAL)));
         } else {
             TreeInfoManager.registerEffects(jcVariableDecl, initEffects.union(EffectSet.getEffectSet(Effects.WRITE_GLOBAL)));
@@ -528,19 +529,5 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
     public void visitAnnotation(JCAnnotation jcAnnotation) {
         super.visitAnnotation(jcAnnotation);
         TreeInfoManager.registerEffects(jcAnnotation, EffectSet.getEffectSet(Effects.NONE));
-    }
-
-    // TODO: Put this somewhere that makes more sense...
-    private static boolean isLocalVariable(Symbol sym) {
-        return sym.owner instanceof MethodSymbol;
-    }
-    private static boolean isLocalVariable(JCIdent ident) {
-        return ident.sym instanceof MethodSymbol;
-    }
-
-    // Helps simplify the annoying situations where JCTree nodes give us JCExpressions that are
-    // always idents and suchlike.
-    private static boolean isLocalVariable(JCTree tree) {
-        return isLocalVariable((JCIdent) tree);
     }
 }
