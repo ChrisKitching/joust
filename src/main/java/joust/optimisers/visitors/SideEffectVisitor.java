@@ -184,9 +184,12 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
 
         EffectSet condEffects = TreeInfoManager.getEffects(that.cond);
         EffectSet trueEffects = TreeInfoManager.getEffects(that.thenpart);
-        EffectSet falseEffects = TreeInfoManager.getEffects(that.elsepart);
-
-        TreeInfoManager.registerEffects(that, condEffects.union(trueEffects, falseEffects));
+        if (that.elsepart != null) {
+            EffectSet falseEffects = TreeInfoManager.getEffects(that.elsepart);
+            TreeInfoManager.registerEffects(that, condEffects.union(trueEffects, falseEffects));
+        }  else {
+            TreeInfoManager.registerEffects(that, condEffects.union(trueEffects));
+        }
     }
 
     @Override
