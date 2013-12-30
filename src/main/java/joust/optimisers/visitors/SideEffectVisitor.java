@@ -6,6 +6,7 @@ import com.sun.tools.javac.util.List;
 import joust.treeinfo.EffectSet;
 import joust.treeinfo.TreeInfoManager;
 import joust.utils.DepthFirstTreeVisitor;
+import joust.utils.LogUtils;
 import joust.utils.TreeUtils;
 import lombok.extern.log4j.Log4j2;
 
@@ -237,7 +238,15 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
     public void visitApply(JCMethodInvocation that) {
         super.visitApply(that);
 
-        MethodSymbol methodSym = (MethodSymbol) ((JCIdent) that.meth).sym;
+        MethodSymbol methodSym;
+        if (that.meth instanceof JCFieldAccess) {
+            methodSym = (MethodSymbol) ((JCFieldAccess) that.meth).sym;
+        } else if (that.meth instanceof JCIdent) {
+            methodSym = (MethodSymbol) ((JCIdent) that.meth).sym;
+        } else {
+            LogUtils.raiseCompilerError("Unexpected application type: " + that.meth.getClass().getName() + " for node: " + that);
+            return;
+        }
 
         EffectSet methodEffects = TreeInfoManager.getEffectsForMethod(methodSym);
 
