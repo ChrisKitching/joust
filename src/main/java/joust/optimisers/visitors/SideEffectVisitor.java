@@ -299,8 +299,15 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
 
         EffectSet rhsEffects = TreeInfoManager.getEffects(that.rhs);
 
-        // LHS is presumably a VarSymbol...
-        VarSymbol varSym = (VarSymbol) ((JCIdent) that.lhs).sym;
+        VarSymbol varSym;
+        if (that.lhs instanceof JCFieldAccess) {
+            varSym = (VarSymbol) ((JCFieldAccess) that.lhs).sym;
+        } else if (that.lhs instanceof JCIdent) {
+            varSym = (VarSymbol) ((JCIdent) that.lhs).sym;
+        } else {
+            LogUtils.raiseCompilerError("Unexpected assignment type: " + that.lhs.getClass().getName() + " for node: " + that);
+            return;
+        }
 
         if (varSym.owner instanceof MethodSymbol) {
             TreeInfoManager.registerEffects(that, rhsEffects.union(EffectSet.getEffectSet(Effects.WRITE_LOCAL)));
