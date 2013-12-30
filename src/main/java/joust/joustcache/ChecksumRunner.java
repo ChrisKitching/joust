@@ -1,20 +1,13 @@
 package joust.joustcache;
 
-import com.sun.tools.javac.code.Symbol;
-import joust.Optimiser;
-import joust.optimisers.utils.OptimisationRunnable;
-import joust.utils.LogUtils;
-import lombok.extern.log4j.Log4j2;
-import net.jpountz.xxhash.XXHash32;
-import net.jpountz.xxhash.XXHashFactory;
-
-import javax.tools.JavaFileObject;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
 import static javax.tools.StandardLocation.CLASS_OUTPUT;
+
+import joust.Optimiser;
+import joust.joustcache.data.TransientClassInfo;
+import joust.optimisers.utils.OptimisationRunnable;
+import lombok.extern.log4j.Log4j2;
+import javax.tools.JavaFileObject;
+import java.io.IOException;
 
 /**
  * A phase to be run after writing the classfiles which computes the checksums of the produced files
@@ -28,24 +21,33 @@ class ChecksumRunner implements OptimisationRunnable {
         log.debug("ChecksumRunner starting!");
         long s = System.currentTimeMillis();
 
-        List<Symbol.ClassSymbol> classSymbols = Optimiser.elementSymbols;
-        for (Symbol.ClassSymbol c : classSymbols) {
+        for (String className : JOUSTCache.classInfo.keySet()) {
+            TransientClassInfo transientInfo = JOUSTCache.transientClassInfo.get(className);
+            if (transientInfo.flushed) {
+                continue;
+            }
+
             try {
                 // Get a reference to the file to which this ClassSymbol was written.
                 JavaFileObject outFile
                         = Optimiser.fileManager.getJavaFileForOutput(CLASS_OUTPUT,
-                        c.flatname.toString(),
+                        className,
                         JavaFileObject.Kind.CLASS,
-                        c.sourcefile);
+                        transientInfo.getSourceFile());
 
+                // Due to the operation of the BY_TODO compile policy, this runner gets called many
+                // times. Not always are all results available.
+                if (outFile == null) {
+                    continue;
+                }
 
                 final int hash = ChecksumUtils.computeHash(outFile);
+                log.debug("Hash for {} is {}", className, hash);
 
-                log.debug("Hash for {} is {}", c, hash);
-
-                JOUSTCache.writeSymbolToDisk(c, hash);
+                JOUSTCache.writeSymbolToDisk(className, hash);
+                transientInfo.setFlushed(true);
             } catch (IOException e) {
-                LogUtils.raiseCompilerError("Error opening generated classfile to store analysis results! Your next incremental build will probably fail (Although this one probably didn't)");
+                log.debug("Can't find file for: {}", className);
             }
         }
         long e = System.currentTimeMillis();

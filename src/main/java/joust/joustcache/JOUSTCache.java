@@ -12,11 +12,13 @@ import jdbm.RecordManager;
 import jdbm.RecordManagerFactory;
 import joust.joustcache.data.ClassInfo;
 import joust.joustcache.data.MethodInfo;
+import joust.joustcache.data.TransientClassInfo;
 import joust.treeinfo.EffectSet;
 import joust.treeinfo.TreeInfoManager;
 import joust.utils.LogUtils;
 import lombok.extern.log4j.Log4j2;
 
+import javax.tools.JavaFileObject;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -43,7 +45,8 @@ class JOUSTCache {
     private static String databasePath;
     private static RecordManager databaseRecordManager;
 
-    private static HashMap<String, ClassInfo> classInfo = new HashMap<>();
+    static HashMap<String, ClassInfo> classInfo = new HashMap<>();
+    static HashMap<String, TransientClassInfo> transientClassInfo = new HashMap<>();
 
     public static void init() {
         if (databaseRecordManager != null) {
@@ -57,6 +60,7 @@ class JOUSTCache {
         }
 
         databaseMap = databaseRecordManager.treeMap(databasePath);
+
         initSerialiser();
     }
 
@@ -169,8 +173,7 @@ class JOUSTCache {
         TreeInfoManager.populateFromClassInfo(cInfo);
     }
 
-    static void writeSymbolToDisk(ClassSymbol sym, int hash) {
-        final String className = sym.fullname.toString();
+    static void writeSymbolToDisk(String className, int hash) {
         final ClassInfo cInfo = classInfo.get(className);
 
         if (cInfo == null) {
@@ -187,9 +190,9 @@ class JOUSTCache {
 
         byte[] buffer = serialisedOutput.toBytes();
 
-        log.debug("Serialised {} using {} bytes", sym.fullname.toString(), buffer.length);
+        log.debug("Serialised {} using {} bytes", className, buffer.length);
 
-        databaseMap.put(sym.fullname.toString(), buffer);
+        databaseMap.put(className, buffer);
         try {
             databaseRecordManager.commit();
         } catch (IOException e) {
@@ -206,17 +209,23 @@ class JOUSTCache {
      */
     public static void registerMethodSideEffects(MethodSymbol sym, EffectSet effectSet) {
         final String methodHash = MethodInfo.getHashForMethod(sym);
-        final String className = ((ClassSymbol) sym.owner).fullname.toString();
+        final String className = ((ClassSymbol) sym.owner).flatname.toString();
 
         MethodInfo m = new MethodInfo(methodHash, effectSet);
-        log.debug("{} has effects {}", methodHash, effectSet);
+        log.debug("{} has effects {} in {}", methodHash, effectSet, className);
 
         ClassInfo cInfo = classInfo.get(className);
         if (cInfo == null) {
             cInfo = new ClassInfo();
             classInfo.put(className, cInfo);
         }
-
         cInfo.methodInfos.add(m);
+
+        TransientClassInfo tcInfo = transientClassInfo.get(className);
+        if (tcInfo == null) {
+            tcInfo = new TransientClassInfo();
+            transientClassInfo.put(className, tcInfo);
+        }
+        tcInfo.setSourceFile(((ClassSymbol) sym.owner).sourcefile);
     }
 }
