@@ -299,19 +299,11 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
 
         EffectSet rhsEffects = TreeInfoManager.getEffects(that.rhs);
 
-        VarSymbol varSym;
-        if (that.lhs instanceof JCFieldAccess) {
-            varSym = (VarSymbol) ((JCFieldAccess) that.lhs).sym;
-        } else if (that.lhs instanceof JCIdent) {
-            varSym = (VarSymbol) ((JCIdent) that.lhs).sym;
-        } else {
-            LogUtils.raiseCompilerError("Unexpected assignment type: " + that.lhs.getClass().getName() + " for node: " + that);
-            return;
-        }
+        VarSymbol varSym = TreeUtils.getTargetSymbolForAssignment(that);
 
-        if (varSym.owner instanceof MethodSymbol) {
+        if (TreeUtils.isLocalVariable(varSym)) {
             TreeInfoManager.registerEffects(that, rhsEffects.union(EffectSet.getEffectSet(Effects.WRITE_LOCAL)));
-        } else if (varSym.owner instanceof ClassSymbol) {
+        } else {
             TreeInfoManager.registerEffects(that, rhsEffects.union(EffectSet.getEffectSet(Effects.WRITE_GLOBAL)));
         }
     }
@@ -328,7 +320,7 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
 
         if (TreeUtils.isLocalVariable(varSym)) {
             TreeInfoManager.registerEffects(that, rhsEffects.union(EffectSet.getEffectSet(Effects.WRITE_LOCAL, Effects.READ_LOCAL)));
-        } else if (varSym.owner instanceof ClassSymbol) {
+        } else {
             TreeInfoManager.registerEffects(that, rhsEffects.union(EffectSet.getEffectSet(Effects.WRITE_GLOBAL, Effects.WRITE_GLOBAL)));
         }
     }
