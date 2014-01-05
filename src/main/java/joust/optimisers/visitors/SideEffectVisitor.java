@@ -315,8 +315,7 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
         // Assignment with an operator, such as +=. Same side effect profile as visitAssign?
         EffectSet rhsEffects = TreeInfoManager.getEffects(that.rhs);
 
-        // LHS is presumably a VarSymbol...
-        VarSymbol varSym = (VarSymbol) ((JCIdent) that.lhs).sym;
+        VarSymbol varSym = TreeUtils.getTargetSymbolForAssignment(that);
 
         if (TreeUtils.isLocalVariable(varSym)) {
             TreeInfoManager.registerEffects(that, rhsEffects.union(EffectSet.getEffectSet(Effects.WRITE_LOCAL, Effects.READ_LOCAL)));
