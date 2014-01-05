@@ -16,6 +16,7 @@ import joust.joustcache.data.TransientClassInfo;
 import joust.treeinfo.EffectSet;
 import joust.treeinfo.TreeInfoManager;
 import joust.utils.LogUtils;
+import lombok.Cleanup;
 import lombok.extern.log4j.Log4j2;
 
 import javax.tools.JavaFileObject;
@@ -143,9 +144,8 @@ class JOUSTCache {
 
         log.info("Loaded {} bytes of cached info for class {}", payload.length, sym.fullname.toString());
 
-        UnsafeInput deserialiserInput = new UnsafeInput(INITIAL_BUFFER_SIZE);
+        @Cleanup UnsafeInput deserialiserInput = new UnsafeInput(INITIAL_BUFFER_SIZE);
         ClassInfo cInfo = serialiser.readObject(deserialiserInput, ClassInfo.class);
-        deserialiserInput.close();
 
         if (cInfo == null) {
             log.warn("Unable to load cached info - got null - for class {}", sym.fullname.toString());
@@ -184,9 +184,8 @@ class JOUSTCache {
         cInfo.setHash(hash);
 
         // Serialise the ClassInfo object.
-        UnsafeOutput serialisedOutput = new UnsafeOutput(INITIAL_BUFFER_SIZE);
+        @Cleanup UnsafeOutput serialisedOutput = new UnsafeOutput(INITIAL_BUFFER_SIZE);
         serialiser.writeObject(serialisedOutput, cInfo);
-        serialisedOutput.close();
 
         byte[] buffer = serialisedOutput.toBytes();
 
