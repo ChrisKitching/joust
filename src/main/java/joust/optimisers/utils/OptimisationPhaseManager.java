@@ -30,6 +30,9 @@ public abstract class OptimisationPhaseManager implements Runnable {
      * @param env The ProcessingEnvironment to which the listeners should associate.
      */
     public static void init(final ProcessingEnvironment env) {
+        tasksBefore.clear();
+        tasksAfter.clear();
+
         // Initialise the HashMaps with empty lists.
         for (TaskEvent.Kind p : TaskEvent.Kind.values()) {
             tasksBefore.put(p, new LinkedList<OptimisationRunnable>());

@@ -14,9 +14,9 @@ import java.util.HashSet;
  */
 public @Log4j2
 class DepthFirstTreeVisitor extends Visitor {
-    HashSet<JCTree> mMarked = new HashSet<>();
+    protected HashSet<JCTree> mMarked = new HashSet<>();
 
-    private void visit(List<? extends JCTree> trees) {
+    protected void visit(List<? extends JCTree> trees) {
         for (List<? extends JCTree> l = trees; l.nonEmpty(); l = l.tail) {
             if (l.head != null && !mMarked.contains(l.head)) {
                 log.trace("Visit statement: \n{}:{}", l.head, l.head.getClass().getName());
@@ -25,7 +25,7 @@ class DepthFirstTreeVisitor extends Visitor {
         }
     }
 
-    private void visit(JCTree tree) {
+    protected void visit(JCTree tree) {
         if (tree != null) {
             if (mMarked.contains(tree)) {
                 return;
@@ -143,8 +143,8 @@ class DepthFirstTreeVisitor extends Visitor {
             return;
         }
 
-        visit(jcWhileLoop.body);
         visit(jcWhileLoop.cond);
+        visit(jcWhileLoop.body);
 
         mMarked.add(jcWhileLoop);
     }
@@ -156,8 +156,8 @@ class DepthFirstTreeVisitor extends Visitor {
         }
 
         visit(jcForLoop.init);
-        visit(jcForLoop.cond);
         visit(jcForLoop.step);
+        visit(jcForLoop.cond);
         visit(jcForLoop.body);
 
         mMarked.add(jcForLoop);

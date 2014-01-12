@@ -8,20 +8,27 @@ import joust.Optimiser;
 import joust.joustcache.JOUSTCache;
 import joust.joustcache.data.ClassInfo;
 import joust.joustcache.data.MethodInfo;
+import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableExpression;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * Provides access to TreeInfo objects related to tree nodes.
  */
 public @Log4j2
 class TreeInfoManager {
-    private static HashMap<JCTree, TreeInfo> mTreeInfoMap = new HashMap<>();
+    private static HashMap<JCTree, TreeInfo> mTreeInfoMap;
 
     // Maps method symbol hashes to the effect sets of their corresponding JCMethodDecl nodes, which
     // may or may not actually *exist* in the parsed code.
-    private static HashMap<String, TreeInfo> mMethodInfoMap = new HashMap<>();
+    private static HashMap<String, TreeInfo> mMethodInfoMap;
+
+    public static void init() {
+        mTreeInfoMap = new HashMap<>();
+        mMethodInfoMap = new HashMap<>();
+    }
 
     /**
      * Ensures the TreeInfo node for the given JCTree exists and returns it. If no node exists, a
@@ -106,5 +113,10 @@ class TreeInfoManager {
             infoNode.mEffectSet = mI.getEffectSet();
             mMethodInfoMap.put(mI.getMethodHash(), infoNode);
         }
+    }
+
+    public static void registerAvailables(JCTree tree, HashSet<PotentiallyAvailableExpression> avail) {
+        TreeInfo infoNode = getInfoNode(tree);
+        infoNode.potentiallyAvailable = avail;
     }
 }

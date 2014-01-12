@@ -10,15 +10,19 @@ import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Names;
 import joust.joustcache.ChecksumRunner;
 import joust.joustcache.ChecksumUtils;
 import joust.joustcache.JOUSTCache;
 import joust.joustcache.data.MethodInfo;
+import joust.optimisers.AvailableExpr;
 import joust.optimisers.ConstFold;
 import joust.optimisers.ExpressionNormaliser;
 import joust.optimisers.SideEffects;
 import joust.optimisers.StripAssertions;
+import joust.optimisers.avail.normalisedexpressions.PossibleSymbol;
 import joust.treeinfo.EffectSet;
+import joust.treeinfo.TreeInfoManager;
 import joust.utils.LogUtils;
 import joust.optimisers.utils.OptimisationPhaseManager;
 import lombok.extern.log4j.Log4j2;
@@ -52,6 +56,9 @@ public @Log4j2 class Optimiser extends AbstractProcessor {
     // Factory class, internal to the compiler, used to manufacture parse tree nodes.
     public static TreeMaker treeMaker;
 
+    // The compiler's name table.
+    public static Names names;
+
     public static JavaFileManager fileManager;
 
     @Override
@@ -70,6 +77,8 @@ public @Log4j2 class Optimiser extends AbstractProcessor {
         JOUSTCache.init();
         ChecksumUtils.init();
         EffectSet.init();
+        PossibleSymbol.init();
+        TreeInfoManager.init();
 
         // Define when we run each optimisation.
         OptimisationPhaseManager.init(env);
@@ -77,6 +86,7 @@ public @Log4j2 class Optimiser extends AbstractProcessor {
         OptimisationPhaseManager.register(new ConstFold(), AFTER, ANNOTATION_PROCESSING);
         OptimisationPhaseManager.register(new SideEffects(), AFTER, ANALYZE);
         OptimisationPhaseManager.register(new ExpressionNormaliser(), AFTER, ANALYZE);
+        OptimisationPhaseManager.register(new AvailableExpr(), AFTER, ANALYZE);
 
         // The post-compilation pass to populate the disk cache with the results of classes processed
         // during this job. Needs to happen here so we can compute a checksum over the bytecode and
@@ -91,6 +101,7 @@ public @Log4j2 class Optimiser extends AbstractProcessor {
         Context context = ((JavacProcessingEnvironment) env).getContext();
 
         treeMaker = TreeMaker.instance(context);
+        names = Names.instance(context);
         fileManager = context.get(JavaFileManager.class);
     }
 
