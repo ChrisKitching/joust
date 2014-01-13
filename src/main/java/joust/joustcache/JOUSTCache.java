@@ -69,17 +69,24 @@ class JOUSTCache {
      * Construct an appropriately-tuned Kryo object to serialise the ClassInfo and MethodInfo objects.
      */
     private static void initSerialiser() {
+        // Register first, so the default serialiser doesn't override the custom one later on...
+        serialiser.register(LinkedList.class);
+
         // Register the classes with the serialiser to enable slightly more concise output.
         serialiser.setRegistrationRequired(true);
 
         // Let's live dangerously.
         serialiser.setAsmEnabled(false);
 
+        // Serialiser for ClassInfo
         FieldSerializer classInfoSerialiser = new FieldSerializer(serialiser, ClassInfo.class);
         classInfoSerialiser.setFieldsCanBeNull(false);
 
+        // Serialiser for MethodInfo
         FieldSerializer methodInfoSerialiser = new FieldSerializer(serialiser, MethodInfo.class);
         methodInfoSerialiser.setFieldsCanBeNull(false);
+
+        // Serialiser for EffectSet (Just writes the value)
         final EffectSetSerialiser effectSetSerialiser = new EffectSetSerialiser();
         methodInfoSerialiser.getField("effectSet").setClass(EffectSet.class, effectSetSerialiser);
 
@@ -144,7 +151,7 @@ class JOUSTCache {
 
         log.info("Loaded {} bytes of cached info for class {}", payload.length, sym.fullname.toString());
 
-        @Cleanup UnsafeInput deserialiserInput = new UnsafeInput(INITIAL_BUFFER_SIZE);
+        @Cleanup UnsafeInput deserialiserInput = new UnsafeInput(payload);
         ClassInfo cInfo = serialiser.readObject(deserialiserInput, ClassInfo.class);
 
         if (cInfo == null) {
