@@ -17,17 +17,11 @@ import static joust.Optimiser.treeMaker;
  * as it means that, in order to process such nodes, one has to first check the runtime type of the
  * node under consideration. (Instead of iterating a single-element block).
  */
-public @Log4j2 class TreeSanityInducingTranslator extends BaseTranslator  {
-    boolean changing = false;
-
+public @Log4j2 class TreeSanityInducingTranslator extends ChangeTrackingTranslator  {
     @Override
     public void visitParens(JCParens jcParens) {
         result = jcParens.expr;
-        changing = true;
-    }
-
-    public boolean makingChanges() {
-        return changing;
+        mHasMadeAChange = true;
     }
 
     @Override
@@ -80,7 +74,7 @@ public @Log4j2 class TreeSanityInducingTranslator extends BaseTranslator  {
             return tree;
         }
 
-        changing = true;
+        mHasMadeAChange = true;
         return treeMaker.Block(flags, List.of(tree));
     }
 

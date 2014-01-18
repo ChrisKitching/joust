@@ -6,7 +6,7 @@ import joust.optimisers.avail.Avail;
 import joust.optimisers.utils.OptimisationRunnable;
 
 /**
- * Perform available expressiona analysis phase.
+ * Perform available expression analysis phase.
  * // TODO: Do this on-demand. This runnable is really only just a bodge!
  */
 public class AvailableExpr implements OptimisationRunnable {

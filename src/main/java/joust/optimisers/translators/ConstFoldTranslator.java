@@ -16,18 +16,7 @@ import static joust.Optimiser.treeMaker;
  * TODO: Lambdas might be able to make this less soul-destroyingly awful to look at.
  */
 public @Log4j2
-class ConstFoldTranslator extends BaseTranslator {
-    // Boolean to track if this visitor has made any changes to the tree this iteration.
-    private boolean mHasMadeAChange;
-
-    /**
-     *  Return if this visitor has made any changes to the tree.
-     *  While this returns true, further passes are required to simplify everything.
-     */
-    public boolean makingChanges() {
-        return mHasMadeAChange;
-    }
-
+class ConstFoldTranslator extends ChangeTrackingTranslator {
     public void visitUnary(JCUnary tree) {
         super.visitUnary(tree);
         // Determine the type of this unary operation.

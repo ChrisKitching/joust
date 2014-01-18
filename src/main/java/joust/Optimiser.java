@@ -17,7 +17,6 @@ import joust.joustcache.JOUSTCache;
 import joust.joustcache.data.MethodInfo;
 import joust.optimisers.AvailableExpr;
 import joust.optimisers.ConstFold;
-import joust.optimisers.ExpressionNormaliser;
 import joust.optimisers.Sanity;
 import joust.optimisers.SideEffects;
 import joust.optimisers.StripAssertions;
@@ -87,7 +86,6 @@ public @Log4j2 class Optimiser extends AbstractProcessor {
         OptimisationPhaseManager.register(new StripAssertions(), AFTER, ANNOTATION_PROCESSING);
         OptimisationPhaseManager.register(new ConstFold(), AFTER, ANNOTATION_PROCESSING);
         OptimisationPhaseManager.register(new SideEffects(), AFTER, ANALYZE);
-        OptimisationPhaseManager.register(new ExpressionNormaliser(), AFTER, ANALYZE);
         OptimisationPhaseManager.register(new AvailableExpr(), AFTER, ANALYZE);
 
         // The post-compilation pass to populate the disk cache with the results of classes processed
