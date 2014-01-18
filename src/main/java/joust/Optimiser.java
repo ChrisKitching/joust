@@ -18,6 +18,7 @@ import joust.joustcache.data.MethodInfo;
 import joust.optimisers.AvailableExpr;
 import joust.optimisers.ConstFold;
 import joust.optimisers.ExpressionNormaliser;
+import joust.optimisers.Sanity;
 import joust.optimisers.SideEffects;
 import joust.optimisers.StripAssertions;
 import joust.optimisers.avail.normalisedexpressions.PossibleSymbol;
@@ -82,6 +83,7 @@ public @Log4j2 class Optimiser extends AbstractProcessor {
 
         // Define when we run each optimisation.
         OptimisationPhaseManager.init(env);
+        OptimisationPhaseManager.register(new Sanity(), AFTER, ANNOTATION_PROCESSING);
         OptimisationPhaseManager.register(new StripAssertions(), AFTER, ANNOTATION_PROCESSING);
         OptimisationPhaseManager.register(new ConstFold(), AFTER, ANNOTATION_PROCESSING);
         OptimisationPhaseManager.register(new SideEffects(), AFTER, ANALYZE);
