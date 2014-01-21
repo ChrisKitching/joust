@@ -91,7 +91,7 @@
       <version>1.2.0</version>
     </dependency>
 
-    <!-- Kyro, for efficient object serialisation. (Used for the disk cache). -->
+    <!-- Kryo, for efficient object serialisation. (Used for the disk cache). -->
     <dependency>
       <groupId>com.esotericsoftware.kryo</groupId>
       <artifactId>kryo</artifactId>
@@ -125,8 +125,8 @@
           <target>1.7</target>
           <showWarnings>true</showWarnings>
           <!-- Stop the annotation processor from annotation processing the annotation processor,
-               but allow Project Lombok, which is an annotation processor, annotation process the
-               annotation processor. -->
+               but allow Project Lombok, which is an annotation processor, to annotation process 
+               the annotation processor. -->
           <annotationProcessors>
             <annotationProcessor>
               lombok.core.AnnotationProcessor
