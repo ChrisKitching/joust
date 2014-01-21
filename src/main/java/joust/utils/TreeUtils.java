@@ -23,27 +23,23 @@ public class TreeUtils {
         return isLocalVariable((JCIdent) tree);
     }
 
-    public static VarSymbol getTargetSymbolForAssignment(JCAssign that) {
-        if (that.lhs instanceof JCFieldAccess) {
-            return (VarSymbol) ((JCFieldAccess) that.lhs).sym;
-        } else if (that.lhs instanceof JCIdent) {
-            return (VarSymbol) ((JCIdent) that.lhs).sym;
+    public static VarSymbol getTargetSymbolForExpression(JCExpression that) {
+        if (that instanceof JCFieldAccess) {
+            return (VarSymbol) ((JCFieldAccess) that).sym;
+        } else if (that instanceof JCIdent) {
+            return (VarSymbol) ((JCIdent) that).sym;
         } else {
-            LogUtils.raiseCompilerError("Unexpected assignment target type: " + that.lhs.getClass().getCanonicalName() + " for node: " + that);
+            LogUtils.raiseCompilerError("Unexpected expression target type: " + that.getClass().getCanonicalName() + " for node: " + that);
         }
 
         return null;
     }
 
     public static VarSymbol getTargetSymbolForAssignment(JCAssignOp that) {
-        if (that.lhs instanceof JCFieldAccess) {
-            return (VarSymbol) ((JCFieldAccess) that.lhs).sym;
-        } else if (that.lhs instanceof JCIdent) {
-            return (VarSymbol) ((JCIdent) that.lhs).sym;
-        } else {
-            LogUtils.raiseCompilerError("Unexpected assignment target type: " + that.lhs.getClass().getCanonicalName() + " for node: " + that);
-        }
+        return getTargetSymbolForExpression(that.lhs);
+    }
 
-        return null;
+    public static VarSymbol getTargetSymbolForAssignment(JCAssign that) {
+        return getTargetSymbolForExpression(that.lhs);
     }
 }
