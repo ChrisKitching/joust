@@ -6,11 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import javax.tools.DiagnosticCollector;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.ToolProvider;
+import javax.tools.*;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -215,7 +211,25 @@ class ITCompilationUnitOutput {
 
         JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnostics, optionList, null, compilationTarget);
 
+        boolean ret = task.call();
+        for (Diagnostic<? extends JavaFileObject> d : diagnostics.getDiagnostics()) {
+            switch (d.getKind()) {
+                case ERROR:
+                    ret = false;
+                    log.error(d);
+                    break;
+                case WARNING:
+                case MANDATORY_WARNING:
+                    log.warn(d);
+                    break;
+                case NOTE:
+                case OTHER:
+                    log.info(d);
+                    break;
+            }
+        }
+
         // Perform the compilation task.
-        return task.call();
+        return ret;
     }
 }

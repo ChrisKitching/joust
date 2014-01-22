@@ -4,6 +4,7 @@ import lombok.extern.log4j.Log4j2;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.Diagnostic;
+import java.util.Arrays;
 
 public @Log4j2
 class LogUtils {
@@ -20,7 +21,7 @@ class LogUtils {
      * @param error The error string to display.
      */
     public static void raiseCompilerError(String error) {
-        log.error("Fatal error from optimiser: {}", error);
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Fatal error from optimiser: "+error);
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Fatal error from optimiser: " + error + "\nAt:\n" + Arrays.toString((new Exception().getStackTrace())).replace(',', '\n'));
+        log.fatal("Fatal error from optimiser: {}", error);
     }
 }
