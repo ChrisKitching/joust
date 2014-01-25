@@ -69,6 +69,7 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
 
     @Override
     public void visitBlock(JCBlock jcBlock) {
+        log.info("Entering block for Avail: {}", jcBlock);
         boolean blockWasNewScope = nextBlockIsNewScope;
         if (nextBlockIsNewScope) {
             log.info("Entering block scope: {}", jcBlock);
@@ -78,6 +79,7 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
         }
 
         super.visitBlock(jcBlock);
+        log.debug("After block {}:\nWe have:\n{}", jcBlock, currentScope);
 
         if (blockWasNewScope) {
             log.info("Exiting block scope: {}", jcBlock);
@@ -86,7 +88,29 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
     }
 
     @Override
+    public void visitDoLoop(JCDoWhileLoop jcDoWhileLoop) {
+        markAvailableExpressions(jcDoWhileLoop);
+        super.visitDoLoop(jcDoWhileLoop);
+    }
+
+    @Override
+    public void visitForLoop(JCForLoop jcForLoop) {
+        markAvailableExpressions(jcForLoop);
+        enterScope();
+        nextBlockIsNewScope = false;
+        super.visitForLoop(jcForLoop);
+        leaveScope();
+    }
+
+    @Override
+    public void visitForeachLoop(JCEnhancedForLoop jcEnhancedForLoop) {
+        markAvailableExpressions(jcEnhancedForLoop);
+        super.visitForeachLoop(jcEnhancedForLoop);
+    }
+
+    @Override
     public void visitWhileLoop(JCWhileLoop jcWhileLoop) {
+        markAvailableExpressions(jcWhileLoop);
         log.debug("Entering visitWhileLoop with scope:\n{}", currentScope);
 
         super.visitWhileLoop(jcWhileLoop);

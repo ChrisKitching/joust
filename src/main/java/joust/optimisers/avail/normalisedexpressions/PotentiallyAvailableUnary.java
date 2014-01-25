@@ -5,7 +5,7 @@ import static com.sun.tools.javac.code.Symbol.*;
 
 public class PotentiallyAvailableUnary extends PotentiallyAvailableExpression {
     public PotentiallyAvailableExpression operand;
-    private Tag opcode;
+    public Tag opcode;
 
     /**
      * Create a PotentiallyAvailableUnary from the given JCUnary.

@@ -195,6 +195,13 @@ public @Log4j2 class AvailScope extends Scope {
 
         registerPotentialExpression(unary, expr);
 
+        if (unary.opcode == Tag.PREINC
+         || unary.opcode == Tag.PREDEC
+         || unary.opcode == Tag.POSTINC
+         || unary.opcode == Tag.POSTDEC) {
+            killExpressionsDependingOnSymbol(PossibleSymbol.getConcrete(TreeUtils.getTargetSymbolForExpression(expr.getExpression())));
+        }
+
         return unary;
     }
 
