@@ -28,6 +28,7 @@ public @Log4j2 class TreeSanityInducingTranslator extends ChangeTrackingTranslat
     public void visitDoLoop(JCDoWhileLoop jcDoWhileLoop) {
         super.visitDoLoop(jcDoWhileLoop);
         jcDoWhileLoop.body = ensureBlock(jcDoWhileLoop.body);
+        ensureConcludingSkip(jcDoWhileLoop.body);
         result = jcDoWhileLoop;
     }
 
@@ -35,6 +36,7 @@ public @Log4j2 class TreeSanityInducingTranslator extends ChangeTrackingTranslat
     public void visitWhileLoop(JCWhileLoop jcWhileLoop) {
         super.visitWhileLoop(jcWhileLoop);
         jcWhileLoop.body = ensureBlock(jcWhileLoop.body);
+        ensureConcludingSkip(jcWhileLoop.body);
         result = jcWhileLoop;
     }
 
@@ -42,6 +44,7 @@ public @Log4j2 class TreeSanityInducingTranslator extends ChangeTrackingTranslat
     public void visitForLoop(JCForLoop jcForLoop) {
         super.visitForLoop(jcForLoop);
         jcForLoop.body = ensureBlock(jcForLoop.body);
+        ensureConcludingSkip(jcForLoop.body);
         result = jcForLoop;
     }
 
@@ -49,6 +52,7 @@ public @Log4j2 class TreeSanityInducingTranslator extends ChangeTrackingTranslat
     public void visitForeachLoop(JCEnhancedForLoop jcEnhancedForLoop) {
         super.visitForeachLoop(jcEnhancedForLoop);
         jcEnhancedForLoop.body = ensureBlock(jcEnhancedForLoop.body);
+        ensureConcludingSkip(jcEnhancedForLoop.body);
         result = jcEnhancedForLoop;
     }
 
@@ -77,8 +81,21 @@ public @Log4j2 class TreeSanityInducingTranslator extends ChangeTrackingTranslat
         mHasMadeAChange = true;
         return treeMaker.Block(flags, List.of(tree));
     }
-
     private JCStatement ensureBlock(JCStatement tree) {
         return ensureBlock(tree, 0);
+    }
+
+    /**
+     * Ensure that the given JCBlock ends with a Skip. If it doesn't, add one.
+     * @param body The JCBlock to consider.
+     */
+    private void ensureConcludingSkip(JCBlock body) {
+        List<JCStatement> statements = body.getStatements();
+        if(!(statements.last() instanceof JCSkip)) {
+            body.stats = statements.append(treeMaker.Skip());
+        }
+    }
+    private void ensureConcludingSkip(JCStatement body) {
+        ensureConcludingSkip((JCBlock) body);
     }
 }
