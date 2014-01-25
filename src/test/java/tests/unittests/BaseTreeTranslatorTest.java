@@ -3,10 +3,13 @@ package tests.unittests;
 import static com.sun.tools.javac.tree.JCTree.*;
 
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.TreeTranslator;
 import joust.optimisers.translators.BaseTranslator;
 import lombok.extern.log4j.Log4j2;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -17,13 +20,35 @@ import static org.junit.Assert.assertTrue;
  * @param <T> The type of TreeTranslator under test.
  */
 public @Log4j2
-abstract class BaseTreeTranslatorTest<T extends BaseTranslator> extends TreeFabricatingTest {
+abstract class BaseTreeTranslatorTest<T extends TreeTranslator> extends TreeFabricatingTest {
 
     // The class of the tree translator type of interest.
     private final Class<T> mClass;
+    private Field mResultField;
 
     public BaseTreeTranslatorTest(Class<T> translatorClass) {
         mClass = translatorClass;
+        try {
+            mResultField = TreeTranslator.class.getDeclaredField("result");
+            mResultField.setAccessible(true);
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+    }
+
+    /**
+     * Get the value of the result field from the given translator.
+     */
+    protected JCTree getResultFromTranslator(T translator) {
+        try {
+            return (JCTree) mResultField.get(translator);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+
+        return null;
     }
 
     /**
@@ -54,11 +79,11 @@ abstract class BaseTreeTranslatorTest<T extends BaseTranslator> extends TreeFabr
         // Check for insanity situations
         assertTrue(foundMethod);
 
-        log.info("Result: {}  Expected: {}", translator.getResult(), expected);
+        log.info("Result: {}  Expected: {}", getResultFromTranslator(translator), expected);
 
         // Ensure that the actual output matches the expected output.
         // TODO: It may become necessary to implement a proper comparator for JCTree objects.
-        assertEquals(expected.toString(), translator.getResult().toString());
+        assertEquals(expected.toString(), getResultFromTranslator(translator).toString());
     }
 
     // Dreadful boilerplate functions for each type of tree node..

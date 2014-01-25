@@ -1,9 +1,11 @@
 package joust.optimisers.translators;
 
+import com.sun.tools.javac.tree.TreeTranslator;
+
 /**
  * A
  */
-public abstract class ChangeTrackingTranslator extends BaseTranslator {
+public abstract class ChangeTrackingTranslator extends TreeTranslator {
     // Boolean to track if this visitor has made any changes to the tree this iteration.
     protected boolean mHasMadeAChange;
 
