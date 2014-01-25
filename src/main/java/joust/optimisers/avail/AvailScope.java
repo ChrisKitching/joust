@@ -17,8 +17,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 import static com.sun.tools.javac.tree.JCTree.*;
@@ -94,10 +92,13 @@ public @Log4j2 class AvailScope extends Scope {
         log.debug("Register {} for node {}", expr, node);
 
         // Enter the virtual symbol into the symbol map (If it's a virtual symbol, that is.)
-        // TODO: Consider doing virtual symbols everywhere?
-        if (!symbolMap.containsKey(expr.sym)) {
-            symbolMap.put(expr.sym, new HashSet<PotentiallyAvailableExpression>());
-            freshSyms.add(expr.sym);
+        if (!symbolMap.containsKey(expr.virtualSym)) {
+            symbolMap.put(expr.virtualSym, new HashSet<PotentiallyAvailableExpression>());
+            freshSyms.add(expr.virtualSym);
+        }
+
+        if (expr.concreteSym != null) {
+            symbolMap.get(expr.concreteSym).add(expr);
         }
 
         // Add this symbol to the dependency list for each symbol it relies upon.
@@ -172,26 +173,47 @@ public @Log4j2 class AvailScope extends Scope {
     }
 
     public PotentiallyAvailableExpression enterExpression(JCAssignOp expr) {
-        // As for JCAssign.
+        // An assignop kills the lhs, and you have to build your own expression representing the change.
         VarSymbol sym = TreeUtils.getTargetSymbolForAssignment(expr);
 
-        PotentiallyAvailableExpression pae = treeMapping.get(expr.rhs);
-        pae.setActualSymbol(sym);
+        // Get the concrete symbol for the target of this assignment.
+        PossibleSymbol concreteSym = PossibleSymbol.getConcrete(sym);
 
-        // TODO: Enter the expression.
-        // TODO: Kill everything that depends on sym.
-        // TODO: Return the result of this expression. (An assignment returns the new LHS value).
-        // TODO: Although, you can't pull these out... We want to return the expression available in
-        // sym.
+        log.debug("Assignop funtimes for {}", concreteSym);
+        // Find the expression already available in the assign, if we have one.
+        PotentiallyAvailableExpression existingExpr = null;
+        Set<PotentiallyAvailableExpression> mappings = symbolMap.get(concreteSym);
+        for (PotentiallyAvailableExpression pae : mappings) {
+            if (concreteSym.equals(pae.concreteSym)) {
+                log.debug("Found existing PAE: {}", pae);
+                existingExpr = pae;
+            }
+        }
 
-        return pae;
+        // Kill everything that depends on the symbol being assigned.
+        killExpressionsDependingOnSymbol(concreteSym);
+
+        if (existingExpr != null) {
+            // Create and register a PAE representing existingExpr OP rhs.
+            PotentiallyAvailableBinary newExpr = new PotentiallyAvailableBinary(existingExpr, treeMapping.get(expr.rhs), expr.getTag().noAssignOp());
+            // TODO: Something something potential expression normaliser.
+            newExpr.setActualSymbol(sym);
+
+            // Recreate the symbol map...
+            symbolMap.put(concreteSym, new HashSet<PotentiallyAvailableExpression>());
+
+            registerPotentialExpression(newExpr, expr);
+            return newExpr;
+        }
+
+        return null;
     }
 
     public PotentiallyAvailableExpression enterExpression(JCUnary expr) {
         PotentiallyAvailableExpression operand = treeMapping.get(expr.getExpression());
 
         PotentiallyAvailableUnary unary = new PotentiallyAvailableUnary(operand, expr.getTag());
-        unary.node = expr;
+        unary.sourceNode = expr;
 
         registerPotentialExpression(unary, expr);
 
@@ -212,7 +234,7 @@ public @Log4j2 class AvailScope extends Scope {
         PotentiallyAvailableExpression rhs = treeMapping.get(expr.rhs);
 
         PotentiallyAvailableBinary binary = new PotentiallyAvailableBinary(lhs, rhs, expr.getTag());
-        binary.node = expr;
+        binary.sourceNode = expr;
 
         registerPotentialExpression(binary, expr);
 
@@ -228,7 +250,7 @@ public @Log4j2 class AvailScope extends Scope {
 
         log.debug("JCIDent symbol:" +expr.sym);
         PotentiallyAvailableNullary nullary = new PotentiallyAvailableNullary(expr, (VarSymbol) expr.sym);
-        nullary.node = expr;
+        nullary.sourceNode = expr;
         log.debug("JCIDent pae:" +nullary);
 
         registerPotentialExpression(nullary, expr);
@@ -244,7 +266,7 @@ public @Log4j2 class AvailScope extends Scope {
         }
 
         PotentiallyAvailableNullary nullary = new PotentiallyAvailableNullary(expr);
-        nullary.node = expr;
+        nullary.sourceNode = expr;
         nullary.setActualSymbol((VarSymbol) expr.sym);
 
         registerPotentialExpression(nullary, expr);
@@ -255,7 +277,7 @@ public @Log4j2 class AvailScope extends Scope {
     public PotentiallyAvailableExpression enterExpression(JCLiteral expr) {
         log.debug("entering JCLiteral:" +expr);
         PotentiallyAvailableNullary nullary = new PotentiallyAvailableNullary(expr);
-        nullary.node = expr;
+        nullary.sourceNode = expr;
 
         registerPotentialExpression(nullary, expr);
 
@@ -320,10 +342,22 @@ public @Log4j2 class AvailScope extends Scope {
 
         log.debug("Killing things that depend on: {}", pSym);
         Set<PotentiallyAvailableExpression> dependsOnThis = new HashSet<>(symbolMap.get(pSym));
-        symbolMap.remove(pSym);
+        symbolMap.get(pSym).clear();
         log.debug(dependsOnThis);
         for (PotentiallyAvailableExpression victim : dependsOnThis) {
-            killExpression(victim);
+            // Filter out virtual dependencies...
+            for (PossibleSymbol sym : victim.deps) {
+                if (sym.equals(pSym)) {
+                    killExpression(victim);
+                }
+            }
+
+            // Unset concrete symbol on things that were merely stored here...
+            if (pSym.isConcrete()) {
+                if (pSym.equals(victim.concreteSym)) {
+                    victim.concreteSym = null;
+                }
+            }
         }
     }
 
@@ -337,14 +371,8 @@ public @Log4j2 class AvailScope extends Scope {
         availableExpressions.remove(expr);
 
         log.debug("\nKilling: " + expr);
-        for (PossibleSymbol dep : expr.deps) {
-            Set<PotentiallyAvailableExpression> furtherList = symbolMap.get(dep);
-            if (furtherList != null) {
-                furtherList.remove(expr);
-            }
-        }
 
-        killExpressionsDependingOnSymbol(expr.sym);
+        killExpressionsDependingOnSymbol(expr.virtualSym);
     }
 
     @Override
@@ -355,7 +383,11 @@ public @Log4j2 class AvailScope extends Scope {
             killExpressionsDependingOnSymbol(pSym);
         }
 
+        for (PossibleSymbol ps : freshSyms) {
+            symbolMap.remove(ps);
+        }
         freshSyms.clear();
+
         return (AvailScope) super.leave();
     }
 
@@ -378,20 +410,9 @@ public @Log4j2 class AvailScope extends Scope {
     public void registerSymbolWithExpression(VarSymbol sym, JCTree tree) {
         PotentiallyAvailableExpression expr = treeMapping.get(tree);
 
-        log.debug("Registering {} with {}", sym, expr);
-
         if (expr != null) {
-            PossibleSymbol actualSym = PossibleSymbol.getConcrete(sym);
-            log.debug("Concretely: {}", actualSym);
-            log.debug("Before Symbols for {} are: {}", expr.sym, Arrays.toString(symbolMap.get(expr.sym).toArray()));
-            log.debug("Before Symbols for {} are: {}", actualSym, Arrays.toString(symbolMap.get(actualSym).toArray()));
-            mergeSymbols(expr.sym, actualSym);
-            log.debug("After Symbols for {} are: {}", actualSym, Arrays.toString(symbolMap.get(actualSym).toArray()));
-            expr.sym = actualSym;
-        } else {
-            log.warn("Failing to register symbol {} with tree {}. This could be *very* problematic", sym, tree);
+            expr.setActualSymbol(sym);
         }
-
     }
 
     /**
@@ -405,8 +426,8 @@ public @Log4j2 class AvailScope extends Scope {
 
         // Update every dependency on s1 to be a dependency on s2.
         for (PotentiallyAvailableExpression depExpr : s1Deps) {
-            if (depExpr.sym.equals(s1)) {
-                depExpr.sym = s2;
+            if (depExpr.virtualSym.equals(s1)) {
+                depExpr.virtualSym = s2;
             }
 
             // The dependencies of the expression that depends on s1.

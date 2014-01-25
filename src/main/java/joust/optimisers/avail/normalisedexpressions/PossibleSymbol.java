@@ -36,6 +36,10 @@ public @Log4j2 class PossibleSymbol {
         sym = s;
     }
 
+    public boolean isConcrete() {
+        return sym != null;
+    }
+
     /**
      * Set this symbol to one that represents the given concrete symbol.
      *

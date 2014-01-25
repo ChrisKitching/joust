@@ -2,6 +2,8 @@ package joust.optimisers.avail;
 
 import com.sun.tools.javac.util.Name;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static joust.Optimiser.names;
 
 /**
@@ -9,42 +11,10 @@ import static joust.Optimiser.names;
  */
 public class NameFactory {
     // The next name to generate.
-    private static char[] sourceCharacters = new char[]{'a'};
-
-    /**
-     * Return a new unique alphanumeric name.
-     *
-     * @return An alphanumeric string that has never before been returned from this function.
-     */
-    public static String getStringName() {
-        String name = "$JOU$T$" + new String(sourceCharacters);
-
-        // Update the character array to the next string.
-        int modificationIndex = sourceCharacters.length - 1;
-        sourceCharacters[modificationIndex]++;
-
-        // Gone past 'z' on the last character - run back up the array cascading the characters.
-        while (sourceCharacters[modificationIndex] > 'z') {
-            sourceCharacters[modificationIndex] = 'a';
-            modificationIndex--;
-            sourceCharacters[modificationIndex]++;
-
-            // We reached the front of the array before managing to apply the increment - we've
-            // exhausted all combinations of this length. Enlarge the array.
-            if (modificationIndex == -1) {
-                // Exhausted!
-                char[] newChars = new char[sourceCharacters.length+1];
-                System.arraycopy(sourceCharacters, 0, newChars, 0, sourceCharacters.length);
-                newChars[newChars.length-1] = 'a';
-                sourceCharacters = newChars;
-                break;
-            }
-        }
-
-        return name;
-    }
+    private static AtomicInteger tempName = new AtomicInteger(-1);
 
     public static Name getName() {
-        return names.fromString(getStringName());
+        // You can't start a name with an integer in Java source... But the AST doesn't mind.
+        return names.fromString(tempName.incrementAndGet() + "$JOUST$");
     }
 }

@@ -54,4 +54,16 @@ class TreeUtils {
     public static VarSymbol getTargetSymbolForAssignment(JCAssign that) {
         return getTargetSymbolForExpression(that.lhs);
     }
+
+    public static boolean operatorIsCommutative(Tag opcode) {
+        return opcode == Tag.BITOR
+            || opcode == Tag.BITXOR
+            || opcode == Tag.BITAND
+            || opcode == Tag.OR
+            || opcode == Tag.AND
+            || opcode == Tag.EQ
+            || opcode == Tag.NE
+            || opcode == Tag.PLUS
+            || opcode == Tag.MUL;
+    }
 }

@@ -99,6 +99,11 @@ class TreeInfoManager {
         return EffectSet.ALL_EFFECTS;
     }
 
+    public static HashSet<PotentiallyAvailableExpression> getAvailable(JCTree tree) {
+        TreeInfo infoNode = getInfoNode(tree);
+        return infoNode.potentiallyAvailable;
+    }
+
     /**
      * Populate the info structures from the given ClassInfo object. ClassInfo objects store class
      * and method granularity information that can meaningfully be cached between compilation units.

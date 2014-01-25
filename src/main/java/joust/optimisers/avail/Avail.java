@@ -2,11 +2,13 @@ package joust.optimisers.avail;
 
 import com.esotericsoftware.minlog.Log;
 import com.sun.tools.javac.tree.JCTree;
+import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableExpression;
 import joust.treeinfo.TreeInfoManager;
 import joust.optimisers.visitors.DepthFirstTreeVisitor;
 import lombok.extern.log4j.Log4j2;
 
 
+import java.util.Arrays;
 import java.util.HashSet;
 
 import static com.sun.tools.javac.tree.JCTree.*;
@@ -37,7 +39,10 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
 
     // Store a copy of the current available expression set in the TreeInfo structure for this node.
     private void markAvailableExpressions(JCTree tree) {
-        TreeInfoManager.registerAvailables(tree, new HashSet<>(currentScope.availableExpressions));
+        HashSet<PotentiallyAvailableExpression> avail = new HashSet<>();
+        avail.addAll(currentScope.availableExpressions);
+        log.info("Marking available for {} as:\n{}", tree, Arrays.toString(avail.toArray()));
+        TreeInfoManager.registerAvailables(tree, avail);
     }
 
     @Override
@@ -207,6 +212,17 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
     public void visitSelect(JCFieldAccess jcFieldAccess) {
         markAvailableExpressions(jcFieldAccess);
         super.visitSelect(jcFieldAccess);
+    }
+
+    /**
+     * Mostly a hack to keep invariant code motion happy (So the last statement in the loop body has as available
+     * expressions all the things calculated in the last *actual* statement of the loop body (Which the skip has been
+     * added following.)
+     */
+    @Override
+    public void visitSkip(JCSkip jcSkip) {
+        markAvailableExpressions(jcSkip);
+        super.visitSkip(jcSkip);
     }
 
     @Override

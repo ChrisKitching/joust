@@ -2,6 +2,7 @@ package joust;
 
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
@@ -10,8 +11,8 @@ import com.sun.tools.javac.util.Names;
 import joust.joustcache.ChecksumUtils;
 import joust.joustcache.JOUSTCache;
 import joust.joustcache.data.MethodInfo;
-import joust.optimisers.AvailableExpr;
 import joust.optimisers.ConstFold;
+import joust.optimisers.LoopInvar;
 import joust.optimisers.Sanity;
 import joust.optimisers.SideEffects;
 import joust.optimisers.StripAssertions;
@@ -57,6 +58,9 @@ public @Log4j2 class Optimiser extends AbstractProcessor {
     // The compiler's name table.
     public static Names names;
 
+    // The compiler's symbol table.
+    public static Symtab symtab;
+
     public static JavaFileManager fileManager;
 
     @Override
@@ -83,7 +87,7 @@ public @Log4j2 class Optimiser extends AbstractProcessor {
         OptimisationPhaseManager.register(new StripAssertions(), AFTER, ANNOTATION_PROCESSING);
         OptimisationPhaseManager.register(new ConstFold(), AFTER, ANNOTATION_PROCESSING);
         OptimisationPhaseManager.register(new SideEffects(), AFTER, ANALYZE);
-        OptimisationPhaseManager.register(new AvailableExpr(), AFTER, ANALYZE);
+        OptimisationPhaseManager.register(new LoopInvar(), AFTER, ANALYZE);
 
         // The post-compilation pass to populate the disk cache with the results of classes processed
         // during this job. Needs to happen here so we can compute a checksum over the bytecode and
@@ -100,6 +104,7 @@ public @Log4j2 class Optimiser extends AbstractProcessor {
 
         treeMaker = TreeMaker.instance(context);
         names = Names.instance(context);
+        symtab = Symtab.instance(context);
         fileManager = context.get(JavaFileManager.class);
     }
 
