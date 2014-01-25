@@ -1,9 +1,5 @@
 package joust;
 
-import static joust.optimisers.utils.OptimisationPhaseManager.PhaseModifier.*;
-import static com.sun.source.util.TaskEvent.Kind.*;
-import static com.sun.tools.javac.tree.JCTree.*;
-
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
@@ -11,7 +7,6 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
-import joust.joustcache.ChecksumRunner;
 import joust.joustcache.ChecksumUtils;
 import joust.joustcache.JOUSTCache;
 import joust.joustcache.data.MethodInfo;
@@ -21,10 +16,9 @@ import joust.optimisers.Sanity;
 import joust.optimisers.SideEffects;
 import joust.optimisers.StripAssertions;
 import joust.optimisers.avail.normalisedexpressions.PossibleSymbol;
-import joust.treeinfo.EffectSet;
+import joust.optimisers.utils.OptimisationPhaseManager;
 import joust.treeinfo.TreeInfoManager;
 import joust.utils.LogUtils;
-import joust.optimisers.utils.OptimisationPhaseManager;
 import lombok.extern.log4j.Log4j2;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -40,6 +34,10 @@ import javax.tools.JavaFileManager;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Set;
+
+import static com.sun.source.util.TaskEvent.Kind.*;
+import static com.sun.tools.javac.tree.JCTree.*;
+import static joust.optimisers.utils.OptimisationPhaseManager.PhaseModifier.*;
 
 @SupportedAnnotationTypes("*")
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
