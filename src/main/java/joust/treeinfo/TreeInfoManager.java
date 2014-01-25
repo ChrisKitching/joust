@@ -59,7 +59,7 @@ class TreeInfoManager {
             JCMethodDecl castTree = (JCMethodDecl) tree;
 
             mMethodInfoMap.put(MethodInfo.getHashForMethod(castTree.sym), infoNode);
-            JOUSTCache.registerMethodSideEffects(((JCTree.JCMethodDecl) tree).sym, effects);
+            //JOUSTCache.registerMethodSideEffects(((JCTree.JCMethodDecl) tree).sym, effects);
         }
     }
 
@@ -89,7 +89,7 @@ class TreeInfoManager {
         }
 
         // Attempt to find the missing info in the cache.
-        JOUSTCache.loadCachedInfoForClass((Symbol.ClassSymbol) sym.owner);
+        // JOUSTCache.loadCachedInfoForClass((Symbol.ClassSymbol) sym.owner);
 
         infoNode = mMethodInfoMap.get(MethodInfo.getHashForMethod(sym));
         if (infoNode != null) {

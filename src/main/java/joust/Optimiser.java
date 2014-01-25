@@ -91,7 +91,8 @@ public @Log4j2 class Optimiser extends AbstractProcessor {
         // The post-compilation pass to populate the disk cache with the results of classes processed
         // during this job. Needs to happen here so we can compute a checksum over the bytecode and
         // spot when things get sneakily changed when we weren't looking.
-        OptimisationPhaseManager.register(new ChecksumRunner(), AFTER, GENERATE);
+        // TODO: Fix the serialiser to cope with the new EffectSEt format.
+        // OptimisationPhaseManager.register(new ChecksumRunner(), AFTER, GENERATE);
 
 
         mTrees = Trees.instance(env);
