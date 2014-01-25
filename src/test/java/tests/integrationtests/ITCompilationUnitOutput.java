@@ -89,7 +89,11 @@ class ITCompilationUnitOutput {
      */
     @Test
     public void runTest() {
-        log.info(mTargetSource);
+        if (log.isDebugEnabled()) {
+            log.info("-------------------------------------------------------------------------");
+            log.info("- Running compilation output comparism test for {}. -", mTargetSource.getName());
+            log.info("-------------------------------------------------------------------------");
+        }
 
         // Create the compiled programs..
         assertTrue(compileTarget(false));
@@ -109,10 +113,13 @@ class ITCompilationUnitOutput {
         assertNotNull(optClass);
         assertNotNull(noOptClass);
 
-        String optOutput = executeCompiledTest(optClass);
-        log.debug("Optimised output:\n{}", optOutput);
+        log.debug("Running no-opt...");
         String noOptOutput = executeCompiledTest(noOptClass);
-        log.debug("Unoptimised output:\n{}", noOptOutput);
+        log.debug("Returns:\n{}", noOptOutput);
+
+        log.debug("Running opt...");
+        String optOutput = executeCompiledTest(optClass);
+        log.debug("Returns:\n{}", optOutput);
 
         // Not using an assertion directly so we can print extra debug information.
         if (!optOutput.equals(noOptOutput)) {
@@ -123,6 +130,12 @@ class ITCompilationUnitOutput {
 
             // ...And fail the test.
             assertTrue(false);
+        }
+
+        if (log.isDebugEnabled()) {
+            log.info("---------------------------------------------");
+            log.info("- End of compilation output comparism test. -");
+            log.info("---------------------------------------------");
         }
     }
 
@@ -211,7 +224,9 @@ class ITCompilationUnitOutput {
 
         JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnostics, optionList, null, compilationTarget);
 
+        log.trace("Calling task.");
         boolean ret = task.call();
+        log.trace("Task complete with {} diagnostics to report.", diagnostics.getDiagnostics().size());
         for (Diagnostic<? extends JavaFileObject> d : diagnostics.getDiagnostics()) {
             switch (d.getKind()) {
                 case ERROR:
@@ -229,6 +244,7 @@ class ITCompilationUnitOutput {
             }
         }
 
+        log.trace("Done.");
         // Perform the compilation task.
         return ret;
     }
