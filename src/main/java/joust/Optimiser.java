@@ -76,7 +76,6 @@ public @Log4j2 class Optimiser extends AbstractProcessor {
 
         JOUSTCache.init();
         ChecksumUtils.init();
-        EffectSet.init();
         PossibleSymbol.init();
         TreeInfoManager.init();
 

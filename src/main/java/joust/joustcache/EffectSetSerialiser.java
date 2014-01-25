@@ -7,18 +7,17 @@ import com.esotericsoftware.kryo.io.Output;
 import joust.treeinfo.EffectSet;
 
 /**
- * A Kryo serialiser for EffectSets. Due to their singleton nature, EffectSets can be represented
- * entirely as their mask.
+ * A Kryo serialiser for EffectSets.
+ * TODO: Support serialising the affected symbol sets!
  */
 public class EffectSetSerialiser  extends Serializer<EffectSet> {
     @Override
     public void write (Kryo kryo, Output output, EffectSet object) {
-        output.writeInt(object.effectMask);
+        output.writeInt(object.effectTypes);
     }
 
     @Override
     public EffectSet read (Kryo kryo, Input input, Class<EffectSet> type) {
-        EffectSet.init();
-        return EffectSet.getEffectSet(input.readInt());
+        return new EffectSet(input.readInt());
     }
 }

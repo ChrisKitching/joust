@@ -1,26 +1,43 @@
 package joust.treeinfo;
 
+import static com.sun.tools.javac.code.Symbol.*;
+
+import joust.utils.SymbolSet;
 import lombok.extern.log4j.Log4j2;
+
+import java.util.Arrays;
 
 /**
  * A class for representing the side effects of a particular tree node.
  */
 public @Log4j2
 class EffectSet {
-    public static enum Effects {
-        NONE (0),
-        READ_LOCAL(1),
-        READ_GLOBAL(2),
-        WRITE_LOCAL(4),
-        WRITE_GLOBAL(8),
-        EXCEPTION (16),
-        IO (32);
+    public static final EffectSet NO_EFFECTS = new EffectSet(EffectType.NONE);
+    public static final EffectSet ALL_EFFECTS = new EffectSet(EffectType.getAllEffects());
+    static {
+        ALL_EFFECTS.readSymbols = SymbolSet.UNIVERSAL_SET;
+        ALL_EFFECTS.writeSymbols = SymbolSet.UNIVERSAL_SET;
+    }
+
+    // The summary of all effect types this EffectSet represents.
+    public int effectTypes;
+
+    // The symbols read/written to by this EffectSet.
+    SymbolSet<VarSymbol> readSymbols = new SymbolSet<>();
+    SymbolSet<VarSymbol> writeSymbols = new SymbolSet<>();
+
+    public static enum EffectType {
+        NONE(0),
+        READ(1),
+        WRITE(2),
+        EXCEPTION(4),
+        IO(8);
 
         private static int ALL_EFFECTS = 0;
 
         public static int getAllEffects() {
             if (ALL_EFFECTS == 0) {
-                for (Effects e : values()) {
+                for (EffectType e : values()) {
                     ALL_EFFECTS |= e.maskValue;
                 }
             }
@@ -29,79 +46,39 @@ class EffectSet {
         }
 
         public final int maskValue;
-        Effects(int mask) {
+        EffectType(int mask) {
             maskValue = mask;
         }
     }
-
-    // Array containing all effect sets indexed by mask.
-    private static EffectSet[] sEffectSets;
-    public static void init() {
-        // Prevent multiple-initialisation.
-        if (sEffectSets != null) {
-            return;
-        }
-
-        // Find the largest effect bit.
-        int highestEffectBit = 0;
-
-        Effects[] effects = Effects.values();
-        for (int i = 0; i < effects.length; i++) {
-            if (effects[i].maskValue > highestEffectBit) {
-                highestEffectBit = effects[i].maskValue;
-            }
-        }
-
-        // We'll need to construct EffectSet singletons to contain every representable combination.
-        highestEffectBit = (highestEffectBit * 2);
-        log.debug("Creating {} effect set elements", highestEffectBit);
-
-        // highestEffectBit now holds the maximum EffectSet value representable. Build them all.
-        sEffectSets = new EffectSet[highestEffectBit];
-        for (int i = 0; i < highestEffectBit; i++) {
-            sEffectSets[i] = new EffectSet(i);
-        }
-    }
-
-    /**
-     * Gets an effect set for a given mask.
-     *
-     * @param mask Effect mask for the desired effect set.
-     * @return The EffectSet with the given mask.
-     */
-    public static EffectSet getEffectSet(int mask) {
-        return sEffectSets[mask];
-    }
-
-    public static EffectSet getEffectSet(Effects effect) {
-        return sEffectSets[effect.maskValue];
-    }
-
-    public static EffectSet getEffectSet(Effects... effects) {
-        int mask = effects[0].maskValue;
-
-        for (int i = 1; i < effects.length; i++) {
-            mask |= effects[i].maskValue;
-        }
-
-        return sEffectSets[mask];
-    }
-
-    public final int effectMask;
 
     /**
      * Return the effect set representing the current effect set unioned with the given effect set.
      * Provided in addition to the varargs one for performance reasons.
      *
-     * @param effectSet An EffectSet to add to this one.
+     * @param unionee An EffectSet to add to this one.
      * @return The effect set representing the union of the effects of this set with the argument.
      */
-    public EffectSet union(EffectSet effectSet) {
-        if (effectSet == null) {
+    public EffectSet union(EffectSet unionee) {
+        if (unionee == null) {
             return this;
         }
 
-        return sEffectSets[effectMask | effectSet.effectMask];
+        // Union the effect summary...
+        EffectSet unioned = new EffectSet(effectTypes | unionee.effectTypes);
+
+        // Union the affected symbol sets...
+        SymbolSet<VarSymbol> rSyms = new SymbolSet<>();
+        rSyms.addAll(readSymbols);
+        rSyms.addAll(unionee.readSymbols);
+
+        SymbolSet<VarSymbol> wSyms = new SymbolSet<>();
+        wSyms.addAll(writeSymbols);
+        wSyms.addAll(unionee.writeSymbols);
+
+        unioned.readSymbols = rSyms;
+        unioned.writeSymbols = wSyms;
+
+        return unioned;
     }
 
     /**
@@ -115,49 +92,87 @@ class EffectSet {
             return this;
         }
 
-        int mask = effectMask;
+        int newMask = effectTypes;
+        SymbolSet<VarSymbol> rSyms = new SymbolSet<>();
+        SymbolSet<VarSymbol> wSyms = new SymbolSet<>();
+
+        // Add the symbols from this set...
+        rSyms.addAll(readSymbols);
+        wSyms.addAll(writeSymbols);
+
         for (int i = 0; i < effectSets.length; i++) {
-            mask |= effectSets[i].effectMask;
+            EffectSet unionee = effectSets[i];
+
+            newMask |= unionee.effectTypes;
+
+            // Add the symbols from the new unionee...
+            rSyms.addAll(unionee.readSymbols);
+            wSyms.addAll(unionee.writeSymbols);
         }
 
-        return sEffectSets[mask];
+        EffectSet unioned = new EffectSet(newMask);
+
+        unioned.readSymbols = rSyms;
+        unioned.writeSymbols = wSyms;
+
+        return unioned;
     }
 
     /**
-     * Return the effect set representing the current effect set plus the given effect.
+     * Return the effect set representing the current effect set plus the given summary fields.
      *
      * @param effect An effect to add to this EffectSet.
      * @return The effect set representing the effects of this EffectSet plus the given extra one.
      */
-    public EffectSet union(Effects effect) {
+    public EffectSet union(EffectType effect) {
         if (effect == null) {
             return this;
         }
 
-        return sEffectSets[effectMask | effect.maskValue];
+        EffectSet newEffectSet = new EffectSet(effectTypes | effect.maskValue);
+        newEffectSet.readSymbols = new SymbolSet<>(readSymbols);
+        newEffectSet.writeSymbols = new SymbolSet<>(writeSymbols);
+
+        return newEffectSet;
     }
 
-    /**
-     * Return the EffectSet resulting from removing the specified Effect from this EffectSet.
-     *
-     * @param effect The Effect to remove from this EffectSet
-     * @return The resulting EffectSet
-     */
-    public EffectSet subtract(Effects effect) {
-        return sEffectSets[effectMask ^ effect.maskValue];
+    public EffectSet(final int mask) {
+        effectTypes = mask;
     }
 
-    public EffectSet subtract(EffectSet effectSet) {
-        return sEffectSets[effectMask ^ effectSet.effectMask];
+    public EffectSet(final EffectType type) {
+        effectTypes = type.maskValue;
     }
 
-    private EffectSet(final int mask) {
-        effectMask = mask;
+    public static EffectSet write(VarSymbol sym) {
+        EffectSet ret = new EffectSet(EffectType.WRITE);
+        ret.writeSymbols.add(sym);
+
+        return ret;
     }
 
+    public static EffectSet read(VarSymbol sym) {
+        EffectSet ret = new EffectSet(EffectType.READ);
+        ret.readSymbols.add(sym);
+
+        return ret;
+    }
 
     @Override
     public String toString() {
-        return Integer.toString(effectMask, 2);
+        StringBuilder str = new StringBuilder(Integer.toString(effectTypes, 2));
+        if (!readSymbols.isEmpty()) {
+            str.append(":R(")
+               .append(Arrays.toString(readSymbols.toArray()))
+               .append(")");
+        }
+
+        if (!readSymbols.isEmpty()) {
+            str.append(":W(")
+               .append(Arrays.toString(writeSymbols.toArray()))
+               .append(")");
+        }
+
+        return str.toString();
     }
 }

@@ -12,7 +12,7 @@ import lombok.extern.log4j.Log4j2;
 
 import static com.sun.tools.javac.tree.JCTree.*;
 import static com.sun.tools.javac.code.Symbol.*;
-import static joust.treeinfo.EffectSet.Effects;
+import static joust.treeinfo.EffectSet.EffectType;
 
 public @Log4j2
 class SideEffectVisitor extends DepthFirstTreeVisitor {
@@ -26,7 +26,7 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
     private EffectSet unionNodeEffects(List<? extends JCTree> trees) {
         final int numTrees = trees.size();
         if (numTrees == 0) {
-            return EffectSet.getEffectSet(Effects.NONE);
+            return EffectSet.NO_EFFECTS;
         }
 
         EffectSet effects = TreeInfoManager.getEffects(trees.get(0));
@@ -48,7 +48,7 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
 
         EffectSet effects = TreeInfoManager.getEffects(that.body);
         if (!thrownExceptions.isEmpty()) {
-            effects = effects.union(Effects.EXCEPTION);
+            effects = effects.union(EffectType.EXCEPTION);
         }
 
         TreeInfoManager.registerEffects(that, effects);
@@ -58,7 +58,7 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
     public void visitSkip(JCSkip that) {
         super.visitSkip(that);
 
-        TreeInfoManager.registerEffects(that, EffectSet.getEffectSet(Effects.NONE));
+        TreeInfoManager.registerEffects(that, EffectSet.NO_EFFECTS);
     }
 
     @Override
@@ -203,28 +203,30 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
     public void visitBreak(JCBreak that) {
         super.visitBreak(that);
 
-        TreeInfoManager.registerEffects(that, EffectSet.getEffectSet(Effects.NONE));
+        TreeInfoManager.registerEffects(that, EffectSet.NO_EFFECTS);
     }
 
     @Override
     public void visitContinue(JCContinue that) {
         super.visitContinue(that);
 
-        TreeInfoManager.registerEffects(that, EffectSet.getEffectSet(Effects.NONE));
+        TreeInfoManager.registerEffects(that, EffectSet.NO_EFFECTS);
     }
 
     @Override
     public void visitReturn(JCReturn that) {
         super.visitReturn(that);
 
-        TreeInfoManager.registerEffects(that, EffectSet.getEffectSet(Effects.NONE));
+        TreeInfoManager.registerEffects(that, EffectSet.NO_EFFECTS);
     }
 
     @Override
     public void visitThrow(JCThrow that) {
         super.visitThrow(that);
 
-        TreeInfoManager.registerEffects(that, EffectSet.getEffectSet(Effects.EXCEPTION));
+        EffectSet exprEffects = TreeInfoManager.getEffects(that.expr);
+
+        TreeInfoManager.registerEffects(that, exprEffects.union(new EffectSet(EffectType.EXCEPTION)));
     }
 
     @Override
@@ -234,7 +236,7 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
         // Hopefully the empty set...
         EffectSet condEffects = TreeInfoManager.getEffects(that.cond);
 
-        TreeInfoManager.registerEffects(that, condEffects.union(EffectSet.getEffectSet(Effects.EXCEPTION)));
+        TreeInfoManager.registerEffects(that, condEffects.union(new EffectSet(EffectType.EXCEPTION)));
     }
 
     @Override
@@ -253,11 +255,10 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
 
         EffectSet methodEffects = TreeInfoManager.getEffectsForMethod(methodSym);
 
-        // Read/write to locals within the method called do not apply in this scope.
-        methodEffects = methodEffects.subtract(EffectSet.getEffectSet(Effects.READ_LOCAL, Effects.WRITE_LOCAL));
         EffectSet argEffects = unionNodeEffects(that.args);
 
         TreeInfoManager.registerEffects(that, methodEffects.union(argEffects));
+        log.debug("Done with apply: {}", that);
     }
 
     @Override
@@ -301,11 +302,7 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
 
         VarSymbol varSym = TreeUtils.getTargetSymbolForAssignment(that);
 
-        if (TreeUtils.isLocalVariable(varSym)) {
-            TreeInfoManager.registerEffects(that, rhsEffects.union(EffectSet.getEffectSet(Effects.WRITE_LOCAL)));
-        } else {
-            TreeInfoManager.registerEffects(that, rhsEffects.union(EffectSet.getEffectSet(Effects.WRITE_GLOBAL)));
-        }
+        TreeInfoManager.registerEffects(that, rhsEffects.union(EffectSet.write(varSym)));
     }
 
     @Override
@@ -317,11 +314,7 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
 
         VarSymbol varSym = TreeUtils.getTargetSymbolForAssignment(that);
 
-        if (TreeUtils.isLocalVariable(varSym)) {
-            TreeInfoManager.registerEffects(that, rhsEffects.union(EffectSet.getEffectSet(Effects.WRITE_LOCAL, Effects.READ_LOCAL)));
-        } else {
-            TreeInfoManager.registerEffects(that, rhsEffects.union(EffectSet.getEffectSet(Effects.WRITE_GLOBAL, Effects.WRITE_GLOBAL)));
-        }
+        TreeInfoManager.registerEffects(that, rhsEffects.union(EffectSet.write(varSym)));
     }
 
     @Override
@@ -346,11 +339,7 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
                 varSym = (VarSymbol) ((JCFieldAccess) that.arg).sym;
             }
 
-            if (TreeUtils.isLocalVariable(varSym)) {
-                TreeInfoManager.registerEffects(that, EffectSet.getEffectSet(Effects.WRITE_LOCAL, Effects.READ_LOCAL));
-            } else {
-                TreeInfoManager.registerEffects(that, EffectSet.getEffectSet(Effects.WRITE_GLOBAL, Effects.READ_GLOBAL));
-            }
+            TreeInfoManager.registerEffects(that, EffectSet.write(varSym));
         } else {
             TreeInfoManager.registerEffects(that, argEffects);
         }
@@ -372,13 +361,7 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
 
         EffectSet nodeEffects = TreeInfoManager.getEffects(that.index);
 
-        if (TreeUtils.isLocalVariable(that.indexed)) {
-            nodeEffects.union(Effects.READ_LOCAL);
-        } else {
-            nodeEffects.union(Effects.READ_GLOBAL);
-        }
-
-        TreeInfoManager.registerEffects(that, nodeEffects);
+        TreeInfoManager.registerEffects(that, nodeEffects.union(EffectSet.read(TreeUtils.getTargetSymbolForExpression(that.indexed))));
     }
 
     @Override
@@ -387,7 +370,9 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
 
         EffectSet argEffects = TreeInfoManager.getEffects(that.selected);
 
-        TreeInfoManager.registerEffects(that, argEffects.union(EffectSet.getEffectSet(Effects.READ_GLOBAL)));
+        if (that.selected instanceof JCIdent) {
+            TreeInfoManager.registerEffects(that, argEffects.union(EffectSet.read(TreeUtils.getTargetSymbolForExpression(that.selected))));
+        }
     }
 
     @Override
@@ -397,22 +382,18 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
         Symbol sym = that.sym;
 
         if (sym instanceof VarSymbol) {
-            if (TreeUtils.isLocalVariable(sym)) {
-                TreeInfoManager.registerEffects(that, EffectSet.getEffectSet(Effects.READ_LOCAL));
-            } else {
-                TreeInfoManager.registerEffects(that, EffectSet.getEffectSet(Effects.READ_GLOBAL));
-            }
+            TreeInfoManager.registerEffects(that, EffectSet.read((VarSymbol) sym));
 
             return;
         }
 
-        TreeInfoManager.registerEffects(that, EffectSet.getEffectSet(Effects.NONE));
+        TreeInfoManager.registerEffects(that, EffectSet.NO_EFFECTS);
     }
 
     @Override
     public void visitLiteral(JCLiteral that) {
         super.visitLiteral(that);
-        TreeInfoManager.registerEffects(that, EffectSet.getEffectSet(Effects.NONE));
+        TreeInfoManager.registerEffects(that, EffectSet.NO_EFFECTS);
     }
 
     @Override
@@ -420,7 +401,7 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
         super.visitErroneous(that);
 
         log.error("Encountered errorneous tree: {}", that);
-        TreeInfoManager.registerEffects(that, EffectSet.getEffectSet(Effects.getAllEffects()));
+        TreeInfoManager.registerEffects(that, EffectSet.ALL_EFFECTS);
     }
 
     @Override
@@ -437,13 +418,13 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
     @Override
     public void visitTypeCast(JCTypeCast jcTypeCast) {
         super.visitTypeCast(jcTypeCast);
-        TreeInfoManager.registerEffects(jcTypeCast, EffectSet.getEffectSet(Effects.NONE));
+        TreeInfoManager.registerEffects(jcTypeCast, EffectSet.NO_EFFECTS);
     }
 
     @Override
     public void visitTypeTest(JCInstanceOf jcInstanceOf) {
         super.visitTypeTest(jcInstanceOf);
-        TreeInfoManager.registerEffects(jcInstanceOf, EffectSet.getEffectSet(Effects.NONE));
+        TreeInfoManager.registerEffects(jcInstanceOf, EffectSet.NO_EFFECTS);
     }
 
     @Override
@@ -453,20 +434,19 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
 
         EffectSet exprEffects = TreeInfoManager.getEffects(jcMemberReference.expr);
 
-        // TODO: Determine if the access is to a local object.
         if (referenced instanceof VarSymbol) {
-            TreeInfoManager.registerEffects(jcMemberReference, exprEffects.union(EffectSet.getEffectSet(Effects.READ_GLOBAL)));
+            TreeInfoManager.registerEffects(jcMemberReference, exprEffects.union(EffectSet.read((VarSymbol) referenced)));
         } else {
             // It could be a reference to a method, for example. These have no side-effects. (But the
             // associated call might.)
-            TreeInfoManager.registerEffects(jcMemberReference, exprEffects.union(EffectSet.getEffectSet(Effects.NONE)));
+            TreeInfoManager.registerEffects(jcMemberReference, exprEffects.union(EffectSet.NO_EFFECTS));
         }
     }
 
     @Override
     public void visitClassDef(JCClassDecl jcClassDecl) {
         super.visitClassDef(jcClassDecl);
-        TreeInfoManager.registerEffects(jcClassDecl, EffectSet.getEffectSet(Effects.NONE));
+        TreeInfoManager.registerEffects(jcClassDecl, EffectSet.NO_EFFECTS);
     }
 
     @Override
@@ -477,67 +457,63 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
         if (jcVariableDecl.init != null) {
             initEffects = TreeInfoManager.getEffects(jcVariableDecl.init);
         } else {
-            initEffects = EffectSet.getEffectSet(Effects.NONE);
+            initEffects = EffectSet.NO_EFFECTS;
         }
 
-        if (TreeUtils.isLocalVariable(jcVariableDecl.sym)) {
-            TreeInfoManager.registerEffects(jcVariableDecl, initEffects.union(EffectSet.getEffectSet(Effects.WRITE_LOCAL)));
-        } else {
-            TreeInfoManager.registerEffects(jcVariableDecl, initEffects.union(EffectSet.getEffectSet(Effects.WRITE_GLOBAL)));
-        }
+        TreeInfoManager.registerEffects(jcVariableDecl, initEffects.union(EffectSet.write(jcVariableDecl.sym)));
     }
 
     @Override
     public void visitTypeIdent(JCPrimitiveTypeTree jcPrimitiveTypeTree) {
         super.visitTypeIdent(jcPrimitiveTypeTree);
-        TreeInfoManager.registerEffects(jcPrimitiveTypeTree, EffectSet.getEffectSet(Effects.NONE));
+        TreeInfoManager.registerEffects(jcPrimitiveTypeTree, EffectSet.NO_EFFECTS);
     }
 
     @Override
     public void visitTypeArray(JCArrayTypeTree jcArrayTypeTree) {
         super.visitTypeArray(jcArrayTypeTree);
-        TreeInfoManager.registerEffects(jcArrayTypeTree, EffectSet.getEffectSet(Effects.NONE));
+        TreeInfoManager.registerEffects(jcArrayTypeTree, EffectSet.NO_EFFECTS);
     }
 
     @Override
     public void visitTypeApply(JCTypeApply jcTypeApply) {
         super.visitTypeApply(jcTypeApply);
-        TreeInfoManager.registerEffects(jcTypeApply, EffectSet.getEffectSet(Effects.NONE));
+        TreeInfoManager.registerEffects(jcTypeApply, EffectSet.NO_EFFECTS);
     }
 
     @Override
     public void visitTypeUnion(JCTypeUnion jcTypeUnion) {
         super.visitTypeUnion(jcTypeUnion);
-        TreeInfoManager.registerEffects(jcTypeUnion, EffectSet.getEffectSet(Effects.NONE));
+        TreeInfoManager.registerEffects(jcTypeUnion, EffectSet.NO_EFFECTS);
     }
 
     @Override
     public void visitTypeIntersection(JCTypeIntersection jcTypeIntersection) {
         super.visitTypeIntersection(jcTypeIntersection);
-        TreeInfoManager.registerEffects(jcTypeIntersection, EffectSet.getEffectSet(Effects.NONE));
+        TreeInfoManager.registerEffects(jcTypeIntersection, EffectSet.NO_EFFECTS);
     }
 
     @Override
     public void visitTypeParameter(JCTypeParameter jcTypeParameter) {
         super.visitTypeParameter(jcTypeParameter);
-        TreeInfoManager.registerEffects(jcTypeParameter, EffectSet.getEffectSet(Effects.NONE));
+        TreeInfoManager.registerEffects(jcTypeParameter, EffectSet.NO_EFFECTS);
     }
 
     @Override
     public void visitTypeBoundKind(TypeBoundKind typeBoundKind) {
         super.visitTypeBoundKind(typeBoundKind);
-        TreeInfoManager.registerEffects(typeBoundKind, EffectSet.getEffectSet(Effects.NONE));
+        TreeInfoManager.registerEffects(typeBoundKind, EffectSet.NO_EFFECTS);
     }
 
     @Override
     public void visitWildcard(JCWildcard jcWildcard) {
         super.visitWildcard(jcWildcard);
-        TreeInfoManager.registerEffects(jcWildcard, EffectSet.getEffectSet(Effects.NONE));
+        TreeInfoManager.registerEffects(jcWildcard, EffectSet.NO_EFFECTS);
     }
 
     @Override
     public void visitAnnotation(JCAnnotation jcAnnotation) {
         super.visitAnnotation(jcAnnotation);
-        TreeInfoManager.registerEffects(jcAnnotation, EffectSet.getEffectSet(Effects.NONE));
+        TreeInfoManager.registerEffects(jcAnnotation, EffectSet.NO_EFFECTS);
     }
 }

@@ -4,7 +4,6 @@ import static com.sun.tools.javac.tree.JCTree.*;
 
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;
-import joust.Optimiser;
 import joust.joustcache.JOUSTCache;
 import joust.joustcache.data.ClassInfo;
 import joust.joustcache.data.MethodInfo;
@@ -97,7 +96,7 @@ class TreeInfoManager {
         }
 
         log.warn("Unable to source side effects for method: {}. This will harm optimisation - such calls are taken to have all possible side effects!", sym);
-        return EffectSet.getEffectSet(EffectSet.Effects.getAllEffects());
+        return EffectSet.ALL_EFFECTS;
     }
 
     /**

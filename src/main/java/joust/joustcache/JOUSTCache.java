@@ -86,7 +86,7 @@ class JOUSTCache {
         FieldSerializer methodInfoSerialiser = new FieldSerializer(serialiser, MethodInfo.class);
         methodInfoSerialiser.setFieldsCanBeNull(false);
 
-        // Serialiser for EffectSet (Just writes the value)
+        // Serialiser for EffectSet.
         final EffectSetSerialiser effectSetSerialiser = new EffectSetSerialiser();
         methodInfoSerialiser.getField("effectSet").setClass(EffectSet.class, effectSetSerialiser);
 
