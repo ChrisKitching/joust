@@ -5,7 +5,7 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.List;
 import joust.treeinfo.EffectSet;
 import joust.treeinfo.TreeInfoManager;
-import joust.utils.DepthFirstTreeVisitor;
+import joust.optimisers.visitors.DepthFirstTreeVisitor;
 import joust.utils.LogUtils;
 import joust.utils.TreeUtils;
 import lombok.extern.log4j.Log4j2;

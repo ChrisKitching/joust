@@ -3,7 +3,7 @@ package joust.optimisers.avail;
 import com.esotericsoftware.minlog.Log;
 import com.sun.tools.javac.tree.JCTree;
 import joust.treeinfo.TreeInfoManager;
-import joust.utils.DepthFirstTreeVisitor;
+import joust.optimisers.visitors.DepthFirstTreeVisitor;
 import lombok.extern.log4j.Log4j2;
 
 
@@ -42,7 +42,7 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
 
     @Override
     public void visitMethodDef(JCMethodDecl jcMethodDecl) {
-        log.debug("Visitng method: "+jcMethodDecl);
+        log.debug("Visitng method: " + jcMethodDecl);
         enclosingMethod = jcMethodDecl.sym;
         currentScope = new AvailScope(jcMethodDecl.sym);
 

@@ -16,7 +16,7 @@ import static joust.Optimiser.treeMaker;
  * TODO: Lambdas might be able to make this less soul-destroyingly awful to look at.
  */
 public @Log4j2
-class ConstFoldTranslator extends ChangeTrackingTranslator {
+class ConstFoldTranslator extends BaseTranslator {
     public void visitUnary(JCUnary tree) {
         super.visitUnary(tree);
         // Determine the type of this unary operation.

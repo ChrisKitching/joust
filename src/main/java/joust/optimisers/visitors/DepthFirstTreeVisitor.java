@@ -1,4 +1,4 @@
-package joust.utils;
+package joust.optimisers.visitors;
 
 import static com.sun.tools.javac.tree.JCTree.*;
 
@@ -13,7 +13,7 @@ import java.util.HashSet;
  * creating tree analysers.
  */
 public @Log4j2
-class DepthFirstTreeVisitor extends Visitor {
+abstract class DepthFirstTreeVisitor extends Visitor {
     protected HashSet<JCTree> mMarked = new HashSet<>();
 
     protected void visit(List<? extends JCTree> trees) {

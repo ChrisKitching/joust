@@ -1,7 +1,6 @@
-package joust.utils;
+package joust.optimisers.translators;
 
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeTranslator;
 
 import java.util.LinkedList;
 
@@ -11,7 +10,7 @@ import java.util.LinkedList;
  *
  * Unfortunately, the resulting code is horribly, horribly, horrible.
  */
-public class ParentTrackingTreeTranslator extends TreeTranslator {
+public class ParentTrackingTreeTranslator extends BaseTranslator {
     protected LinkedList<JCTree> visitedStack = new LinkedList<>();
 
     @Override
