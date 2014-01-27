@@ -132,10 +132,15 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
     public void visitCase(JCCase that) {
         super.visitCase(that);
 
-        EffectSet condEffects = TreeInfoManager.getEffects(that.pat);
         EffectSet bodyEffects = unionNodeEffects(that.stats);
 
-        TreeInfoManager.registerEffects(that, condEffects.union(bodyEffects));
+        // The default case...
+        if (that.pat == null) {
+            TreeInfoManager.registerEffects(that, bodyEffects);
+        } else {
+            EffectSet condEffects = TreeInfoManager.getEffects(that.pat);
+            TreeInfoManager.registerEffects(that, condEffects.union(bodyEffects));
+        }
     }
 
     @Override
