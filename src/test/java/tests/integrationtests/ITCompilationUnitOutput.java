@@ -5,6 +5,7 @@ import testutils.BaseIntegrationTestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import javax.tools.*;
 
@@ -43,7 +44,7 @@ class ITCompilationUnitOutput {
 
     private static final String JAVAP = System.getProperty("java.home")+"/../bin/javap";
 
-    @Parameterized.Parameters
+    @Parameters(name = "{index}: {0}")
     public static Collection<Object[]> data() {
         URL testInputsUrl = ITCompilationUnitOutput.class.getResource(TEST_INPUTS_DIR);
 
