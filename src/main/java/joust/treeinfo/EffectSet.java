@@ -23,8 +23,8 @@ class EffectSet {
     public int effectTypes;
 
     // The symbols read/written to by this EffectSet.
-    SymbolSet<VarSymbol> readSymbols = new SymbolSet<>();
-    SymbolSet<VarSymbol> writeSymbols = new SymbolSet<>();
+    public SymbolSet<VarSymbol> readSymbols = new SymbolSet<>();
+    public SymbolSet<VarSymbol> writeSymbols = new SymbolSet<>();
 
     public static enum EffectType {
         NONE(0),
@@ -174,5 +174,9 @@ class EffectSet {
         }
 
         return str.toString();
+    }
+
+    public boolean contains(EffectType effect) {
+        return (effectTypes & effect.maskValue) != 0;
     }
 }

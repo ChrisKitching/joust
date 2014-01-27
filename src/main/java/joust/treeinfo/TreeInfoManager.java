@@ -12,6 +12,9 @@ import lombok.extern.log4j.Log4j2;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
+
+import static com.sun.tools.javac.code.Symbol.*;
 
 /**
  * Provides access to TreeInfo objects related to tree nodes.
@@ -23,6 +26,8 @@ class TreeInfoManager {
     // Maps method symbol hashes to the effect sets of their corresponding JCMethodDecl nodes, which
     // may or may not actually *exist* in the parsed code.
     private static HashMap<String, TreeInfo> mMethodInfoMap;
+
+    private static HashMap<MethodSymbol, Set<VarSymbol>> mEverLives = new HashMap<>();
 
     public static void init() {
         mTreeInfoMap = new HashMap<>();
@@ -122,5 +127,27 @@ class TreeInfoManager {
     public static void registerAvailables(JCTree tree, HashSet<PotentiallyAvailableExpression> avail) {
         TreeInfo infoNode = getInfoNode(tree);
         infoNode.potentiallyAvailable = avail;
+    }
+
+    public static void registerLives(JCTree tree, Set<Symbol> live) {
+        TreeInfo infoNode = getInfoNode(tree);
+        infoNode.liveVariables = live;
+    }
+
+    public static Set<Symbol> getLiveVariables(JCTree tree) {
+        TreeInfo infoNode = getInfoNode(tree);
+        return infoNode.liveVariables;
+    }
+
+    /**
+     * Register the ever-live set for a given method.
+     */
+    public static void setEverLiveForMethod(JCMethodDecl jcMethodDecl, HashSet<VarSymbol> everLive) {
+        mEverLives.put(jcMethodDecl.sym, everLive);
+    }
+
+
+    public static Set<VarSymbol> getEverLive(MethodSymbol meth) {
+        return mEverLives.get(meth);
     }
 }

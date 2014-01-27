@@ -25,6 +25,14 @@ class TreeUtils {
         return isLocalVariable((JCIdent) tree);
     }
 
+    public static VarSymbol getTargetSymbolForIdent(JCIdent ident) {
+        if (ident.sym instanceof VarSymbol) {
+            return (VarSymbol) ident.sym;
+        }
+
+        return null;
+    }
+
     public static VarSymbol getTargetSymbolForExpression(JCExpression that) {
         if (that instanceof JCFieldAccess) {
             JCFieldAccess cast = (JCFieldAccess) that;
@@ -37,9 +45,9 @@ class TreeUtils {
                 }
             }
 
-            return (VarSymbol) ((JCIdent) cast.selected).sym;
+            return getTargetSymbolForIdent((JCIdent) cast.selected);
         } else if (that instanceof JCIdent) {
-            return (VarSymbol) ((JCIdent) that).sym;
+            return getTargetSymbolForIdent((JCIdent) that);
         } else {
             LogUtils.raiseCompilerError("Unexpected expression target type: " + that.getClass().getCanonicalName() + " for node: " + that);
         }

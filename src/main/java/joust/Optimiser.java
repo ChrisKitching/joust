@@ -11,6 +11,7 @@ import com.sun.tools.javac.util.Names;
 import joust.joustcache.ChecksumUtils;
 import joust.joustcache.JOUSTCache;
 import joust.joustcache.data.MethodInfo;
+import joust.optimisers.AssignmentStrip;
 import joust.optimisers.ConstFold;
 import joust.optimisers.LoopInvar;
 import joust.optimisers.Sanity;
@@ -87,6 +88,7 @@ public @Log4j2 class Optimiser extends AbstractProcessor {
         OptimisationPhaseManager.register(new StripAssertions(), AFTER, ANNOTATION_PROCESSING);
         OptimisationPhaseManager.register(new ConstFold(), AFTER, ANNOTATION_PROCESSING);
         OptimisationPhaseManager.register(new SideEffects(), AFTER, ANALYZE);
+        OptimisationPhaseManager.register(new AssignmentStrip(), AFTER, ANALYZE);
         OptimisationPhaseManager.register(new LoopInvar(), AFTER, ANALYZE);
 
         // The post-compilation pass to populate the disk cache with the results of classes processed
