@@ -5,6 +5,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.TreeCopier;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
@@ -17,7 +18,9 @@ import joust.optimisers.LoopInvar;
 import joust.optimisers.Sanity;
 import joust.optimisers.SideEffects;
 import joust.optimisers.StripAssertions;
+import joust.optimisers.Unroll;
 import joust.optimisers.avail.normalisedexpressions.PossibleSymbol;
+import joust.optimisers.utils.NonStupidTreeCopier;
 import joust.optimisers.utils.OptimisationPhaseManager;
 import joust.treeinfo.TreeInfoManager;
 import joust.utils.LogUtils;
@@ -62,6 +65,8 @@ public @Log4j2 class Optimiser extends AbstractProcessor {
     // The compiler's symbol table.
     public static Symtab symtab;
 
+    public static NonStupidTreeCopier treeCopier;
+
     public static JavaFileManager fileManager;
 
     @Override
@@ -90,6 +95,7 @@ public @Log4j2 class Optimiser extends AbstractProcessor {
         OptimisationPhaseManager.register(new SideEffects(), AFTER, ANALYZE);
         OptimisationPhaseManager.register(new AssignmentStrip(), AFTER, ANALYZE);
         OptimisationPhaseManager.register(new LoopInvar(), AFTER, ANALYZE);
+        OptimisationPhaseManager.register(new Unroll(), AFTER, ANALYZE);
 
         // The post-compilation pass to populate the disk cache with the results of classes processed
         // during this job. Needs to happen here so we can compute a checksum over the bytecode and
@@ -105,6 +111,7 @@ public @Log4j2 class Optimiser extends AbstractProcessor {
         Context context = ((JavacProcessingEnvironment) env).getContext();
 
         treeMaker = TreeMaker.instance(context);
+        treeCopier = new NonStupidTreeCopier<Void>(treeMaker);
         names = Names.instance(context);
         symtab = Symtab.instance(context);
         fileManager = context.get(JavaFileManager.class);

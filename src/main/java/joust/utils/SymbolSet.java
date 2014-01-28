@@ -3,6 +3,8 @@ package joust.utils;
 import java.util.Collection;
 import java.util.HashSet;
 
+import static com.sun.tools.javac.code.Symbol.*;
+
 /**
  * A set which may logically contain *all* the things.
  */
@@ -37,5 +39,16 @@ public class SymbolSet<T> extends HashSet<T> {
         }
 
         return super.contains(o);
+    }
+
+    /**
+     * Computes the intersection of this SymbolSet with the input one, returning the result as a new set.
+     */
+    public SymbolSet<T> intersect(SymbolSet<T> other) {
+
+        SymbolSet<T> ret = new SymbolSet<>(this);
+        ret.retainAll(other);
+
+        return ret;
     }
 }

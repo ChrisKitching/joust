@@ -1,6 +1,9 @@
 package joust.optimisers.translators;
 
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.util.List;
+import joust.optimisers.utils.JavacListUtils;
+import lombok.extern.log4j.Log4j2;
 
 import java.util.LinkedList;
 
@@ -12,7 +15,8 @@ import static com.sun.tools.javac.tree.JCTree.*;
  *
  * Unfortunately, the resulting code is horribly, horribly, horrible.
  */
-public class ParentTrackingTreeTranslator extends BaseTranslator {
+public @Log4j2
+class ParentTrackingTreeTranslator extends BaseTranslator {
     protected LinkedList<JCTree> visitedStack = new LinkedList<>();
 
     @Override
@@ -391,5 +395,34 @@ public class ParentTrackingTreeTranslator extends BaseTranslator {
         visitedStack.push(jcAnnotatedType);
         super.visitAnnotatedType(jcAnnotatedType);
         visitedStack.pop();
+    }
+
+    /**
+     * Helper method to insert the given statement into the body of the block enclosing the currently-being-considered
+     * node.
+     *
+     * @param target The node in the enclosing block to place the new statement immediately before.
+     * @param trees The new statement to put into the tree.
+     */
+    protected void insertIntoEnclosingBlock(JCTree target, List<JCStatement> trees) {
+        if (trees.isEmpty()) {
+            return;
+        }
+        mHasMadeAChange = true;
+
+        // Statements can be moved to the parent by considering the top of visitedStack.
+        JCBlock enclosingBlock = (JCBlock) visitedStack.peek();
+        List<JCStatement> enclosingStatements = enclosingBlock.stats;
+
+        // The index of the while loop inside the enclosing scope - we want to move invariants to here.
+        int loopIndex = enclosingStatements.indexOf(target);
+
+        for (JCStatement st : trees) {
+            // enclosingStatements.add(loopIndex, tree); throws UnsupportedOperationException. *sigh*
+            JavacListUtils.insertAtIndex(enclosingStatements, st, loopIndex);
+            loopIndex++;
+        }
+
+        log.debug("Inserted {} into {} at index {}", trees, enclosingBlock, loopIndex);
     }
 }

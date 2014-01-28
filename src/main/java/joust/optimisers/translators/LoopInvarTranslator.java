@@ -219,33 +219,4 @@ public @Log4j2 class LoopInvarTranslator extends TODOTranslator {
         tree.accept(killVisitor);
         return killVisitor.killSet;
     }
-
-    /**
-     * Helper method to insert the given statement into the body of the block enclosing the currently-being-considered
-     * node.
-     *
-     * @param target The node in the enclosing block to place the new statement immediately before.
-     * @param trees The new statement to put into the tree.
-     */
-    private void insertIntoEnclosingBlock(JCTree target, List<JCStatement> trees) {
-        if (trees.isEmpty()) {
-            return;
-        }
-        mHasMadeAChange = true;
-
-        // Statements can be moved to the parent by considering the top of visitedStack.
-        JCBlock enclosingBlock = (JCBlock) visitedStack.peek();
-        List<JCStatement> enclosingStatements = enclosingBlock.stats;
-
-        // The index of the while loop inside the enclosing scope - we want to move invariants to here.
-        int loopIndex = enclosingStatements.indexOf(target);
-
-        for (JCStatement st : trees) {
-            // enclosingStatements.add(loopIndex, tree); throws UnsupportedOperationException. *sigh*
-            JavacListUtils.insertAtIndex(enclosingStatements, st, loopIndex);
-            loopIndex++;
-        }
-
-        log.debug("Inserted {} into {} at index {}", trees, enclosingBlock, loopIndex);
-    }
 }
