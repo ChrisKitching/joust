@@ -37,8 +37,11 @@ class UnrollTranslator extends ParentTrackingTreeTranslator {
             // If we touched anything, it's sort of likely there's new dead assignments to strip...
             SideEffectVisitor effectVisitor = new SideEffectVisitor();
             tree.accept(effectVisitor);
-            UnusedAssignmentStripper stripper = new UnusedAssignmentStripper();
-            tree.accept(stripper);
+            UnusedAssignmentStripper stripper;
+            do {
+                stripper = new UnusedAssignmentStripper();
+                tree.accept(stripper);
+            } while (stripper.mHasMadeAChange);
             log.info("After unrolling and stripping: \n{}", visitedStack.peek());
         }
     }

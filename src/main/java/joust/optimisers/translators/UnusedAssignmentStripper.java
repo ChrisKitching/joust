@@ -72,6 +72,7 @@ class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
         super.visitExec(tree);
 
         if (tree.expr == null) {
+            mHasMadeAChange = true;
             result = treeMaker.Skip();
         }
     }
@@ -89,6 +90,7 @@ class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
 
             if (shouldCull(rhsEffects, live)) {
                 log.info("Killing redundant assignment: {}", tree);
+                mHasMadeAChange = true;
                 result = null;
             }
         }
@@ -107,6 +109,7 @@ class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
 
             if (shouldCull(rhsEffects, live)) {
                 log.info("Killing redundant assignment: {}", tree);
+                mHasMadeAChange = true;
                 result = null;
             }
         }
@@ -120,6 +123,7 @@ class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
 
         if (!everLive.contains(target)) {
             log.info("Culling assignment: {}", tree);
+            mHasMadeAChange = true;
             result = treeMaker.Skip();
             return;
         }
@@ -133,10 +137,13 @@ class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
                 }
             }
 
-            log.info("Killing redundant assignment: {}", tree);
+            if (tree.init != null) {
+                log.info("Killing redundant assignment: {}", tree);
+                mHasMadeAChange = true;
 
-            // So this *assignment* is redundant, but we need the decl. Just null out the init.
-            tree.init = null;
+                // So this *assignment* is redundant, but we need the decl. Just null out the init.
+                tree.init = null;
+            }
         }
     }
 }
