@@ -74,6 +74,8 @@ class ConstFoldTranslatorTest extends BaseTreeTranslatorTest<ConstFoldTranslator
             $(lShift(l(5), l(6L)), l(5 << 6L)),
             $(lShift(l('t'), l(1)), l('t' << 1)),
 
+            $(plus(l("cake"), l("tacular")), l("caketacular")),
+
             $(plus(l(1), l(1)), l(2)),
             $(plus(l('a'), l('c')), l('a' + 'c')),
             $(plus(l(Double.NaN), l(Integer.MAX_VALUE)), l(Double.NaN + Integer.MAX_VALUE)),

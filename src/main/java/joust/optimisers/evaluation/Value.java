@@ -1143,12 +1143,6 @@ class Value {
     }
 
     private static Value arithmeticPlus(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
-        // Verify the types of the operands are numeric literals.
-        if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
-            LogUtils.raiseCompilerError("Attempt to add non-numeric types: " + leftKind + ", " + rightKind);
-            return null;
-        }
-
         // For each of the nine possible cases, cast the payloads to their real types and find the result.
         switch (leftKind) {
             case CHAR_LITERAL:
@@ -1898,6 +1892,12 @@ class Value {
         typetag = TypeTag.BOOLEAN;
     }
 
+    private Value(String x) {
+        value = x;
+        // Bewilderingly, this maps to Kind.STRING_LITERAL *and nothing else*.
+        typetag = TypeTag.CLASS;
+    }
+
     public Value() {
         typetag = TypeTag.UNKNOWN;
     }
@@ -1920,6 +1920,8 @@ class Value {
             return new Value((Double) value);
         } else if (value instanceof Boolean) {
             return new Value((Boolean) value);
+        } else if (value instanceof String) {
+            return new Value((String) value);
         } else {
             return UNKNOWN;
         }
