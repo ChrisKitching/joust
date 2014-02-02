@@ -248,15 +248,7 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
     public void visitApply(JCMethodInvocation that) {
         super.visitApply(that);
 
-        MethodSymbol methodSym;
-        if (that.meth instanceof JCFieldAccess) {
-            methodSym = (MethodSymbol) ((JCFieldAccess) that.meth).sym;
-        } else if (that.meth instanceof JCIdent) {
-            methodSym = (MethodSymbol) ((JCIdent) that.meth).sym;
-        } else {
-            LogUtils.raiseCompilerError("Unexpected application type: " + that.meth.getClass().getName() + " for node: " + that);
-            return;
-        }
+        MethodSymbol methodSym = TreeUtils.getTargetSymbolForCall(that);
 
         EffectSet methodEffects = TreeInfoManager.getEffectsForMethod(methodSym);
 

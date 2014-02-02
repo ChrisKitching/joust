@@ -63,6 +63,16 @@ class TreeUtils {
         return getTargetSymbolForExpression(that.lhs);
     }
 
+    public static MethodSymbol getTargetSymbolForCall(JCMethodInvocation that) {
+        if (that.meth instanceof JCFieldAccess) {
+            return (MethodSymbol) ((JCFieldAccess) that.meth).sym;
+        } else if (that.meth instanceof JCIdent) {
+            return (MethodSymbol) ((JCIdent) that.meth).sym;
+        }
+        LogUtils.raiseCompilerError("Unexpected application type: " + that.meth.getClass().getName() + " for node: " + that);
+        return null;
+    }
+
     public static boolean operatorIsCommutative(Tag opcode) {
         return opcode == Tag.BITOR
             || opcode == Tag.BITXOR
