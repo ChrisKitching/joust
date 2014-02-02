@@ -23,18 +23,21 @@ class EvaluationContext {
     // An immutable map that relates the assignop opcodes to their non-assigning equivalents.
     private final static Map<Tag, Tag> OPASG_TO_OP;
     static {
-        Map<Tag, Tag> map = new HashMap<>();
-        map.put(Tag.BITOR_ASG, Tag.BITOR);
-        map.put(Tag.BITXOR_ASG, Tag.BITXOR);
-        map.put(Tag.BITAND_ASG, Tag.BITAND);
-        map.put(Tag.SL_ASG, Tag.SL);
-        map.put(Tag.SR_ASG, Tag.SR);
-        map.put(Tag.USR_ASG, Tag.USR);
-        map.put(Tag.PLUS_ASG, Tag.PLUS);
-        map.put(Tag.MINUS_ASG, Tag.MINUS);
-        map.put(Tag.MUL_ASG, Tag.MUL);
-        map.put(Tag.DIV_ASG, Tag.DIV);
-        map.put(Tag.MOD_ASG, Tag.MOD);
+        final Map<Tag, Tag> map = new HashMap<Tag, Tag>() {
+            {
+                put(Tag.BITOR_ASG, Tag.BITOR);
+                put(Tag.BITXOR_ASG, Tag.BITXOR);
+                put(Tag.BITAND_ASG, Tag.BITAND);
+                put(Tag.SL_ASG, Tag.SL);
+                put(Tag.SR_ASG, Tag.SR);
+                put(Tag.USR_ASG, Tag.USR);
+                put(Tag.PLUS_ASG, Tag.PLUS);
+                put(Tag.MINUS_ASG, Tag.MINUS);
+                put(Tag.MUL_ASG, Tag.MUL);
+                put(Tag.DIV_ASG, Tag.DIV);
+                put(Tag.MOD_ASG, Tag.MOD);
+            }
+        };
 
         OPASG_TO_OP = Collections.unmodifiableMap(map);
     }

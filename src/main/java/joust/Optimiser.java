@@ -14,6 +14,7 @@ import joust.joustcache.JOUSTCache;
 import joust.joustcache.data.MethodInfo;
 import joust.optimisers.AssignmentStrip;
 import joust.optimisers.ConstFold;
+import joust.optimisers.ExpressionNormalise;
 import joust.optimisers.LoopInvar;
 import joust.optimisers.Sanity;
 import joust.optimisers.SideEffects;
@@ -96,6 +97,7 @@ public @Log4j2 class Optimiser extends AbstractProcessor {
         OptimisationPhaseManager.register(new Sanity(), AFTER, ANNOTATION_PROCESSING);
         OptimisationPhaseManager.register(new StripAssertions(), AFTER, ANNOTATION_PROCESSING);
         OptimisationPhaseManager.register(new ConstFold(), AFTER, ANNOTATION_PROCESSING);
+        OptimisationPhaseManager.register(new ExpressionNormalise(), AFTER, ANALYZE);
         OptimisationPhaseManager.register(new SideEffects(), AFTER, ANALYZE);
         OptimisationPhaseManager.register(new AssignmentStrip(), AFTER, ANALYZE);
         OptimisationPhaseManager.register(new LoopInvar(), AFTER, ANALYZE);
