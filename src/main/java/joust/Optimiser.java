@@ -48,13 +48,13 @@ import static joust.optimisers.utils.OptimisationPhaseManager.PhaseModifier.*;
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 public @Log4j2 class Optimiser extends AbstractProcessor {
     public static Trees mTrees;
-    public static LinkedList<JCTree> elementTrees = new LinkedList<>();
-    public static LinkedList<Symbol.ClassSymbol> elementSymbols = new LinkedList<>();
+    public static LinkedList<JCTree> elementTrees;
+    public static LinkedList<Symbol.ClassSymbol> elementSymbols;
 
     // TODO: Consider moving.
     // Maps method symbol hashes to their corresponding declaration. Useful for loading summary
     // information from the disk cache.
-    public static HashMap<String, JCTree.JCMethodDecl> methodTable = new HashMap<>();
+    public static HashMap<String, JCTree.JCMethodDecl> methodTable;
 
     // Factory class, internal to the compiler, used to manufacture parse tree nodes.
     public static TreeMaker treeMaker;
@@ -81,6 +81,10 @@ public @Log4j2 class Optimiser extends AbstractProcessor {
             LogUtils.raiseCompilerError("Optimiser aborted by command line argument processor.");
             return;
         }
+
+        elementTrees = new LinkedList<>();
+        elementSymbols = new LinkedList<>();
+        methodTable = new HashMap<>();
 
         JOUSTCache.init();
         ChecksumUtils.init();
