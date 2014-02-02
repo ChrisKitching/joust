@@ -2,7 +2,7 @@ package tests.unittests;
 
 import static com.sun.tools.javac.tree.JCTree.*;
 import static junitparams.JUnitParamsRunner.$;
-import static tests.unittests.constfold.BaseConstFoldTest.*;
+import static tests.unittests.ExpressionFactory.*;
 
 import com.sun.tools.javac.tree.JCTree;
 import joust.optimisers.translators.ConstFoldTranslator;

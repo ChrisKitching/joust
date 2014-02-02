@@ -1,16 +1,16 @@
-package tests.unittests.constfold;
+package tests.unittests;
 
 import static com.sun.tools.javac.tree.JCTree.*;
 
 import com.sun.tools.javac.code.TypeTag;
-import tests.unittests.TreeFabricatingTest;
 
+import static tests.unittests.TreeFabricatingTest.t;
 
 /**
  * Base class for tests of constant folding. Provides a collection of methods for conveniently
  * creating literal trees.
  */
-public class BaseConstFoldTest extends TreeFabricatingTest {
+public class ExpressionFactory {
     public static JCParens parens(JCExpression e) {
         return t.Parens(e);
     }
