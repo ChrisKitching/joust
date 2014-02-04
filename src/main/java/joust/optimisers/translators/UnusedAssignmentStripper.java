@@ -48,12 +48,12 @@ class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
      * @return true if the assignment under consideration lacks interesting side effects, false otherwise.
      */
     private boolean shouldCull(EffectSet rhsEffects, Set<Symbol> live) {
-        if (rhsEffects.contains(EffectSet.EffectType.IO)) {
+        if (rhsEffects.containsAny(EffectSet.EffectType.IO, EffectSet.EffectType.WRITE_ESCAPING)) {
             return false;
-        } else if (rhsEffects.contains(EffectSet.EffectType.WRITE)) {
+        } else if (rhsEffects.contains(EffectSet.EffectType.WRITE_INTERNAL)) {
             // Determine if any of the symbols are interesting. A symbol is interesting if it is live at
             // this point (In which case write side effects to it matter) or if it is global.
-            for (VarSymbol sym : rhsEffects.writeSymbols) {
+            for (VarSymbol sym : rhsEffects.writeInternal) {
                 if (!TreeUtils.isLocalVariable(sym) || live.contains(sym)) {
                     return false;
                 }

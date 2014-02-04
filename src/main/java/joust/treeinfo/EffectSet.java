@@ -3,6 +3,7 @@ package joust.treeinfo;
 import static com.sun.tools.javac.code.Symbol.*;
 
 import joust.utils.SymbolSet;
+import joust.utils.TreeUtils;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.Arrays;
@@ -15,23 +16,30 @@ class EffectSet {
     public static final EffectSet NO_EFFECTS = new EffectSet(EffectType.NONE);
     public static final EffectSet ALL_EFFECTS = new EffectSet(EffectType.getAllEffects());
     static {
-        ALL_EFFECTS.readSymbols = SymbolSet.UNIVERSAL_SET;
-        ALL_EFFECTS.writeSymbols = SymbolSet.UNIVERSAL_SET;
+        ALL_EFFECTS.readInternal = SymbolSet.UNIVERSAL_SET;
+        ALL_EFFECTS.writeInternal = SymbolSet.UNIVERSAL_SET;
+        ALL_EFFECTS.readEscaping = SymbolSet.UNIVERSAL_SET;
+        ALL_EFFECTS.writeEscaping = SymbolSet.UNIVERSAL_SET;
     }
 
     // The summary of all effect types this EffectSet represents.
     public int effectTypes;
 
     // The symbols read/written to by this EffectSet.
-    public SymbolSet<VarSymbol> readSymbols = new SymbolSet<>();
-    public SymbolSet<VarSymbol> writeSymbols = new SymbolSet<>();
+    public SymbolSet<VarSymbol> readInternal = new SymbolSet<>();
+    public SymbolSet<VarSymbol> writeInternal = new SymbolSet<>();
+
+    public SymbolSet<VarSymbol> readEscaping = new SymbolSet<>();
+    public SymbolSet<VarSymbol> writeEscaping = new SymbolSet<>();
 
     public static enum EffectType {
         NONE(0),
-        READ(1),
-        WRITE(2),
-        EXCEPTION(4),
-        IO(8);
+        READ_INTERNAL(1),
+        WRITE_INTERNAL(2),
+        READ_ESCAPING(4),
+        WRITE_ESCAPING(8),
+        EXCEPTION(16),
+        IO(32);
 
         private static int ALL_EFFECTS = 0;
 
@@ -66,17 +74,10 @@ class EffectSet {
         // Union the effect summary...
         EffectSet unioned = new EffectSet(effectTypes | unionee.effectTypes);
 
-        // Union the affected symbol sets...
-        SymbolSet<VarSymbol> rSyms = new SymbolSet<>();
-        rSyms.addAll(readSymbols);
-        rSyms.addAll(unionee.readSymbols);
-
-        SymbolSet<VarSymbol> wSyms = new SymbolSet<>();
-        wSyms.addAll(writeSymbols);
-        wSyms.addAll(unionee.writeSymbols);
-
-        unioned.readSymbols = rSyms;
-        unioned.writeSymbols = wSyms;
+        unioned.readInternal = SymbolSet.union(readInternal, unionee.readInternal);
+        unioned.writeInternal = SymbolSet.union(writeInternal, unionee.writeInternal);
+        unioned.readEscaping = SymbolSet.union(readEscaping, unionee.readEscaping);
+        unioned.writeEscaping = SymbolSet.union(writeEscaping, unionee.writeEscaping);
 
         return unioned;
     }
@@ -93,12 +94,11 @@ class EffectSet {
         }
 
         int newMask = effectTypes;
-        SymbolSet<VarSymbol> rSyms = new SymbolSet<>();
-        SymbolSet<VarSymbol> wSyms = new SymbolSet<>();
+        SymbolSet<VarSymbol> riSyms = new SymbolSet<>(readInternal);
+        SymbolSet<VarSymbol> wiSyms = new SymbolSet<>(writeInternal);
+        SymbolSet<VarSymbol> reSyms = new SymbolSet<>(readEscaping);
+        SymbolSet<VarSymbol> weSyms = new SymbolSet<>(writeEscaping);
 
-        // Add the symbols from this set...
-        rSyms.addAll(readSymbols);
-        wSyms.addAll(writeSymbols);
 
         for (int i = 0; i < effectSets.length; i++) {
             EffectSet unionee = effectSets[i];
@@ -106,14 +106,18 @@ class EffectSet {
             newMask |= unionee.effectTypes;
 
             // Add the symbols from the new unionee...
-            rSyms.addAll(unionee.readSymbols);
-            wSyms.addAll(unionee.writeSymbols);
+            riSyms.addAll(unionee.readInternal);
+            wiSyms.addAll(unionee.writeInternal);
+            reSyms.addAll(unionee.readEscaping);
+            weSyms.addAll(unionee.writeEscaping);
         }
 
         EffectSet unioned = new EffectSet(newMask);
 
-        unioned.readSymbols = rSyms;
-        unioned.writeSymbols = wSyms;
+        unioned.readInternal = riSyms;
+        unioned.writeInternal = wiSyms;
+        unioned.readEscaping = reSyms;
+        unioned.writeEscaping = weSyms;
 
         return unioned;
     }
@@ -130,8 +134,10 @@ class EffectSet {
         }
 
         EffectSet newEffectSet = new EffectSet(effectTypes | effect.maskValue);
-        newEffectSet.readSymbols = new SymbolSet<>(readSymbols);
-        newEffectSet.writeSymbols = new SymbolSet<>(writeSymbols);
+        newEffectSet.readInternal = new SymbolSet<>(readInternal);
+        newEffectSet.writeInternal = new SymbolSet<>(writeInternal);
+        newEffectSet.readEscaping = new SymbolSet<>(readEscaping);
+        newEffectSet.writeEscaping = new SymbolSet<>(writeEscaping);
 
         return newEffectSet;
     }
@@ -145,15 +151,27 @@ class EffectSet {
     }
 
     public static EffectSet write(VarSymbol sym) {
-        EffectSet ret = new EffectSet(EffectType.WRITE);
-        ret.writeSymbols.add(sym);
+        EffectSet ret;
+        if (TreeUtils.isLocalVariable(sym)) {
+            ret = new EffectSet(EffectType.WRITE_INTERNAL);
+            ret.writeInternal.add(sym);
+        } else {
+            ret = new EffectSet(EffectType.WRITE_ESCAPING);
+            ret.writeEscaping.add(sym);
+        }
 
         return ret;
     }
 
     public static EffectSet read(VarSymbol sym) {
-        EffectSet ret = new EffectSet(EffectType.READ);
-        ret.readSymbols.add(sym);
+        EffectSet ret;
+        if (TreeUtils.isLocalVariable(sym)) {
+            ret = new EffectSet(EffectType.READ_INTERNAL);
+            ret.readInternal.add(sym);
+        } else {
+            ret = new EffectSet(EffectType.READ_ESCAPING);
+            ret.readEscaping.add(sym);
+        }
 
         return ret;
     }
@@ -161,15 +179,27 @@ class EffectSet {
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder(Integer.toString(effectTypes, 2));
-        if (!readSymbols.isEmpty()) {
-            str.append(":R(")
-               .append(Arrays.toString(readSymbols.toArray()))
+        if (!readInternal.isEmpty()) {
+            str.append(":RI(")
+               .append(Arrays.toString(readInternal.toArray()))
                .append(")");
         }
 
-        if (!readSymbols.isEmpty()) {
-            str.append(":W(")
-               .append(Arrays.toString(writeSymbols.toArray()))
+        if (!readEscaping.isEmpty()) {
+            str.append(":RE(")
+               .append(Arrays.toString(readEscaping.toArray()))
+               .append(")");
+        }
+
+        if (!readInternal.isEmpty()) {
+            str.append(":WI(")
+               .append(Arrays.toString(writeInternal.toArray()))
+               .append(")");
+        }
+
+        if (!readInternal.isEmpty()) {
+            str.append(":WE(")
+               .append(Arrays.toString(writeEscaping.toArray()))
                .append(")");
         }
 
@@ -178,5 +208,18 @@ class EffectSet {
 
     public boolean contains(EffectType effect) {
         return (effectTypes & effect.maskValue) != 0;
+    }
+
+    public boolean contains(int effectMask) {
+        return (effectTypes & effectMask) != 0;
+    }
+
+    public boolean containsAny(EffectType... effects) {
+        int unifiedMask = 0;
+        for (int i = 0; i < effects.length; i++) {
+            unifiedMask |= effects[i].maskValue;
+        }
+
+        return (effectTypes & unifiedMask) != 0;
     }
 }

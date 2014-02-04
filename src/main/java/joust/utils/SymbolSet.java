@@ -11,7 +11,6 @@ import static com.sun.tools.javac.code.Symbol.*;
 public class SymbolSet<T> extends HashSet<T> {
     public static final SymbolSet UNIVERSAL_SET = new SymbolSet();
 
-
     public SymbolSet() { }
     public SymbolSet(Collection s) {
         super(s);
@@ -48,6 +47,28 @@ public class SymbolSet<T> extends HashSet<T> {
 
         SymbolSet<T> ret = new SymbolSet<>(this);
         ret.retainAll(other);
+
+        return ret;
+    }
+
+    /**
+     * Create and return a new SymbolSet containing all the elements from the input SymbolSets.
+     */
+    public static<V> SymbolSet<V> union(SymbolSet<V> a, SymbolSet<V> b) {
+        SymbolSet<V> ret = new SymbolSet<>();
+        ret.addAll(a);
+        ret.addAll(b);
+        return ret;
+    }
+
+    /**
+     * Both functions provided so the first case is a tad faster when usable...
+     */
+    public static<V> SymbolSet<V> union(SymbolSet<V>... a) {
+        SymbolSet<V> ret = new SymbolSet<>();
+        for (int i = 0; i < a.length; i++) {
+            ret.addAll(a[i]);
+        }
 
         return ret;
     }

@@ -1,7 +1,6 @@
 package joust.optimisers.translators;
 
 import com.sun.tools.javac.util.List;
-import javafx.geometry.Side;
 import joust.optimisers.evaluation.EvaluationContext;
 import joust.optimisers.evaluation.Value;
 import joust.optimisers.visitors.SideEffectVisitor;
@@ -53,12 +52,12 @@ class UnrollTranslator extends ParentTrackingTreeTranslator {
         log.debug("Unroll consideration for: {}", tree);
 
         EffectSet condEffects = TreeInfoManager.getEffects(tree.cond);
-        SymbolSet<VarSymbol> condReads = condEffects.readSymbols;
-        SymbolSet<VarSymbol> condWrites = condEffects.writeSymbols;
+        SymbolSet<VarSymbol> condReads = condEffects.readInternal;
+        SymbolSet<VarSymbol> condWrites = condEffects.writeInternal;
 
         EffectSet repeatEffects = TreeInfoManager.getEffects(tree.cond);
-        SymbolSet<VarSymbol> repeatReads = repeatEffects.readSymbols;
-        SymbolSet<VarSymbol> repeatWrites = repeatEffects.writeSymbols;
+        SymbolSet<VarSymbol> repeatReads = repeatEffects.readInternal;
+        SymbolSet<VarSymbol> repeatWrites = repeatEffects.writeInternal;
 
         // Determine if any of the symbols depended on by the condition or repeat are global.
         if (containsGlobal(condReads) || containsGlobal(condWrites)
@@ -69,7 +68,7 @@ class UnrollTranslator extends ParentTrackingTreeTranslator {
 
         EffectSet bodyEffects = TreeInfoManager.getEffects(tree.body);
         // If the body writes anything read by the cond or repeat, abort. (That shit's complicated.).
-        SymbolSet<VarSymbol> bodyWrites = bodyEffects.writeSymbols;
+        SymbolSet<VarSymbol> bodyWrites = bodyEffects.writeInternal;
 
         // TODO: can *sometimes* deal with this. Sort of tricky, and implies very retarded code.
         if (!bodyWrites.intersect(condReads).isEmpty() || !bodyWrites.intersect(repeatReads).isEmpty()) {
