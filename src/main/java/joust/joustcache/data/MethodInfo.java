@@ -13,10 +13,15 @@ import lombok.NoArgsConstructor;
  */
 public @AllArgsConstructor @NoArgsConstructor
 class MethodInfo {
-    @Getter private String methodHash;
-    @Getter private EffectSet effectSet;
+    public String methodHash;
+    public EffectSet effectSet;
 
     public static String getHashForMethod(Symbol.MethodSymbol sym) {
         return sym.owner.type.toString() + '.' + sym.name.toString() + ':' + sym.type.toString();
+    }
+
+    @Override
+    public String toString() {
+        return methodHash + ":" + effectSet.toString();
     }
 }

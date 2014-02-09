@@ -6,6 +6,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.UnsafeInput;
 import com.esotericsoftware.kryo.io.UnsafeOutput;
 import com.esotericsoftware.kryo.serializers.CollectionSerializer;
+import com.esotericsoftware.kryo.serializers.DefaultSerializers;
 import com.esotericsoftware.kryo.serializers.FieldSerializer;
 import jdbm.PrimaryTreeMap;
 import jdbm.RecordManager;
@@ -16,6 +17,7 @@ import joust.joustcache.data.TransientClassInfo;
 import joust.treeinfo.EffectSet;
 import joust.treeinfo.TreeInfoManager;
 import joust.utils.LogUtils;
+import joust.utils.SymbolSet;
 import lombok.Cleanup;
 import lombok.extern.log4j.Log4j2;
 
@@ -24,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
@@ -84,10 +87,20 @@ class JOUSTCache {
 
         // Serialiser for MethodInfo
         FieldSerializer methodInfoSerialiser = new FieldSerializer(serialiser, MethodInfo.class);
+        methodInfoSerialiser.getField("methodHash").setClass(String.class, new DefaultSerializers.StringSerializer());
         methodInfoSerialiser.setFieldsCanBeNull(false);
 
         // Serialiser for EffectSet.
-        final EffectSetSerialiser effectSetSerialiser = new EffectSetSerialiser();
+        FieldSerializer effectSetSerialiser = new FieldSerializer(serialiser, EffectSet.class);
+
+        SymbolSetSerialiser symbolSetSerialiser = new SymbolSetSerialiser();
+
+        // Don't serialise non-escaping symbol sets. Nobody cares.
+        effectSetSerialiser.removeField("readInternal");
+        effectSetSerialiser.removeField("writeInternal");
+        effectSetSerialiser.getField("readEscaping").setClass(SymbolSet.class, symbolSetSerialiser);
+        effectSetSerialiser.getField("writeEscaping").setClass(SymbolSet.class, symbolSetSerialiser);
+
         methodInfoSerialiser.getField("effectSet").setClass(EffectSet.class, effectSetSerialiser);
 
         // To serialise the list of MethodInfo objects inside the ClassInfo.
@@ -101,6 +114,7 @@ class JOUSTCache {
         serialiser.register(EffectSet.class, effectSetSerialiser);
         serialiser.register(ClassInfo.class, classInfoSerialiser);
         serialiser.register(MethodInfo.class, methodInfoSerialiser);
+        serialiser.register(SymbolSet.class, symbolSetSerialiser);
     }
 
     /**
@@ -154,6 +168,8 @@ class JOUSTCache {
         @Cleanup UnsafeInput deserialiserInput = new UnsafeInput(payload);
         ClassInfo cInfo = serialiser.readObject(deserialiserInput, ClassInfo.class);
 
+        log.warn("Loaded info:\n{}", cInfo);
+
         if (cInfo == null) {
             log.warn("Unable to load cached info - got null - for class {}", sym.fullname.toString());
             return;
@@ -190,13 +206,15 @@ class JOUSTCache {
 
         cInfo.setHash(hash);
 
+        log.warn("Serialising {} for {}", cInfo, className);
+
         // Serialise the ClassInfo object.
         @Cleanup UnsafeOutput serialisedOutput = new UnsafeOutput(INITIAL_BUFFER_SIZE);
         serialiser.writeObject(serialisedOutput, cInfo);
 
         byte[] buffer = serialisedOutput.toBytes();
 
-        log.debug("Serialised {} using {} bytes", className, buffer.length);
+        log.debug("Serialised using {} bytes", buffer.length);
 
         databaseMap.put(className, buffer);
         try {
@@ -213,7 +231,7 @@ class JOUSTCache {
      * @param sym Method symbol to relate the side effects with.
      * @param effectSet The effect set of the provided method symbol's declaration.
      */
-    public static void registerMethodSideEffects(MethodSymbol sym, EffectSet effectSet) {
+    public static void registerMethodSideEffects(MethodSymbol sym, EffectSet effectSet, boolean purge) {
         final String methodHash = MethodInfo.getHashForMethod(sym);
         final String className = ((ClassSymbol) sym.owner).flatname.toString();
 
@@ -224,6 +242,17 @@ class JOUSTCache {
         if (cInfo == null) {
             cInfo = new ClassInfo();
             classInfo.put(className, cInfo);
+        }
+        if (purge) {
+            // If purging, scan methodInfos for collisions and drop any existing info.
+            Iterator<MethodInfo> iterator = cInfo.methodInfos.iterator();
+            while (iterator.hasNext()) {
+                MethodInfo mInfo = iterator.next();
+                if (mInfo.methodHash.equals(methodHash)) {
+                    log.debug("Dropping: {}", mInfo);
+                    iterator.remove();
+                }
+            }
         }
         cInfo.methodInfos.add(m);
 

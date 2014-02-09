@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static com.sun.tools.javac.code.Symbol.*;
+import static joust.Optimiser.methodTable;
 
 /**
  * Provides access to TreeInfo objects related to tree nodes.
@@ -63,8 +64,9 @@ class TreeInfoManager {
         if (tree instanceof JCMethodDecl) {
             JCMethodDecl castTree = (JCMethodDecl) tree;
 
-            mMethodInfoMap.put(MethodInfo.getHashForMethod(castTree.sym), infoNode);
-            //JOUSTCache.registerMethodSideEffects(((JCTree.JCMethodDecl) tree).sym, effects);
+            boolean purge = mMethodInfoMap.put(MethodInfo.getHashForMethod(castTree.sym), infoNode) != null;
+
+            JOUSTCache.registerMethodSideEffects(((JCTree.JCMethodDecl) tree).sym, effects, purge);
         }
     }
 
@@ -92,14 +94,15 @@ class TreeInfoManager {
             return infoNode.mEffectSet;
         }
 
-        return EffectSet.ALL_EFFECTS;
-    }
+        // If the method is to be analysed later, trigger the dependency addition.
+        if (methodTable.containsKey(MethodInfo.getHashForMethod(sym))) {
+            return EffectSet.ALL_EFFECTS;
+        }
 
-    public static EffectSet loadEffectsForMethodFromCache(MethodSymbol sym) {
         // Attempt to find the missing info in the cache.
-        // JOUSTCache.loadCachedInfoForClass((Symbol.ClassSymbol) sym.owner);
+        JOUSTCache.loadCachedInfoForClass((Symbol.ClassSymbol) sym.owner);
 
-        TreeInfo infoNode = mMethodInfoMap.get(MethodInfo.getHashForMethod(sym));
+        infoNode = mMethodInfoMap.get(MethodInfo.getHashForMethod(sym));
         if (infoNode != null) {
             return infoNode.mEffectSet;
         }
@@ -123,8 +126,8 @@ class TreeInfoManager {
     public static void populateFromClassInfo(ClassInfo cInfo) {
         for (MethodInfo mI : cInfo.methodInfos) {
             TreeInfo infoNode = new TreeInfo();
-            infoNode.mEffectSet = mI.getEffectSet();
-            mMethodInfoMap.put(mI.getMethodHash(), infoNode);
+            infoNode.mEffectSet = mI.effectSet;
+            mMethodInfoMap.put(mI.methodHash, infoNode);
         }
     }
 

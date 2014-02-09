@@ -9,8 +9,10 @@ import com.sun.tools.javac.tree.TreeCopier;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
+import joust.joustcache.ChecksumRunner;
 import joust.joustcache.ChecksumUtils;
 import joust.joustcache.JOUSTCache;
+import joust.joustcache.data.ClassInfo;
 import joust.joustcache.data.MethodInfo;
 import joust.optimisers.AssignmentStrip;
 import joust.optimisers.ConstFold;
@@ -57,6 +59,9 @@ public @Log4j2 class Optimiser extends AbstractProcessor {
     // information from the disk cache.
     public static HashMap<String, JCTree.JCMethodDecl> methodTable;
 
+    // Used to provide a deserialisation target for VarSymbols.
+    public static HashMap<String, Symbol.VarSymbol> varsymbolTable;
+
     // Factory class, internal to the compiler, used to manufacture parse tree nodes.
     public static TreeMaker treeMaker;
 
@@ -86,6 +91,7 @@ public @Log4j2 class Optimiser extends AbstractProcessor {
         elementTrees = new LinkedList<>();
         elementSymbols = new LinkedList<>();
         methodTable = new HashMap<>();
+        varsymbolTable = new HashMap<>();
 
         JOUSTCache.init();
         ChecksumUtils.init();
@@ -106,8 +112,7 @@ public @Log4j2 class Optimiser extends AbstractProcessor {
         // The post-compilation pass to populate the disk cache with the results of classes processed
         // during this job. Needs to happen here so we can compute a checksum over the bytecode and
         // spot when things get sneakily changed when we weren't looking.
-        // TODO: Fix the serialiser to cope with the new EffectSEt format.
-        // OptimisationPhaseManager.register(new ChecksumRunner(), AFTER, GENERATE);
+        OptimisationPhaseManager.register(new ChecksumRunner(), AFTER, GENERATE);
 
 
         mTrees = Trees.instance(env);
@@ -143,12 +148,14 @@ public @Log4j2 class Optimiser extends AbstractProcessor {
                 elementSymbols.add(classTree.sym);
                 elementTrees.add(classTree);
 
-                // Populate method table.
+                // Populate method and varsym tables.
                 for (JCTree def : classTree.defs) {
                     if (def instanceof JCMethodDecl) {
                         JCMethodDecl cast = (JCMethodDecl) def;
-
                         methodTable.put(MethodInfo.getHashForMethod(cast.sym), cast);
+                    } else if (def instanceof JCVariableDecl) {
+                        JCVariableDecl cast = (JCVariableDecl) def;
+                        varsymbolTable.put(ClassInfo.getHashForVariable(cast.sym), cast.sym);
                     }
                 }
             }
