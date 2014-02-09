@@ -44,6 +44,18 @@ public class SymbolSet<T> extends HashSet<T> {
      * Computes the intersection of this SymbolSet with the input one, returning the result as a new set.
      */
     public SymbolSet<T> intersect(SymbolSet<T> other) {
+        // Intersection with the universal set is the other set...
+        if (other == UNIVERSAL_SET && this == UNIVERSAL_SET) {
+            return this;
+        }
+
+        if (other == UNIVERSAL_SET) {
+            return new SymbolSet<>(this);
+        }
+
+        if (this == UNIVERSAL_SET) {
+            return new SymbolSet<>(other);
+        }
 
         SymbolSet<T> ret = new SymbolSet<>(this);
         ret.retainAll(other);
@@ -55,6 +67,11 @@ public class SymbolSet<T> extends HashSet<T> {
      * Create and return a new SymbolSet containing all the elements from the input SymbolSets.
      */
     public static<V> SymbolSet<V> union(SymbolSet<V> a, SymbolSet<V> b) {
+        // Unions with the universal set are... The universal set.
+        if (a == UNIVERSAL_SET || b == UNIVERSAL_SET) {
+            return UNIVERSAL_SET;
+        }
+
         SymbolSet<V> ret = new SymbolSet<>();
         ret.addAll(a);
         ret.addAll(b);
@@ -67,6 +84,9 @@ public class SymbolSet<T> extends HashSet<T> {
     public static<V> SymbolSet<V> union(SymbolSet<V>... a) {
         SymbolSet<V> ret = new SymbolSet<>();
         for (int i = 0; i < a.length; i++) {
+            if (a[i] == UNIVERSAL_SET) {
+                return UNIVERSAL_SET;
+            }
             ret.addAll(a[i]);
         }
 
