@@ -7,6 +7,7 @@ import com.sun.tools.javac.util.Name;
 import joust.optimisers.avail.normalisedexpressions.PossibleSymbol;
 import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableBinary;
 import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableExpression;
+import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableFunctionalExpression;
 import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableNullary;
 import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableUnary;
 import joust.utils.LogUtils;
@@ -143,6 +144,8 @@ public @Log4j2 class AvailScope extends Scope {
             return enterExpression((JCInstanceOf) expr);
         } else if (expr instanceof JCArrayAccess) {
             return enterExpression((JCArrayAccess) expr);
+        } else if (expr instanceof JCMethodInvocation) {
+            return enterExpression((JCMethodInvocation) expr);
         }
 
         return null;
@@ -304,6 +307,24 @@ public @Log4j2 class AvailScope extends Scope {
         // TODO: Handle these... Fucking complicated.
         log.info("JCArrayAccess not implemented in AvailScope.");
         return null;
+    }
+
+    public PotentiallyAvailableExpression enterExpression(JCMethodInvocation expr) {
+        log.debug("entering call:" +expr);
+        PotentiallyAvailableFunctionalExpression nullary = new PotentiallyAvailableFunctionalExpression(expr);
+        nullary.sourceNode = expr;
+
+        // Tack on the PAEs (Previously generated) of the arguments to this call.
+        for (JCExpression arg : expr.args) {
+            PotentiallyAvailableExpression pae = treeMapping.get(arg);
+            nullary.args = nullary.args.append(pae);
+            nullary.deps.addAll(pae.deps);
+        }
+        log.debug("Created: {}", nullary);
+
+        registerPotentialExpression(nullary, expr);
+
+        return nullary;
     }
 
     /**

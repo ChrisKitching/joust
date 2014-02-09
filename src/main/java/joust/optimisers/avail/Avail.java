@@ -3,6 +3,7 @@ package joust.optimisers.avail;
 import com.esotericsoftware.minlog.Log;
 import com.sun.tools.javac.tree.JCTree;
 import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableExpression;
+import joust.treeinfo.EffectSet;
 import joust.treeinfo.TreeInfoManager;
 import joust.optimisers.visitors.DepthFirstTreeVisitor;
 import lombok.extern.log4j.Log4j2;
@@ -145,13 +146,6 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
     }
 
     @Override
-    public void visitParens(JCParens jcParens) {
-        markAvailableExpressions(jcParens);
-        super.visitParens(jcParens);
-        currentScope.enterExpression(jcParens);
-    }
-
-    @Override
     public void visitAssign(JCAssign jcAssign) {
         Log.debug("Visit assign!");
 
@@ -169,6 +163,9 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
     @Override
     public void visitAssignop(JCAssignOp jcAssignOp) {
         markAvailableExpressions(jcAssignOp);
+        if (!eligibleForCSE(jcAssignOp)) {
+            return;
+        }
         super.visitAssignop(jcAssignOp);
         currentScope.enterExpression(jcAssignOp);
     }
@@ -176,6 +173,9 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
     @Override
     public void visitUnary(JCUnary jcUnary) {
         markAvailableExpressions(jcUnary);
+        if (!eligibleForCSE(jcUnary)) {
+            return;
+        }
         super.visitUnary(jcUnary);
         currentScope.enterExpression(jcUnary);
     }
@@ -183,6 +183,9 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
     @Override
     public void visitBinary(JCBinary jcBinary) {
         markAvailableExpressions(jcBinary);
+        if (!eligibleForCSE(jcBinary)) {
+            return;
+        }
         super.visitBinary(jcBinary);
         currentScope.enterExpression(jcBinary);
     }
@@ -190,6 +193,9 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
     @Override
     public void visitTypeCast(JCTypeCast jcTypeCast) {
         markAvailableExpressions(jcTypeCast);
+        if (!eligibleForCSE(jcTypeCast)) {
+            return;
+        }
         super.visitTypeCast(jcTypeCast);
         currentScope.enterExpression(jcTypeCast);
     }
@@ -197,6 +203,9 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
     @Override
     public void visitTypeTest(JCInstanceOf jcInstanceOf) {
         markAvailableExpressions(jcInstanceOf);
+        if (!eligibleForCSE(jcInstanceOf)) {
+            return;
+        }
         super.visitTypeTest(jcInstanceOf);
         currentScope.enterExpression(jcInstanceOf);
     }
@@ -204,6 +213,9 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
     @Override
     public void visitIndexed(JCArrayAccess jcArrayAccess) {
         markAvailableExpressions(jcArrayAccess);
+        if (!eligibleForCSE(jcArrayAccess)) {
+            return;
+        }
         super.visitIndexed(jcArrayAccess);
         currentScope.enterExpression(jcArrayAccess);
     }
@@ -249,5 +261,33 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
         }
         markAvailableExpressions(jcLiteral);
         currentScope.enterExpression(jcLiteral);
+    }
+
+    @Override
+    public void visitApply(JCMethodInvocation jcMethodInvocation) {
+        markAvailableExpressions(jcMethodInvocation);
+        if (!eligibleForCSE(jcMethodInvocation)) {
+            return;
+        }
+        super.visitApply(jcMethodInvocation);
+
+        currentScope.enterExpression(jcMethodInvocation);
+    }
+
+    /**
+     * Helper function to determine if a particular node is eligible for CSE using effect information.
+     */
+    private boolean eligibleForCSE(JCTree tree) {
+        EffectSet effects = TreeInfoManager.getEffects(tree);
+        log.warn("Effects for {} are {}", tree, effects);
+
+        // It's safe to consider a node for common subexpression elimination if it has either escaping
+        // writes or escaping reads, but not if it has both.
+        if (effects.contains(EffectSet.EffectType.READ_ESCAPING)
+         && effects.contains(EffectSet.EffectType.WRITE_ESCAPING)) {
+            return false;
+        }
+
+        return true;
     }
 }

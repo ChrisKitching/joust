@@ -7,6 +7,7 @@ import joust.optimisers.avail.normalisedexpressions.PossibleSymbol;
 import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableExpression;
 import joust.optimisers.utils.JavacListUtils;
 import joust.optimisers.visitors.KillSetVisitor;
+import joust.optimisers.visitors.sideeffects.SideEffectVisitor;
 import joust.treeinfo.TreeInfoManager;
 import joust.utils.LogUtils;
 import lombok.extern.log4j.Log4j2;
@@ -28,6 +29,13 @@ public @Log4j2 class LoopInvarTranslator extends TODOTranslator {
         Avail a  = new Avail();
         jcMethodDecl.accept(a);
         super.visitMethodDef(jcMethodDecl);
+
+        if (mHasMadeAChange) {
+            // If we touched anything, bring the effect annotations up to date.
+            SideEffectVisitor effectVisitor = new SideEffectVisitor();
+            jcMethodDecl.accept(effectVisitor);
+            effectVisitor.finaliseIncompleteEffectSets();
+        }
     }
 
     @Override
