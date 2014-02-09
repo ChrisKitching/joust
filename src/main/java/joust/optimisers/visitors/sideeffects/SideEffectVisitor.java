@@ -1,12 +1,14 @@
 package joust.optimisers.visitors.sideeffects;
 
 import com.esotericsoftware.minlog.Log;
+import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.List;
 import joust.joustcache.data.MethodInfo;
 import joust.optimisers.visitors.DepthFirstTreeVisitor;
 import joust.treeinfo.EffectSet;
+import joust.treeinfo.TreeInfo;
 import joust.treeinfo.TreeInfoManager;
 import joust.utils.SetHashMap;
 import joust.utils.TreeUtils;
@@ -241,6 +243,14 @@ class SideEffectVisitor extends DepthFirstTreeVisitor {
     @Override
     public void visitMethodDef(JCMethodDecl that) {
         super.visitMethodDef(that);
+
+        if ((that.sym.flags() & Flags.ABSTRACT) != 0) {
+            log.warn("Panic: Abstract method encountered. How to handle the effects?!");
+            // TODO: Funky system for resolving polymorphic calls to the superset of all possible
+            // call targets. For now, though, Universe!
+            TreeInfoManager.registerEffects(that, EffectSet.ALL_EFFECTS);
+            return;
+        }
 
         List<JCExpression> thrownExceptions = that.thrown;
         for (JCExpression e : thrownExceptions) {
