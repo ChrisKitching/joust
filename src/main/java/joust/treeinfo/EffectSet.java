@@ -32,11 +32,11 @@ class EffectSet {
     public int effectTypes;
 
     // The symbols read/written to by this EffectSet.
-    public SymbolSet<VarSymbol> readInternal = new SymbolSet<>();
-    public SymbolSet<VarSymbol> writeInternal = new SymbolSet<>();
+    public SymbolSet readInternal = new SymbolSet();
+    public SymbolSet writeInternal = new SymbolSet();
 
-    public SymbolSet<VarSymbol> readEscaping = new SymbolSet<>();
-    public SymbolSet<VarSymbol> writeEscaping = new SymbolSet<>();
+    public SymbolSet readEscaping = new SymbolSet();
+    public SymbolSet writeEscaping = new SymbolSet();
 
     public static enum EffectType {
         NONE(0),
@@ -100,8 +100,8 @@ class EffectSet {
 
         EffectSet unioned = new EffectSet(effectTypes | (unionee.effectTypes & ESCAPING_ONLY));
 
-        unioned.readInternal = new SymbolSet<>(readInternal);
-        unioned.writeInternal = new SymbolSet<>(writeInternal);
+        unioned.readInternal = new SymbolSet(readInternal);
+        unioned.writeInternal = new SymbolSet(writeInternal);
         unioned.readEscaping = SymbolSet.union(readEscaping, unionee.readEscaping);
         unioned.writeEscaping = SymbolSet.union(writeEscaping, unionee.writeEscaping);
 
@@ -120,10 +120,10 @@ class EffectSet {
         }
 
         int newMask = effectTypes;
-        SymbolSet<VarSymbol> riSyms = new SymbolSet<>(readInternal);
-        SymbolSet<VarSymbol> wiSyms = new SymbolSet<>(writeInternal);
-        SymbolSet<VarSymbol> reSyms = new SymbolSet<>(readEscaping);
-        SymbolSet<VarSymbol> weSyms = new SymbolSet<>(writeEscaping);
+        SymbolSet riSyms = new SymbolSet(readInternal);
+        SymbolSet wiSyms = new SymbolSet(writeInternal);
+        SymbolSet reSyms = new SymbolSet(readEscaping);
+        SymbolSet weSyms = new SymbolSet(writeEscaping);
 
 
         for (int i = 0; i < effectSets.length; i++) {
@@ -160,10 +160,10 @@ class EffectSet {
         }
 
         EffectSet newEffectSet = new EffectSet(effectTypes | effect.maskValue);
-        newEffectSet.readInternal = new SymbolSet<>(readInternal);
-        newEffectSet.writeInternal = new SymbolSet<>(writeInternal);
-        newEffectSet.readEscaping = new SymbolSet<>(readEscaping);
-        newEffectSet.writeEscaping = new SymbolSet<>(writeEscaping);
+        newEffectSet.readInternal = new SymbolSet(readInternal);
+        newEffectSet.writeInternal = new SymbolSet(writeInternal);
+        newEffectSet.readEscaping = new SymbolSet(readEscaping);
+        newEffectSet.writeEscaping = new SymbolSet(writeEscaping);
 
         return newEffectSet;
     }

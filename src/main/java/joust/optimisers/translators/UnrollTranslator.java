@@ -53,12 +53,12 @@ class UnrollTranslator extends ParentTrackingTreeTranslator {
         log.debug("Unroll consideration for: {}", tree);
 
         EffectSet condEffects = TreeInfoManager.getEffects(tree.cond);
-        SymbolSet<VarSymbol> condReads = condEffects.readInternal;
-        SymbolSet<VarSymbol> condWrites = condEffects.writeInternal;
+        SymbolSet condReads = condEffects.readInternal;
+        SymbolSet condWrites = condEffects.writeInternal;
 
         EffectSet repeatEffects = TreeInfoManager.getEffects(tree.cond);
-        SymbolSet<VarSymbol> repeatReads = repeatEffects.readInternal;
-        SymbolSet<VarSymbol> repeatWrites = repeatEffects.writeInternal;
+        SymbolSet repeatReads = repeatEffects.readInternal;
+        SymbolSet repeatWrites = repeatEffects.writeInternal;
 
         // Determine if any of the symbols depended on by the condition or repeat are global.
         if (containsGlobal(condReads) || containsGlobal(condWrites)
@@ -69,7 +69,7 @@ class UnrollTranslator extends ParentTrackingTreeTranslator {
 
         EffectSet bodyEffects = TreeInfoManager.getEffects(tree.body);
         // If the body writes anything read by the cond or repeat, abort. (That shit's complicated.).
-        SymbolSet<VarSymbol> bodyWrites = bodyEffects.writeInternal;
+        SymbolSet bodyWrites = bodyEffects.writeInternal;
 
         // TODO: can *sometimes* deal with this. Sort of tricky, and implies very retarded code.
         if (!bodyWrites.intersect(condReads).isEmpty() || !bodyWrites.intersect(repeatReads).isEmpty()) {
@@ -147,7 +147,7 @@ class UnrollTranslator extends ParentTrackingTreeTranslator {
         return ret;
     }
 
-    private boolean containsGlobal(SymbolSet<VarSymbol> syms) {
+    private boolean containsGlobal(SymbolSet syms) {
         for (VarSymbol sym : syms) {
             if (!TreeUtils.isLocalVariable(sym)) {
                 return true;

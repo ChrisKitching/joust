@@ -9,7 +9,7 @@ import static com.sun.tools.javac.code.Symbol.*;
 /**
  * A set which may logically contain *all* the things.
  */
-public class SymbolSet<T> extends HashSet<T> {
+public class SymbolSet extends HashSet<VarSymbol> {
     public static final SymbolSet UNIVERSAL_SET = new SymbolSet();
 
     public SymbolSet() { }
@@ -44,21 +44,21 @@ public class SymbolSet<T> extends HashSet<T> {
     /**
      * Computes the intersection of this SymbolSet with the input one, returning the result as a new set.
      */
-    public SymbolSet<T> intersect(SymbolSet<T> other) {
+    public SymbolSet intersect(SymbolSet other) {
         // Intersection with the universal set is the other set...
         if (other == UNIVERSAL_SET && this == UNIVERSAL_SET) {
             return this;
         }
 
         if (other == UNIVERSAL_SET) {
-            return new SymbolSet<>(this);
+            return new SymbolSet(this);
         }
 
         if (this == UNIVERSAL_SET) {
-            return new SymbolSet<>(other);
+            return new SymbolSet(other);
         }
 
-        SymbolSet<T> ret = new SymbolSet<>(this);
+        SymbolSet ret = new SymbolSet(this);
         ret.retainAll(other);
 
         return ret;
@@ -67,13 +67,13 @@ public class SymbolSet<T> extends HashSet<T> {
     /**
      * Create and return a new SymbolSet containing all the elements from the input SymbolSets.
      */
-    public static<V> SymbolSet<V> union(SymbolSet<V> a, SymbolSet<V> b) {
+    public static SymbolSet union(SymbolSet a, SymbolSet b) {
         // Unions with the universal set are... The universal set.
         if (a == UNIVERSAL_SET || b == UNIVERSAL_SET) {
             return UNIVERSAL_SET;
         }
 
-        SymbolSet<V> ret = new SymbolSet<>();
+        SymbolSet ret = new SymbolSet();
         ret.addAll(a);
         ret.addAll(b);
         return ret;
@@ -82,8 +82,8 @@ public class SymbolSet<T> extends HashSet<T> {
     /**
      * Both functions provided so the first case is a tad faster when usable...
      */
-    public static<V> SymbolSet<V> union(SymbolSet<V>... a) {
-        SymbolSet<V> ret = new SymbolSet<>();
+    public static SymbolSet union(SymbolSet... a) {
+        SymbolSet ret = new SymbolSet();
         for (int i = 0; i < a.length; i++) {
             if (a[i] == UNIVERSAL_SET) {
                 return UNIVERSAL_SET;
