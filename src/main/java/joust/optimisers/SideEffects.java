@@ -3,7 +3,7 @@ package joust.optimisers;
 import com.sun.tools.javac.tree.JCTree;
 import joust.Optimiser;
 import joust.optimisers.utils.OptimisationRunnable;
-import joust.optimisers.visitors.SideEffectVisitor;
+import joust.optimisers.visitors.sideeffects.SideEffectVisitor;
 
 /**
  * Runnable for the side effect annotator.
@@ -11,9 +11,12 @@ import joust.optimisers.visitors.SideEffectVisitor;
 public class SideEffects implements OptimisationRunnable {
     @Override
     public void run() {
+        SideEffectVisitor visitor = new SideEffectVisitor();
         for (JCTree tree : Optimiser.elementTrees) {
-            SideEffectVisitor visitor = new SideEffectVisitor();
             tree.accept(visitor);
+            visitor.clearMarked();
         }
+
+        visitor.finaliseIncompleteEffectSets();
     }
 }

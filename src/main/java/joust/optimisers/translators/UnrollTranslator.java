@@ -3,7 +3,7 @@ package joust.optimisers.translators;
 import com.sun.tools.javac.util.List;
 import joust.optimisers.evaluation.EvaluationContext;
 import joust.optimisers.evaluation.Value;
-import joust.optimisers.visitors.SideEffectVisitor;
+import joust.optimisers.visitors.sideeffects.SideEffectVisitor;
 import joust.treeinfo.EffectSet;
 import joust.treeinfo.TreeInfoManager;
 import joust.utils.SymbolSet;
@@ -36,6 +36,7 @@ class UnrollTranslator extends ParentTrackingTreeTranslator {
             // If we touched anything, it's sort of likely there's new dead assignments to strip...
             SideEffectVisitor effectVisitor = new SideEffectVisitor();
             tree.accept(effectVisitor);
+            effectVisitor.finaliseIncompleteEffectSets();
             UnusedAssignmentStripper stripper;
             do {
                 stripper = new UnusedAssignmentStripper();

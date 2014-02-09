@@ -16,6 +16,14 @@ public @Log4j2
 abstract class DepthFirstTreeVisitor extends Visitor {
     protected HashSet<JCTree> mMarked = new HashSet<>();
 
+    /**
+     * Clear the marked node set. Useful if you want to revisit nodes, or to save memory if you know that
+     * the nodes already in the set will never be passed again.
+     */
+    public void clearMarked() {
+        mMarked.clear();
+    }
+
     protected void visit(List<? extends JCTree> trees) {
         for (List<? extends JCTree> l = trees; l.nonEmpty(); l = l.tail) {
             if (l.head != null && !mMarked.contains(l.head)) {

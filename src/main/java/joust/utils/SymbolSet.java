@@ -1,5 +1,6 @@
 package joust.utils;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -91,5 +92,13 @@ public class SymbolSet<T> extends HashSet<T> {
         }
 
         return ret;
+    }
+
+    @Override
+    public String toString() {
+        if (this == UNIVERSAL_SET) {
+            return "#U";
+        }
+        return Arrays.toString(toArray());
     }
 }

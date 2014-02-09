@@ -54,6 +54,7 @@ class TreeInfoManager {
      * Register the given EffectSet with the given JCTree
      */
     public static void registerEffects(JCTree tree, EffectSet effects) {
+        log.info("Registering EffectSet:\n{}\nWith tree:\n{}", effects, tree);
         TreeInfo infoNode = getInfoNode(tree);
         infoNode.mEffectSet = effects;
 
@@ -83,8 +84,7 @@ class TreeInfoManager {
      * can be found.
      *
      * @param sym MethodSymbol to seek effects for.
-     * @return The corresponding EffectSet from either the memory or disk cache, or the set of all
-     *         effects if no such EffectSet exists.
+     * @return The corresponding EffectSet memory, or the set of all effects if no such EffectSet is found.
      */
     public static EffectSet getEffectsForMethod(Symbol.MethodSymbol sym) {
         TreeInfo infoNode = mMethodInfoMap.get(MethodInfo.getHashForMethod(sym));
@@ -92,10 +92,14 @@ class TreeInfoManager {
             return infoNode.mEffectSet;
         }
 
+        return EffectSet.ALL_EFFECTS;
+    }
+
+    public static EffectSet loadEffectsForMethodFromCache(MethodSymbol sym) {
         // Attempt to find the missing info in the cache.
         // JOUSTCache.loadCachedInfoForClass((Symbol.ClassSymbol) sym.owner);
 
-        infoNode = mMethodInfoMap.get(MethodInfo.getHashForMethod(sym));
+        TreeInfo infoNode = mMethodInfoMap.get(MethodInfo.getHashForMethod(sym));
         if (infoNode != null) {
             return infoNode.mEffectSet;
         }

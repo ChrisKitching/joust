@@ -14,13 +14,19 @@ import java.util.Arrays;
 public @Log4j2
 class EffectSet {
     public static final EffectSet NO_EFFECTS = new EffectSet(EffectType.NONE);
-    public static final EffectSet ALL_EFFECTS = new EffectSet(EffectType.getAllEffects());
-    static {
-        ALL_EFFECTS.readInternal = SymbolSet.UNIVERSAL_SET;
-        ALL_EFFECTS.writeInternal = SymbolSet.UNIVERSAL_SET;
-        ALL_EFFECTS.readEscaping = SymbolSet.UNIVERSAL_SET;
-        ALL_EFFECTS.writeEscaping = SymbolSet.UNIVERSAL_SET;
-    }
+    public static final EffectSet ALL_EFFECTS = new EffectSet(EffectType.getAllEffects()) {
+        {
+            readInternal = SymbolSet.UNIVERSAL_SET;
+            writeInternal = SymbolSet.UNIVERSAL_SET;
+            readEscaping = SymbolSet.UNIVERSAL_SET;
+            writeEscaping = SymbolSet.UNIVERSAL_SET;
+        }
+    };
+
+    public static final int ESCAPING_ONLY = EffectType.READ_ESCAPING.maskValue
+                                          | EffectType.WRITE_ESCAPING.maskValue
+                                          | EffectType.EXCEPTION.maskValue
+                                          | EffectType.IO.maskValue;
 
     // The summary of all effect types this EffectSet represents.
     public int effectTypes;
@@ -76,6 +82,26 @@ class EffectSet {
 
         unioned.readInternal = SymbolSet.union(readInternal, unionee.readInternal);
         unioned.writeInternal = SymbolSet.union(writeInternal, unionee.writeInternal);
+        unioned.readEscaping = SymbolSet.union(readEscaping, unionee.readEscaping);
+        unioned.writeEscaping = SymbolSet.union(writeEscaping, unionee.writeEscaping);
+
+        return unioned;
+    }
+
+    /**
+     * Creates a new EffectSet containing all the escaping/non escaping read/write effects of this, plus all
+     * the escaping read/write effects of unionee, plus all other effects.
+     */
+    public EffectSet unionEscaping(EffectSet unionee) {
+        if (unionee == null) {
+            log.warn("Unionee was null.");
+            return this;
+        }
+
+        EffectSet unioned = new EffectSet(effectTypes | (unionee.effectTypes & ESCAPING_ONLY));
+
+        unioned.readInternal = new SymbolSet<>(readInternal);
+        unioned.writeInternal = new SymbolSet<>(writeInternal);
         unioned.readEscaping = SymbolSet.union(readEscaping, unionee.readEscaping);
         unioned.writeEscaping = SymbolSet.union(writeEscaping, unionee.writeEscaping);
 
@@ -181,25 +207,25 @@ class EffectSet {
         StringBuilder str = new StringBuilder(Integer.toString(effectTypes, 2));
         if (!readInternal.isEmpty()) {
             str.append(":RI(")
-               .append(Arrays.toString(readInternal.toArray()))
+               .append(readInternal.toString())
                .append(")");
         }
 
         if (!readEscaping.isEmpty()) {
             str.append(":RE(")
-               .append(Arrays.toString(readEscaping.toArray()))
+               .append(readEscaping.toString())
                .append(")");
         }
 
-        if (!readInternal.isEmpty()) {
+        if (!writeInternal.isEmpty()) {
             str.append(":WI(")
-               .append(Arrays.toString(writeInternal.toArray()))
+               .append(writeInternal.toString())
                .append(")");
         }
 
-        if (!readInternal.isEmpty()) {
+        if (!writeEscaping.isEmpty()) {
             str.append(":WE(")
-               .append(Arrays.toString(writeEscaping.toArray()))
+               .append(writeEscaping.toString())
                .append(")");
         }
 
