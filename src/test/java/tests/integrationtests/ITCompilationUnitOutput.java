@@ -1,11 +1,11 @@
 package tests.integrationtests;
 
 import lombok.extern.log4j.Log4j2;
-import testutils.BaseIntegrationTestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import testutils.BaseIntegrationTestCase;
 
 import javax.tools.*;
 
@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,6 +35,7 @@ import static org.junit.Assert.*;
 public @Log4j2
 class ITCompilationUnitOutput {
     public static final String TEST_INPUTS_DIR = "/testinputs/";
+    public static final String TEST_SHARED_CLASSES_DIR = "/testutils/";
     public static final String OPT_DIR = "/compilationResults/opt/";
     public static final String UN_OPT_DIR = "/compilationResults/noOpt/";
 
@@ -44,8 +46,22 @@ class ITCompilationUnitOutput {
 
     private static final String JAVAP = System.getProperty("java.home")+"/../bin/javap";
 
+    // The directory in which classes shared between all unit tests should reside.
+    private static File[] mSharedClasses;
+
     @Parameters(name = "{index}: {0}")
     public static Collection<Object[]> data() {
+        // Create a File array of all *.java files in the shared classes directory.
+        URL sharedClasses = ITCompilationUnitOutput.class.getResource(TEST_SHARED_CLASSES_DIR);
+        File[] files = new File(sharedClasses.getFile()).listFiles();
+        ArrayList<File> desiredFiles = new ArrayList<>();
+        for (File f : files) {
+            if (f.getName().endsWith(".java")) {
+                desiredFiles.add(f);
+            }
+        }
+        mSharedClasses = desiredFiles.toArray(new File[desiredFiles.size()]);
+
         URL testInputsUrl = ITCompilationUnitOutput.class.getResource(TEST_INPUTS_DIR);
 
         File optOutDir = new File(sOptOutDir.getFile());
@@ -210,7 +226,15 @@ class ITCompilationUnitOutput {
 
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null);
 
-        Iterable<? extends JavaFileObject> compilationTarget = fileManager.getJavaFileObjects(mTargetSource);
+        // Create a list of target files including both the shared files and the target for this test.
+        File[] targetFiles = new File[mSharedClasses.length + 1];
+        targetFiles[0] = mTargetSource;
+        System.arraycopy(mSharedClasses, 0, targetFiles, 1, mSharedClasses.length);
+        for (File f: targetFiles) {
+            log.warn("File: {}", f);
+        }
+
+        Iterable<? extends JavaFileObject> compilationTarget = fileManager.getJavaFileObjects(targetFiles);
 
         List<String> optionList = new ArrayList<>();
         if (!optimise) {
