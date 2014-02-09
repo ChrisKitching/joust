@@ -216,6 +216,12 @@ class ITCompilationUnitOutput {
         if (!optimise) {
             optionList.add("-proc:none");
         }
+        optionList.add("-source");
+        optionList.add("1.7");
+        optionList.add("-target");
+        optionList.add("1.7");
+
+        // The compilation targets...
         optionList.add("-d");
         if (optimise) {
             optionList.add(mOptOutDir.getPath());
