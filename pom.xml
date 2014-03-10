@@ -32,7 +32,7 @@
   </properties>
 
   <dependencies>
-    <!-- Log4j for logging -->
+    <!-- Log4j2 for logging -->
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-api</artifactId>
