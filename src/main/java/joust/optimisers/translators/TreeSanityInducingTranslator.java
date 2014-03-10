@@ -22,6 +22,7 @@ import static joust.Optimiser.treeMaker;
 public @Log4j2 class TreeSanityInducingTranslator extends BaseTranslator  {
     @Override
     public void visitParens(JCParens jcParens) {
+        super.visitParens(jcParens);
         result = jcParens.expr;
         mHasMadeAChange = true;
     }
