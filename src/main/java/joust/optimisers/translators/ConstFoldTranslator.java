@@ -3,7 +3,8 @@ package joust.optimisers.translators;
 import joust.optimisers.evaluation.Value;
 import lombok.extern.log4j.Log4j2;
 
-import static com.sun.tools.javac.tree.JCTree.*;
+import static com.sun.tools.javac.tree.JCTree.Tag;
+import static joust.tree.annotatedtree.AJCTree.*;
 /**
  * Implementation of constant folding. Unfortunately, javac does its constant folding after we are
  * invoked, and it does so, perhaps understandably, at a lower level than the AST.
@@ -13,61 +14,47 @@ import static com.sun.tools.javac.tree.JCTree.*;
  * Unfortunately, doing things at this level means we have to deal with issues like brackets.
  * TODO: Lambdas might be able to make this less soul-destroyingly awful to look at.
  */
-public @Log4j2
+@Log4j2
+public
 class ConstFoldTranslator extends BaseTranslator {
-    public void visitUnary(JCUnary tree) {
+    @Override
+    public void visitUnary(AJCUnary tree) {
         super.visitUnary(tree);
         // Determine the type of this unary operation.
         final Tag nodeTag = tree.getTag();
-        final JCExpression expr = tree.getExpression();
+        final AJCExpression expr = tree.arg;
 
         // Replace each unary operation on a literal with a literal of the new value.
-        if (!(expr instanceof JCLiteral)) {
+        if (!(expr instanceof AJCLiteral)) {
             return;
         }
 
         mHasMadeAChange = true;
 
         // To Values...
-        Value operand = Value.of(((JCLiteral) expr).getValue());
-        result = Value.unary(nodeTag, operand).toLiteral();
-
+        Value operand = Value.of(((AJCLiteral) expr).getValue());
+        tree.swapFor(Value.unary(nodeTag, operand).toLiteral());
     }
 
-    public void visitBinary(JCBinary tree) {
+    @Override
+    public void visitBinary(AJCBinary tree) {
         super.visitBinary(tree);
         // Determine the type of this unary operation.
         final Tag nodeTag = tree.getTag();
-        JCExpression leftOperand = tree.getLeftOperand();
-        JCExpression rightOperand = tree.getRightOperand();
+        AJCExpression leftOperand = tree.lhs;
+        AJCExpression rightOperand = tree.rhs;
 
         // Ensure this is an operation on literals before proceeding.
-        if (!(leftOperand instanceof JCLiteral && rightOperand instanceof JCLiteral)) {
+        if (!(leftOperand instanceof AJCLiteral && rightOperand instanceof AJCLiteral)) {
             return;
         }
 
         mHasMadeAChange = true;
 
         // To Values...
-        Value lValue = Value.of(((JCLiteral) leftOperand).getValue());
-        Value rValue = Value.of(((JCLiteral) rightOperand).getValue());
-        result = Value.binary(nodeTag, lValue, rValue).toLiteral();
+        Value lValue = Value.of(((AJCLiteral) leftOperand).getValue());
+        Value rValue = Value.of(((AJCLiteral) rightOperand).getValue());
+
+        tree.swapFor(Value.binary(nodeTag, lValue, rValue).toLiteral());
     }
-
-    /**
-     * Remove parens that are wrapping a lone literal.
-     *
-     * @param tree JCParens node to examine.
-     */
-    @Override
-    public void visitParens(JCParens tree) {
-        super.visitParens(tree);
-
-        JCExpression inside = tree.getExpression();
-        if (inside instanceof JCLiteral) {
-            mHasMadeAChange = true;
-            result = inside;
-        }
-    }
-
 }
