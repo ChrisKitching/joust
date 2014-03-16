@@ -10,13 +10,17 @@ import javax.annotation.processing.ProcessingEnvironment;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import static com.sun.source.util.TaskEvent.Kind;
+
 /**
  * A runnable that will be executed by the compiler during the specified phase.
  * When to run is specified by both a Phase and PhaseModifier.
  */
 public abstract class OptimisationPhaseManager implements Runnable {
-    private static final HashMap<TaskEvent.Kind, LinkedList<OptimisationRunnable>> tasksBefore = new HashMap<>();
-    private static final HashMap<TaskEvent.Kind, LinkedList<OptimisationRunnable>> tasksAfter = new HashMap<>();
+    private static final HashMap<Kind, LinkedList<OptimisationRunnable>> tasksBefore = new HashMap<>();
+    private static final HashMap<Kind, LinkedList<OptimisationRunnable>> tasksAfter = new HashMap<>();
+
+    public static CompilerPhase currentPhase = CompilerPhase.fromKind(Kind.ANNOTATION_PROCESSING);
 
     public static enum PhaseModifier {
         BEFORE,
@@ -34,7 +38,7 @@ public abstract class OptimisationPhaseManager implements Runnable {
         tasksAfter.clear();
 
         // Initialise the HashMaps with empty lists.
-        for (TaskEvent.Kind p : TaskEvent.Kind.values()) {
+        for (Kind p : Kind.values()) {
             tasksBefore.put(p, new LinkedList<OptimisationRunnable>());
             tasksAfter.put(p, new LinkedList<OptimisationRunnable>());
         }
@@ -51,6 +55,7 @@ public abstract class OptimisationPhaseManager implements Runnable {
             @Override
             public void started(TaskEvent taskEvent) {
                 l.debug("started event: {}", taskEvent);
+                currentPhase = CompilerPhase.fromKind(taskEvent.getKind());
                 runTasks(tasksBefore.get(taskEvent.getKind()));
             }
 
@@ -69,12 +74,12 @@ public abstract class OptimisationPhaseManager implements Runnable {
         compilationTask.addTaskListener(listener);
     }
 
-    public static void register(OptimisationRunnable task, PhaseModifier modifier, TaskEvent.Kind runWhen) {
-        if (runWhen == TaskEvent.Kind.ENTER || runWhen == TaskEvent.Kind.PARSE) {
+    public static void register(OptimisationRunnable task, PhaseModifier modifier, Kind runWhen) {
+        if (runWhen == Kind.ENTER || runWhen == Kind.PARSE) {
             throw new UnsupportedOperationException("It is impossible to run a PhaseSpecific runnable during a phase which has concluded.");
         }
 
-        HashMap<TaskEvent.Kind, LinkedList<OptimisationRunnable>> tasks = modifier == PhaseModifier.BEFORE ? tasksBefore : tasksAfter;
+        HashMap<Kind, LinkedList<OptimisationRunnable>> tasks = modifier == PhaseModifier.BEFORE ? tasksBefore : tasksAfter;
         tasks.get(runWhen).add(task);
     }
 }
