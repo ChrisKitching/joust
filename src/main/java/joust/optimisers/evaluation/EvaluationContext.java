@@ -50,17 +50,17 @@ class EvaluationContext {
      */
     public void evaluate(AJCStatement statement) {
         log.debug("Evaluating: {}", statement);
-        if (statement instanceof AJCVariableDecl) {
-            AJCVariableDecl cast = (AJCVariableDecl) statement;
-            currentAssignments.put(cast.getTargetSymbol(), Value.UNKNOWN);
-            if (cast.getInit() != null) {
-                Value val = evaluate(cast.getInit());
-                currentAssignments.put(cast.getTargetSymbol(), val);
-            }
-        } else if (statement instanceof AJCExpressionStatement) {
-            evaluate(((AJCExpressionStatement) statement).expr);
+        AJCVariableDecl cast = (AJCVariableDecl) statement;
+        currentAssignments.put(cast.getTargetSymbol(), Value.UNKNOWN);
+        if (cast.getInit() != null) {
+            Value val = evaluate(cast.getInit());
+            currentAssignments.put(cast.getTargetSymbol(), val);
         }
     }
+    public void evaluate(AJCExpressionStatement exec) {
+        evaluate(exec.expr);
+    }
+
     public void evaluateStatements(List<AJCStatement> statements) {
         for (AJCStatement stat : statements) {
             evaluate(stat);
