@@ -5,13 +5,16 @@ import com.sun.tools.javac.util.List;
 import joust.tree.annotatedtree.AJCTree;
 import joust.treeinfo.EffectSet;
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
  * Class to hold an EffectSet and the dependency information for it to support incremental updating.
  */
+@Log4j2
 public class Effects {
     EffectSet directPart;
 
@@ -101,22 +104,28 @@ public class Effects {
     }
     private void setEffectSetInternal(EffectSet e, Set<Effects> visited) {
         if (visited.contains(this)) {
+            log.trace("Stopping because a cycle has been encountered: {}", visited);
             return;
         }
         visited.add(this);
 
+        log.trace("Old effects: {}", effectSet);
+        log.trace("New effects: {}", e);
         EffectSet oldEffects = effectSet;
         effectSet = e;
         if (dependantOnThis.isEmpty()) {
+            log.trace("Done - no deps.");
             return;
         }
 
         if (oldEffects.equals(e)) {
+            log.trace("Done - no change in effects.");
             return;
         }
 
         // Determine if this change only *added* effects. If so we can use a simpler routine to update...
         if (e.contains(oldEffects)) {
+            log.trace("Contained - unioning.");
             // Union your way up the tree...
             for (Effects eS : dependantOnThis) {
                 if (eS == this) {
@@ -133,7 +142,7 @@ public class Effects {
             if (eS == this) {
                 continue;
             }
-            eS.rebuildFromChildrenInternal(visited);
+            eS.rebuildFromChildrenInternal(new HashSet<Effects>());
         }
     }
 
@@ -148,17 +157,21 @@ public class Effects {
             return;
         }
         visited.add(this);
+        log.trace("Rebuilding effects from children...");
 
-        EffectSet newEffectSet = directPart;
+        EffectSet newEffectSet = EffectSet.NO_EFFECTS.union(directPart);
+        log.trace("Old: {}", newEffectSet);
         for (Effects child : deps) {
             if (child == this) {
                 continue;
             }
 
+            child.rebuildFromChildrenInternal(visited);
             newEffectSet = newEffectSet.union(child.effectSet);
         }
+        log.trace("New: {}", newEffectSet);
 
-        setEffectSetInternal(newEffectSet, visited);
+        setEffectSet(newEffectSet);
     }
 
     public void addUnresolvedDependency(Symbol.MethodSymbol target) {
@@ -167,5 +180,14 @@ public class Effects {
         }
 
         needsEffectsFrom.add(target);
+    }
+
+    public boolean hasUnresolvedDependencies() {
+        return needsEffectsFrom != null && !needsEffectsFrom.isEmpty();
+    }
+
+    @Override
+    public String toString() {
+        return "Immediate: " + directPart.toString()+"\nComputed: " + effectSet.toString();
     }
 }

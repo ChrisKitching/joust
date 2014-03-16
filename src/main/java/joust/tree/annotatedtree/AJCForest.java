@@ -2,7 +2,9 @@ package joust.tree.annotatedtree;
 
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.List;
+import joust.Optimiser;
 import joust.joustcache.data.ClassInfo;
+import joust.optimisers.visitors.sideeffects.SideEffectVisitor;
 import joust.tree.conversion.TreePreparationTranslator;
 import lombok.extern.log4j.Log4j2;
 
@@ -33,7 +35,7 @@ public class AJCForest {
      * Iterate the root elements converting them to our tree representation, populating the various tables
      * as you go.
      */
-    public static AJCForest init(Iterable<JCCompilationUnit> rootElements) {
+    public static void init(Iterable<JCCompilationUnit> rootElements) {
         List<AJCClassDecl> prospectiveRootNodes = List.nil();
 
         // Since it's stateless...
@@ -80,7 +82,25 @@ public class AJCForest {
         // Deallocate the annoying lookup table.
         InitialASTConverter.uninit();
 
-        return new AJCForest(prospectiveRootNodes, prospectiveMethodTable, prospectiveVarSymbolTable);
+        AJCForest ret = new AJCForest(prospectiveRootNodes, prospectiveMethodTable, prospectiveVarSymbolTable);
+        Optimiser.inputTrees = ret;
+        ret.initialAnalysis();
+    }
+
+    /**
+     * Perform initial analysis on the converted tree that has to occur prior to other optimisation steps taking place.
+     */
+    private void initialAnalysis() {
+        log.info("Commencing initial side effect analysis on converted tree.");
+        // Run the initial effect analysis on the tree (It's kept incrementally updated)...
+        SideEffectVisitor effects = new SideEffectVisitor();
+        for (AJCClassDecl tree : rootNodes) {
+            effects.visit(tree);
+        }
+
+        // So now we've populated the direct effects of each method. Let's resolve all the loose ends...
+        effects.bootstrap();
+        log.info("Initial side effect analysis complete.");
     }
 
     // Prevent direct instantiation.

@@ -277,7 +277,7 @@ public class InitialASTConverter extends TreeScanner {
         scan(jcMethodDecl.thrown);
         scan(jcMethodDecl.defaultValue);
         scan(jcMethodDecl.body);
-        log.debug("Method restype: {}", jcMethodDecl.restype);
+        log.debug("Method restype: {} for: {}", jcMethodDecl.restype, jcMethodDecl.sym);
         if (jcMethodDecl.restype != null) {
             scan(jcMethodDecl.restype);
 

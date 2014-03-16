@@ -5,6 +5,7 @@ import static com.sun.tools.javac.tree.JCTree.*;
 import joust.joustcache.JOUSTCache;
 import joust.joustcache.data.ClassInfo;
 import joust.joustcache.data.MethodInfo;
+import joust.optimisers.visitors.sideeffects.Effects;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.HashMap;
@@ -20,7 +21,7 @@ import static com.sun.tools.javac.code.Symbol.*;
 public final class TreeInfoManager {
     // Maps method symbol hashes to the effect sets of their corresponding JCMethodDecl nodes, which
     // may or may not actually *exist* in the parsed code.
-    private static HashMap<String, EffectSet> methodEffectMap;
+    private static HashMap<String, Effects> methodEffectMap;
 
     private static HashMap<MethodSymbol, Set<VarSymbol>> mEverLives;
 
@@ -32,7 +33,7 @@ public final class TreeInfoManager {
     /**
      * Add an EffectSet to the method effect table...
      */
-    public static void registerMethodEffects(MethodSymbol sym, EffectSet effects) {
+    public static void registerMethodEffects(MethodSymbol sym, Effects effects) {
         methodEffectMap.put(MethodInfo.getHashForMethod(sym), effects);
     }
 
@@ -43,24 +44,16 @@ public final class TreeInfoManager {
      * @param sym MethodSymbol to seek effects for.
      * @return The corresponding EffectSet memory, or the set of all effects if no such EffectSet is found.
      */
-    public static EffectSet getEffectsForMethod(MethodSymbol sym) {
+    public static Effects getEffectsForMethod(MethodSymbol sym) {
         String symbolHash = MethodInfo.getHashForMethod(sym);
 
-        EffectSet effects = methodEffectMap.get(symbolHash);
-        if (effects != null) {
-            return effects;
-        }
-
-        // Attempt to find the missing info in the cache.
-        JOUSTCache.loadCachedInfoForClass((ClassSymbol) sym.owner);
-
-        effects = methodEffectMap.get(symbolHash);
+        Effects effects = methodEffectMap.get(symbolHash);
         if (effects != null) {
             return effects;
         }
 
         log.warn("Unable to source side effects for method: {}. This will harm optimisation - such calls are taken to have all possible side effects!", sym);
-        return null;
+        return new Effects(EffectSet.ALL_EFFECTS, EffectSet.ALL_EFFECTS);
     }
 
     /**

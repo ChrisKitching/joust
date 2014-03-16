@@ -249,7 +249,7 @@ class EffectSet {
     public boolean contains(EffectSet effectSet) {
         // If any of the bits not set on both masks are set on effectSet.effectTypes, it contains an effect that
         // isn't present in this EffectSet, so we don't contain it.
-        if (((effectSet.effectTypes ^ effectTypes) & effectSet.effectTypes) == 0) {
+        if (((effectSet.effectTypes | effectTypes) ^ effectTypes) != 0) {
             return false;
         }
 

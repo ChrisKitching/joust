@@ -1,6 +1,7 @@
 package joust.joustcache.data;
 
 import com.sun.tools.javac.code.Symbol;
+import joust.optimisers.visitors.sideeffects.Effects;
 import joust.treeinfo.EffectSet;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,7 +17,7 @@ import lombok.NoArgsConstructor;
 public
 class MethodInfo {
     public String methodHash;
-    public EffectSet effectSet;
+    public Effects effectSet;
 
     public static String getHashForMethod(Symbol.MethodSymbol sym) {
         return sym.owner.type.toString() + '.' + sym.name.toString() + ':' + sym.type.toString();

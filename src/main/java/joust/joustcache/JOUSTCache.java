@@ -232,7 +232,7 @@ class JOUSTCache {
      * @param effectSet The effect set of the provided method symbol's declaration.
      */
     // TODO: Use TreeInfoManager properly...
-    public static void registerMethodSideEffects(MethodSymbol sym, EffectSet effectSet, boolean purge) {
+    /*public static void registerMethodSideEffects(MethodSymbol sym, EffectSet effectSet, boolean purge) {
         final String methodHash = MethodInfo.getHashForMethod(sym);
         final String className = ((ClassSymbol) sym.owner).flatname.toString();
 
@@ -263,5 +263,5 @@ class JOUSTCache {
             transientClassInfo.put(className, tcInfo);
         }
         tcInfo.setSourceFile(((ClassSymbol) sym.owner).sourcefile);
-    }
+    }*/
 }
