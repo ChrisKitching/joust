@@ -57,12 +57,12 @@ public class JavacListUtils {
         List<T> previousTarget = null;
 
         // Run down the list until you find the index of interest.
-        while (i > 0) {
+        while (i > 1) {
             i--;
             previousTarget = currentTarget;
             currentTarget = currentTarget.tail;
 
-            if (currentTarget == null) {
+            if (currentTarget == List.nil()) {
                 throw new IndexOutOfBoundsException(INSERT_OUT_OF_BOUNDS);
             }
         }
@@ -92,9 +92,8 @@ public class JavacListUtils {
      */
     public static<T> List<T> set(@NonNull List<T> list, int i, T e) {
         if (i == 0) {
-            List<T> ret = List.of(e);
-            ret.tail = list;
-            return ret;
+            list.head = e;
+            return list;
         }
 
         List<T> currentTarget = list;
@@ -133,7 +132,7 @@ public class JavacListUtils {
             i--;
             beforeVictim = beforeVictim.tail;
 
-            if (beforeVictim == null) {
+            if (beforeVictim == List.nil()) {
                 throw new IndexOutOfBoundsException(REMOVE_OUT_OF_BOUNDS);
             }
         }
