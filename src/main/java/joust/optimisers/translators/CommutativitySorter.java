@@ -1,9 +1,12 @@
 package joust.optimisers.translators;
 
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.tree.JCTree;
 import joust.optimisers.utils.CommutativitySorterComparator;
 import joust.tree.annotatedtree.AJCTreeVisitorImpl;
 import lombok.extern.log4j.Log4j2;
 
+import javax.lang.model.type.TypeKind;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -78,6 +81,25 @@ public class CommutativitySorter extends AJCTreeVisitorImpl {
             if ("java.lang.String".equals(tree.lhs.getType().toString())
              || "java.lang.String".equals(tree.rhs.getType().toString())) {
                 log.info("String concat!");
+                combinedElements.add(tree);
+                return;
+            }
+        }
+
+        // If floating point operations are involved, we don't want to reorder such operations.
+        // Assuming type coercion works how I want it to, this should be okay...
+        // TODO: Tests!
+        Type lType = tree.lhs.getType();
+        Type rType = tree.rhs.getType();
+        if (lType.isPrimitive() && rType.isPrimitive()) {
+            Type.JCPrimitiveType lPrim = (Type.JCPrimitiveType) lType;
+            Type.JCPrimitiveType rPrim = (Type.JCPrimitiveType) rType;
+
+            TypeKind lKind = lPrim.getKind();
+            TypeKind rKind = rPrim.getKind();
+
+            if (lKind == TypeKind.FLOAT || lKind == TypeKind.DOUBLE
+             || rKind == TypeKind.FLOAT || rKind == TypeKind.DOUBLE) {
                 combinedElements.add(tree);
                 return;
             }
