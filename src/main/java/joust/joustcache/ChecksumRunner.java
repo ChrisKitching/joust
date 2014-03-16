@@ -2,20 +2,20 @@ package joust.joustcache;
 
 import static javax.tools.StandardLocation.CLASS_OUTPUT;
 
-import joust.Optimiser;
 import joust.joustcache.data.TransientClassInfo;
-import joust.optimisers.utils.OptimisationRunnable;
+import joust.optimisers.runnables.OptimisationRunnable;
 import lombok.extern.log4j.Log4j2;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
+
+import static joust.utils.StaticCompilerUtils.fileManager;
 
 /**
  * A phase to be run after writing the classfiles which computes the checksums of the produced files
  * and writes them and the relavent analysis results to the disk cache.
  */
-public @Log4j2
-class ChecksumRunner implements OptimisationRunnable {
-
+@Log4j2
+public class ChecksumRunner extends OptimisationRunnable {
     @Override
     public void run() {
         log.debug("ChecksumRunner starting!");
@@ -30,7 +30,7 @@ class ChecksumRunner implements OptimisationRunnable {
             try {
                 // Get a reference to the file to which this ClassSymbol was written.
                 JavaFileObject outFile
-                        = Optimiser.fileManager.getJavaFileForOutput(CLASS_OUTPUT,
+                        = fileManager.getJavaFileForOutput(CLASS_OUTPUT,
                         className,
                         JavaFileObject.Kind.CLASS,
                         transientInfo.getSourceFile());
