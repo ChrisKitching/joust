@@ -11,7 +11,9 @@ import lombok.NoArgsConstructor;
  * is generally the subset of the results of the analysis performed which is of interest outside the
  * compilation unit containing the method.
  */
-public @AllArgsConstructor @NoArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
+public
 class MethodInfo {
     public String methodHash;
     public EffectSet effectSet;
@@ -22,6 +24,6 @@ class MethodInfo {
 
     @Override
     public String toString() {
-        return methodHash + ":" + effectSet.toString();
+        return methodHash + ':' + effectSet;
     }
 }

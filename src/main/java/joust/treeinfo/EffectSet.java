@@ -47,7 +47,7 @@ class EffectSet {
         EXCEPTION(16),
         IO(32);
 
-        private static int ALL_EFFECTS = 0;
+        private static int ALL_EFFECTS;
 
         public static int getAllEffects() {
             if (ALL_EFFECTS == 0) {
@@ -104,6 +104,17 @@ class EffectSet {
         unioned.writeInternal = new SymbolSet(writeInternal);
         unioned.readEscaping = SymbolSet.union(readEscaping, unionee.readEscaping);
         unioned.writeEscaping = SymbolSet.union(writeEscaping, unionee.writeEscaping);
+
+        return unioned;
+    }
+
+    public EffectSet dropUnescaping() {
+        EffectSet unioned = new EffectSet(effectTypes & ESCAPING_ONLY);
+
+        unioned.readInternal = new SymbolSet();
+        unioned.writeInternal = new SymbolSet();
+        unioned.readEscaping = new SymbolSet(readEscaping);
+        unioned.writeEscaping = new SymbolSet(writeEscaping);
 
         return unioned;
     }
@@ -232,6 +243,44 @@ class EffectSet {
         return str.toString();
     }
 
+    /**
+     * Returns true if this effect set contains every effect described by the input set, false otherwise.
+     */
+    public boolean contains(EffectSet effectSet) {
+        // If any of the bits not set on both masks are set on effectSet.effectTypes, it contains an effect that
+        // isn't present in this EffectSet, so we don't contain it.
+        if (((effectSet.effectTypes ^ effectTypes) & effectSet.effectTypes) == 0) {
+            return false;
+        }
+
+        // Check appropriate symbol sets...
+        if (effectSet.contains(EffectType.READ_ESCAPING)) {
+            if (!effectSet.readEscaping.subsetOf(readEscaping)) {
+                return false;
+            }
+        }
+
+        if (effectSet.contains(EffectType.WRITE_ESCAPING)) {
+            if (!effectSet.writeEscaping.subsetOf(writeEscaping)) {
+                return false;
+            }
+        }
+
+        if (effectSet.contains(EffectType.WRITE_INTERNAL)) {
+            if (!effectSet.readInternal.subsetOf(readInternal)) {
+                return false;
+            }
+        }
+
+        if (effectSet.contains(EffectType.WRITE_INTERNAL)) {
+            if (!effectSet.writeInternal.subsetOf(writeInternal)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public boolean contains(EffectType effect) {
         return (effectTypes & effect.maskValue) != 0;
     }
@@ -247,5 +296,16 @@ class EffectSet {
         }
 
         return (effectTypes & unifiedMask) != 0;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof EffectSet)) {
+            return false;
+        }
+
+        EffectSet cast = (EffectSet) obj;
+
+        return contains(cast) && cast.contains(this);
     }
 }
