@@ -2,6 +2,7 @@ package joust.utils;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A HashMap relating keys to sets of elements. Adds methods for adding/removing elements from the stored
@@ -9,12 +10,18 @@ import java.util.HashSet;
  * @param <K> The type of the keys into the HashMap.
  * @param <V> The type of the values in the lists related to keys.
  */
-public class SetHashMap<K, V> extends HashMap<K, HashSet<V>> {
+public class SetHashMap<K, V> extends HashMap<K, Set<V>> {
+    public void ensure(K key) {
+        if (get(key) == null) {
+            put(key, new HashSet<V>());
+        }
+    }
+
     /**
      * Add value to the set associated with key.
      */
     public void listAdd(K key, V value) {
-        HashSet<V> values = get(key);
+        Set<V> values = get(key);
 
         // Initialise the list if this is the first element.
         if (values == null) {
@@ -30,7 +37,7 @@ public class SetHashMap<K, V> extends HashMap<K, HashSet<V>> {
      * Remove value from the set associated with key. If this makes the set empty, drop it.
      */
     public void listRemove(K key, V value) {
-        HashSet<V> values = get(key);
+        Set<V> values = get(key);
 
         // Stop if we have no mapping for key.
         if (values == null) {
