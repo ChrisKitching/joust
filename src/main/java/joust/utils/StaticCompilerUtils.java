@@ -2,6 +2,7 @@ package joust.utils;
 
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symtab;
+import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
@@ -31,6 +32,8 @@ public final class StaticCompilerUtils {
 
     // The compiler's name table.
     public static Names names;
+
+    public static Types types;
 
     // The compiler's symbol table.
     public static Symtab symtab;
@@ -82,6 +85,7 @@ public final class StaticCompilerUtils {
         treeCopier = AJCTreeCopier.instance(con);
         javacTreeCopier = new NonStupidJCTreeCopier<>(javacTreeMaker);
         names = Names.instance(con);
+        types = Types.instance(con);
         symtab = Symtab.instance(con);
     }
 
