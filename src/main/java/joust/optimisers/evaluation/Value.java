@@ -4,10 +4,10 @@ import com.sun.tools.javac.code.TypeTag;
 import joust.utils.LogUtils;
 import lombok.extern.log4j.Log4j2;
 
-
-import static com.sun.tools.javac.tree.JCTree.*;
+import static com.sun.tools.javac.tree.JCTree.Tag;
+import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.code.Symbol.*;
-import static joust.Optimiser.treeMaker;
+import static joust.utils.StaticCompilerUtils.treeMaker;
 
 /**
  * Represents the current value of a variable in an EvaluationContext.
@@ -1927,7 +1927,7 @@ class Value {
         }
     }
 
-    public JCLiteral toLiteral() {
+    public AJCLiteral toLiteral() {
         if (this == UNKNOWN) {
             LogUtils.raiseCompilerError("Attempt to literalify UNKNOWN value!");
             return null;
