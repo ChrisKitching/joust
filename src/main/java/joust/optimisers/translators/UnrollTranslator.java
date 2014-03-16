@@ -14,8 +14,6 @@ import java.util.HashMap;
 
 import static com.sun.tools.javac.tree.JCTree.*;
 import static com.sun.tools.javac.code.Symbol.*;
-import static joust.Optimiser.treeMaker;
-import static joust.Optimiser.treeCopier;
 
 /**
  * Loop unrolling funtimes!

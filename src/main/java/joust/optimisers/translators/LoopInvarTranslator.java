@@ -5,7 +5,6 @@ import com.sun.tools.javac.util.List;
 import joust.optimisers.avail.Avail;
 import joust.optimisers.avail.normalisedexpressions.PossibleSymbol;
 import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableExpression;
-import joust.optimisers.utils.JavacListUtils;
 import joust.optimisers.visitors.KillSetVisitor;
 import joust.optimisers.visitors.sideeffects.SideEffectVisitor;
 import joust.treeinfo.TreeInfoManager;
@@ -27,13 +26,13 @@ public @Log4j2 class LoopInvarTranslator extends TODOTranslator {
     public void visitMethodDef(JCMethodDecl jcMethodDecl) {
         // Run on-demand available expression analysis...
         Avail a  = new Avail();
-        jcMethodDecl.accept(a);
+        //jcMethodDecl.accept(a);
         super.visitMethodDef(jcMethodDecl);
 
         if (mHasMadeAChange) {
             // If we touched anything, bring the effect annotations up to date.
             SideEffectVisitor effectVisitor = new SideEffectVisitor();
-            jcMethodDecl.accept(effectVisitor);
+            //jcMethodDecl.accept(effectVisitor);
             effectVisitor.finaliseIncompleteEffectSets();
         }
     }

@@ -4,6 +4,7 @@ import joust.joustcache.ChecksumUtils;
 import joust.joustcache.JOUSTCache;
 import joust.optimisers.ConstFold;
 import joust.optimisers.ExpressionNormalise;
+import joust.optimisers.SideEffects;
 import joust.optimisers.avail.normalisedexpressions.PossibleSymbol;
 import joust.optimisers.utils.OptimisationPhaseManager;
 import joust.tree.annotatedtree.AJCForest;
@@ -54,7 +55,7 @@ public class Optimiser extends AbstractProcessor {
         OptimisationPhaseManager.init(env);
         OptimisationPhaseManager.register(new ConstFold(), AFTER, ANNOTATION_PROCESSING);
         OptimisationPhaseManager.register(new ExpressionNormalise(), AFTER, ANALYZE);
-        //OptimisationPhaseManager.register(new SideEffects(), AFTER, ANALYZE);
+        OptimisationPhaseManager.register(new SideEffects(), AFTER, ANALYZE);
         //OptimisationPhaseManager.register(new AssignmentStrip(), AFTER, ANALYZE);
         //OptimisationPhaseManager.register(new LoopInvar(), AFTER, ANALYZE);
         //OptimisationPhaseManager.register(new Unroll(), AFTER, ANALYZE);

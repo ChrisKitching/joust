@@ -1,7 +1,7 @@
 package joust.optimisers.translators;
 
 import joust.optimisers.utils.CommutativitySorterComparator;
-import joust.optimisers.visitors.DepthFirstTreeVisitor;
+import joust.optimisers.visitors.DepthFirstJavacTreeVisitor;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ import static joust.Optimiser.treeMaker;
  * differ in structure via commutativity are all transformed into identical trees. (Although we'll still
  * miss equivalent trees that are differently-structured via a distribution relationship, alas.).
  */
-public @Log4j2 class CommutativitySorter extends DepthFirstTreeVisitor {
+public @Log4j2 class CommutativitySorter extends DepthFirstJavacTreeVisitor {
     // The commutative operator which combines elements in the commutative subtree of interest.
     private Tag currentSubtreeTag;
 

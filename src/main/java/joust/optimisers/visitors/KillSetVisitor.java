@@ -6,13 +6,12 @@ import lombok.extern.log4j.Log4j2;
 
 import java.util.HashSet;
 
-import static com.sun.tools.javac.code.Symbol.*;
 import static com.sun.tools.javac.tree.JCTree.*;
 
 /**
  * A tree visitor to determine the set of VarSymbols a given subtree kills. Used in loop invariant code motion.
  */
-public @Log4j2 class KillSetVisitor extends DepthFirstTreeVisitor {
+public @Log4j2 class KillSetVisitor extends DepthFirstJavacTreeVisitor {
     public HashSet<PossibleSymbol> killSet = new HashSet<>();
 
     @Override

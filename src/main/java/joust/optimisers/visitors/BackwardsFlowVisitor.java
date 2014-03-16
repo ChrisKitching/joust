@@ -8,7 +8,7 @@ import java.util.HashSet;
 
 import static com.sun.tools.javac.tree.JCTree.*;
 
-public @Log4j2 class BackwardsFlowVisitor extends DepthFirstTreeVisitor {
+public @Log4j2 class BackwardsFlowVisitor extends DepthFirstJavacTreeVisitor {
     protected HashSet<JCTree> mMarked = new HashSet<>();
 
     protected void visitBackwards(List<? extends JCTree> aTrees) {

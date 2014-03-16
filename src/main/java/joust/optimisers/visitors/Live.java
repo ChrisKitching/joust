@@ -15,8 +15,8 @@ import static com.sun.tools.javac.code.Symbol.*;
 /**
  * Live variable analysis. Used on demand to determine the live variable set at each point.
  */
-public @Log4j2
-class Live extends BackwardsFlowVisitor {
+@Log4j2
+public class Live extends BackwardsFlowVisitor {
     HashSet<VarSymbol> currentlyLive = new HashSet<>();
 
     // Every symbol that has ever been live.
