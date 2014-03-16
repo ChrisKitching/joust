@@ -15,63 +15,6 @@ class TreeUtils {
     public static boolean isLocalVariable(Symbol sym) {
         return sym.owner instanceof MethodSymbol;
     }
-    public static boolean isLocalVariable(JCIdent ident) {
-        return ident.sym instanceof MethodSymbol;
-    }
-
-    // Helps simplify the annoying situations where JCTree nodes give us JCExpressions that are
-    // always idents and suchlike.
-    public static boolean isLocalVariable(JCTree tree) {
-        return isLocalVariable((JCIdent) tree);
-    }
-
-    public static VarSymbol getTargetSymbolForIdent(JCIdent ident) {
-        if (ident.sym instanceof VarSymbol) {
-            return (VarSymbol) ident.sym;
-        }
-
-        return null;
-    }
-
-    public static VarSymbol getTargetSymbolForExpression(JCExpression that) {
-        if (that instanceof JCFieldAccess) {
-            JCFieldAccess cast = (JCFieldAccess) that;
-            while (!(cast.selected instanceof JCIdent)) {
-                if (cast.selected instanceof JCFieldAccess) {
-                    cast = (JCFieldAccess) cast.selected;
-                } else {
-                    log.warn("Unable to find target symbol for {}\nStuck with cast = {}, next {} of type {}", that, cast, cast.selected, cast.selected.getClass().getSimpleName());
-                    return null;
-                }
-            }
-
-            return getTargetSymbolForIdent((JCIdent) cast.selected);
-        } else if (that instanceof JCIdent) {
-            return getTargetSymbolForIdent((JCIdent) that);
-        } else {
-            LogUtils.raiseCompilerError("Unexpected expression target type: " + that.getClass().getCanonicalName() + " for node: " + that);
-        }
-
-        return null;
-    }
-
-    public static VarSymbol getTargetSymbolForAssignment(JCAssignOp that) {
-        return getTargetSymbolForExpression(that.lhs);
-    }
-
-    public static VarSymbol getTargetSymbolForAssignment(JCAssign that) {
-        return getTargetSymbolForExpression(that.lhs);
-    }
-
-    public static MethodSymbol getTargetSymbolForCall(JCMethodInvocation that) {
-        if (that.meth instanceof JCFieldAccess) {
-            return (MethodSymbol) ((JCFieldAccess) that.meth).sym;
-        } else if (that.meth instanceof JCIdent) {
-            return (MethodSymbol) ((JCIdent) that.meth).sym;
-        }
-        LogUtils.raiseCompilerError("Unexpected application type: " + that.meth.getClass().getName() + " for node: " + that);
-        return null;
-    }
 
     public static boolean operatorIsCommutative(Tag opcode) {
         return opcode == Tag.BITOR

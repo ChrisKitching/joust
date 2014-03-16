@@ -117,7 +117,7 @@ abstract class BaseTreeTranslatorTest<T extends TreeTranslator> extends TreeFabr
     }
 
     public void testVisitDoLoop(JCDoWhileLoop input, JCTree expected) throws Exception {
-        testVisitNode("visitDoLoop", input, expected);
+        testVisitNode("visitDoWhileLoop", input, expected);
     }
 
     public void testVisitWhileLoop(JCWhileLoop input, JCTree expected) throws Exception {
@@ -133,7 +133,7 @@ abstract class BaseTreeTranslatorTest<T extends TreeTranslator> extends TreeFabr
     }
 
     public void testVisitLabelled(JCLabeledStatement input, JCTree expected) throws Exception {
-        testVisitNode("visitLabelled", input, expected);
+        testVisitNode("visitLabelledStatement", input, expected);
     }
 
     public void testVisitCase(JCCase input, JCTree expected) throws Exception {
@@ -157,7 +157,7 @@ abstract class BaseTreeTranslatorTest<T extends TreeTranslator> extends TreeFabr
     }
 
     public void testVisitExec(JCExpressionStatement input, JCTree expected) throws Exception {
-        testVisitNode("visitExec", input, expected);
+        testVisitNode("visitExpressionStatement", input, expected);
     }
 
     public void testVisitBreak(JCBreak input, JCTree expected) throws Exception {
@@ -177,7 +177,7 @@ abstract class BaseTreeTranslatorTest<T extends TreeTranslator> extends TreeFabr
     }
 
     public void testVisitApply(JCMethodInvocation input, JCTree expected) throws Exception {
-        testVisitNode("visitApply", input, expected);
+        testVisitNode("visitCall", input, expected);
     }
 
     public void testVisitNewClass(JCNewClass input, JCTree expected) throws Exception {
@@ -217,19 +217,19 @@ abstract class BaseTreeTranslatorTest<T extends TreeTranslator> extends TreeFabr
     }
 
     public void testVisitTypeTest(JCInstanceOf input, JCTree expected) throws Exception {
-        testVisitNode("visitTypeTest", input, expected);
+        testVisitNode("visitInstanceOf", input, expected);
     }
 
     public void testVisitIndexed(JCArrayAccess input, JCTree expected) throws Exception {
-        testVisitNode("visitIndexed", input, expected);
+        testVisitNode("visitArrayAccess", input, expected);
     }
 
     public void testVisitSelect(JCFieldAccess input, JCTree expected) throws Exception {
-        testVisitNode("visitSelect", input, expected);
+        testVisitNode("visitFieldAccess", input, expected);
     }
 
     public void testVisitReference(JCMemberReference input, JCTree expected) throws Exception {
-        testVisitNode("visitReference", input, expected);
+        testVisitNode("visitMemberReference", input, expected);
     }
 
     public void testVisitIdent(JCIdent input, JCTree expected) throws Exception {
@@ -241,11 +241,11 @@ abstract class BaseTreeTranslatorTest<T extends TreeTranslator> extends TreeFabr
     }
 
     public void testVisitTypeIdent(JCPrimitiveTypeTree input, JCTree expected) throws Exception {
-        testVisitNode("visitTypeIdent", input, expected);
+        testVisitNode("visitPrimitiveType", input, expected);
     }
 
     public void testVisitTypeArray(JCArrayTypeTree input, JCTree expected) throws Exception {
-        testVisitNode("visitTypeArray", input, expected);
+        testVisitNode("visitArrayType", input, expected);
     }
 
     public void testVisitTypeApply(JCTypeApply input, JCTree expected) throws Exception {

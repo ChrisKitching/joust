@@ -94,11 +94,26 @@ public class SymbolSet extends HashSet<VarSymbol> {
         return ret;
     }
 
+    public boolean subsetOf(SymbolSet s) {
+        // If the intersection is the same size as this set, this set is a subset of that set.
+        SymbolSet intersection = intersect(s);
+        return intersection.size() == size();
+    }
+
     @Override
     public String toString() {
         if (this == UNIVERSAL_SET) {
             return "#U";
         }
         return Arrays.toString(toArray());
+    }
+
+    @Override
+    public int size() {
+        if (this == UNIVERSAL_SET) {
+            return Integer.MAX_VALUE;
+        }
+
+        return super.size();
     }
 }

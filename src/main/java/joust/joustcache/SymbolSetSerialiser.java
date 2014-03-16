@@ -9,7 +9,7 @@ import joust.utils.SymbolSet;
 import lombok.extern.log4j.Log4j2;
 
 import static com.sun.tools.javac.code.Symbol.*;
-import static joust.Optimiser.varsymbolTable;
+import static joust.Optimiser.inputTrees;
 
 /**
  * Serialiser for SymbolSets. Adds support for the universal set singleton, and ensures elements are serialised using
@@ -18,8 +18,8 @@ import static joust.Optimiser.varsymbolTable;
  * the object you get back may be radicially different from the one you put in, but it is certain to only contain
  * that subset of the symbols originally stored that you actually care about.
  */
-public @Log4j2
-class SymbolSetSerialiser extends Serializer<SymbolSet> {
+@Log4j2
+public class SymbolSetSerialiser extends Serializer<SymbolSet> {
     @Override
     public void write(Kryo kryo, Output output, SymbolSet object) {
         // Record if this is the universal set or not.
@@ -52,8 +52,8 @@ class SymbolSetSerialiser extends Serializer<SymbolSet> {
             log.trace("Got symbol hash: {}", symbolHash);
 
             // Determine if this is a symbol we care about...
-            if (varsymbolTable.containsKey(symbolHash)) {
-                VarSymbol symGot = varsymbolTable.get(symbolHash);
+            if (inputTrees.varsymbolTable.containsKey(symbolHash)) {
+                VarSymbol symGot = inputTrees.varsymbolTable.get(symbolHash);
                 log.trace("Obtained concrete symbol: {}", symGot);
                 ret.add(symGot);
             } else {
