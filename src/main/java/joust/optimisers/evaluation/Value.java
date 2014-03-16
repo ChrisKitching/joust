@@ -6,13 +6,13 @@ import lombok.extern.log4j.Log4j2;
 
 import static com.sun.tools.javac.tree.JCTree.Tag;
 import static joust.tree.annotatedtree.AJCTree.*;
-import static com.sun.tools.javac.code.Symbol.*;
 import static joust.utils.StaticCompilerUtils.treeMaker;
 
 /**
  * Represents the current value of a variable in an EvaluationContext.
  */
-public @Log4j2
+@Log4j2
+public
 class Value {
     // The "I have no fucking idea" value.
     public static final Value UNKNOWN = new Value();
@@ -30,7 +30,7 @@ class Value {
             case BOOLEAN:
                 if (value instanceof Integer) {
                     int bi = (Integer) value;
-                    return (bi != 0);
+                    return bi != 0;
                 }
                 return value;
             case CHAR:
@@ -208,13 +208,13 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(charLValue | charRValue);
+                        return of(charLValue | charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(charLValue | intRValue);
+                        return of(charLValue | intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(charLValue | longRValue);
+                        return of(charLValue | longRValue);
                     default:
                         return null;
                 }
@@ -223,13 +223,13 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(intLValue | charRValue);
+                        return of(intLValue | charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(intLValue | intRValue);
+                        return of(intLValue | intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(intLValue | longRValue);
+                        return of(intLValue | longRValue);
                     default:
                         return null;
                 }
@@ -238,13 +238,13 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(longLValue | charRValue);
+                        return of(longLValue | charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(longLValue | intRValue);
+                        return of(longLValue | intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(longLValue | longRValue);
+                        return of(longLValue | longRValue);
                     default:
                         return null;
                 }
@@ -267,13 +267,13 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(charLValue ^ charRValue);
+                        return of(charLValue ^ charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(charLValue ^ intRValue);
+                        return of(charLValue ^ intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(charLValue ^ longRValue);
+                        return of(charLValue ^ longRValue);
                     default:
                         return null;
                 }
@@ -282,13 +282,13 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(intLValue ^ charRValue);
+                        return of(intLValue ^ charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(intLValue ^ intRValue);
+                        return of(intLValue ^ intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(intLValue ^ longRValue);
+                        return of(intLValue ^ longRValue);
                     default:
                         return null;
                 }
@@ -297,13 +297,13 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(longLValue ^ charRValue);
+                        return of(longLValue ^ charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(longLValue ^ intRValue);
+                        return of(longLValue ^ intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(longLValue ^ longRValue);
+                        return of(longLValue ^ longRValue);
                     default:
                         return null;
                 }
@@ -326,13 +326,13 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(charLValue & charRValue);
+                        return of(charLValue & charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(charLValue & intRValue);
+                        return of(charLValue & intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(charLValue & longRValue);
+                        return of(charLValue & longRValue);
                     default:
                         return null;
                 }
@@ -341,13 +341,13 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(intLValue & charRValue);
+                        return of(intLValue & charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(intLValue & intRValue);
+                        return of(intLValue & intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(intLValue & longRValue);
+                        return of(intLValue & longRValue);
                     default:
                         return null;
                 }
@@ -356,13 +356,13 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(longLValue & charRValue);
+                        return of(longLValue & charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(longLValue & intRValue);
+                        return of(longLValue & intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(longLValue & longRValue);
+                        return of(longLValue & longRValue);
                     default:
                         return null;
                 }
@@ -385,13 +385,13 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(charLValue << charRValue);
+                        return of(charLValue << charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(charLValue << intRValue);
+                        return of(charLValue << intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(charLValue << longRValue);
+                        return of(charLValue << longRValue);
                     default:
                         return null;
                 }
@@ -400,13 +400,13 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(intLValue << charRValue);
+                        return of(intLValue << charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(intLValue << intRValue);
+                        return of(intLValue << intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(intLValue << longRValue);
+                        return of(intLValue << longRValue);
                     default:
                         return null;
                 }
@@ -415,13 +415,13 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(longLValue << charRValue);
+                        return of(longLValue << charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(longLValue << intRValue);
+                        return of(longLValue << intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(longLValue << longRValue);
+                        return of(longLValue << longRValue);
                     default:
                         return null;
                 }
@@ -444,13 +444,13 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(charLValue >> charRValue);
+                        return of(charLValue >> charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(charLValue >> intRValue);
+                        return of(charLValue >> intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(charLValue >> longRValue);
+                        return of(charLValue >> longRValue);
                     default:
                         return null;
                 }
@@ -459,13 +459,13 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(intLValue >> charRValue);
+                        return of(intLValue >> charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(intLValue >> intRValue);
+                        return of(intLValue >> intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(intLValue >> longRValue);
+                        return of(intLValue >> longRValue);
                     default:
                         return null;
                 }
@@ -474,13 +474,13 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(longLValue >> charRValue);
+                        return of(longLValue >> charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(longLValue >> intRValue);
+                        return of(longLValue >> intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(longLValue >> longRValue);
+                        return of(longLValue >> longRValue);
                     default:
                         return null;
                 }
@@ -503,13 +503,13 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(charLValue >>> charRValue);
+                        return of(charLValue >>> charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(charLValue >>> intRValue);
+                        return of(charLValue >>> intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(charLValue >>> longRValue);
+                        return of(charLValue >>> longRValue);
                     default:
                         return null;
                 }
@@ -518,13 +518,13 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(intLValue >>> charRValue);
+                        return of(intLValue >>> charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(intLValue >>> intRValue);
+                        return of(intLValue >>> intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(intLValue >>> longRValue);
+                        return of(intLValue >>> longRValue);
                     default:
                         return null;
                 }
@@ -533,13 +533,13 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(longLValue >>> charRValue);
+                        return of(longLValue >>> charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(longLValue >>> intRValue);
+                        return of(longLValue >>> intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(longLValue >>> longRValue);
+                        return of(longLValue >>> longRValue);
                     default:
                         return null;
                 }
@@ -558,7 +558,7 @@ class Value {
         // Compute the logical or of the booleans and return the result.
         final boolean leftBool = (Boolean) leftPayload;
         final boolean rightBool = (Boolean) rightPayload;
-        return Value.of(leftBool || rightBool);
+        return of(leftBool || rightBool);
     }
 
     private static Value logicalAnd(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
@@ -571,12 +571,12 @@ class Value {
         // Compute the logical and of the booleans and return the result.
         final boolean leftBool = (Boolean) leftPayload;
         final boolean rightBool = (Boolean) rightPayload;
-        return Value.of(leftBool && rightBool);
+        return of(leftBool && rightBool);
     }
 
     private static Value logicalEq(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         if (rightKind != leftKind) {
-            return Value.of(false);
+            return of(false);
         }
 
         // It is not sufficient to check that leftPayload == rightPayload - we need to check if the
@@ -587,33 +587,33 @@ class Value {
             case CHAR_LITERAL:
                 char charLValue = (Character) leftPayload;
                 char charRValue = (Character) rightPayload;
-                return Value.of(charLValue == charRValue);
+                return of(charLValue == charRValue);
             case INT_LITERAL:
                 int intLValue = (Integer) leftPayload;
                 int intValue = (Integer) rightPayload;
-                return Value.of(intLValue == intValue);
+                return of(intLValue == intValue);
             case LONG_LITERAL:
                 long longLValue = (Long) leftPayload;
                 long longRValue = (Long) rightPayload;
-                return Value.of(longLValue == longRValue);
+                return of(longLValue == longRValue);
             case FLOAT_LITERAL:
                 float floatLValue = (Float) leftPayload;
                 float floatRValue = (Float) rightPayload;
-                return Value.of(floatLValue == floatRValue);
+                return of(floatLValue == floatRValue);
             case DOUBLE_LITERAL:
                 double doubleLValue = (Double) leftPayload;
                 double doubleRValue = (Double) rightPayload;
-                return Value.of(doubleLValue == doubleRValue);
+                return of(doubleLValue == doubleRValue);
             case BOOLEAN_LITERAL:
                 boolean boolLValue = (Boolean) leftPayload;
                 boolean boolRValue = (Boolean) rightPayload;
-                return Value.of(boolLValue == boolRValue);
+                return of(boolLValue == boolRValue);
             case STRING_LITERAL:
                 log.warn("Comparing strings with == !");
-                return Value.of(false);
+                return of(false);
             case NULL_LITERAL:
                 // Since null == null...
-                return Value.of(true);
+                return of(true);
             default:
                 LogUtils.raiseCompilerError("[BUG] Attempt to logical-eq non-literal types " + leftKind + ", " + rightKind + " in ConstFolder.");
                 return null;
@@ -622,7 +622,7 @@ class Value {
 
     private static Value logicalNeq(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         if (rightKind != leftKind) {
-            return Value.of(false);
+            return of(false);
         }
 
         // It is not sufficient to check that leftPayload != rightPayload - we need to check if the
@@ -633,33 +633,33 @@ class Value {
             case CHAR_LITERAL:
                 char charLValue = (Character) leftPayload;
                 char charRValue = (Character) rightPayload;
-                return Value.of(charLValue != charRValue);
+                return of(charLValue != charRValue);
             case INT_LITERAL:
                 int intLValue = (Integer) leftPayload;
                 int intValue = (Integer) rightPayload;
-                return Value.of(intLValue != intValue);
+                return of(intLValue != intValue);
             case LONG_LITERAL:
                 long longLValue = (Long) leftPayload;
                 long longRValue = (Long) rightPayload;
-                return Value.of(longLValue != longRValue);
+                return of(longLValue != longRValue);
             case FLOAT_LITERAL:
                 float floatLValue = (Float) leftPayload;
                 float floatRValue = (Float) rightPayload;
-                return Value.of(floatLValue != floatRValue);
+                return of(floatLValue != floatRValue);
             case DOUBLE_LITERAL:
                 double doubleLValue = (Double) leftPayload;
                 double doubleRValue = (Double) rightPayload;
-                return Value.of(doubleLValue != doubleRValue);
+                return of(doubleLValue != doubleRValue);
             case BOOLEAN_LITERAL:
                 boolean boolLValue = (Boolean) leftPayload;
                 boolean boolRValue = (Boolean) rightPayload;
-                return Value.of(boolLValue != boolRValue);
+                return of(boolLValue != boolRValue);
             case STRING_LITERAL:
                 log.warn("Comparing strings with == !");
-                return Value.of(true);
+                return of(true);
             case NULL_LITERAL:
                 // Since null != null is false...
-                return Value.of(false);
+                return of(false);
             default:
                 LogUtils.raiseCompilerError("[BUG] Attempt to logical-neq non-literal types " + leftKind + ", " + rightKind + " in ConstFolder.");
                 return null;
@@ -680,19 +680,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(charLValue < charRValue);
+                        return of(charLValue < charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(charLValue < intRValue);
+                        return of(charLValue < intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(charLValue < longRValue);
+                        return of(charLValue < longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(charLValue < doubleRValue);
+                        return of(charLValue < doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(charLValue < floatRValue);
+                        return of(charLValue < floatRValue);
                     default:
                         return null;
                 }
@@ -701,19 +701,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(intLValue < charRValue);
+                        return of(intLValue < charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(intLValue < intRValue);
+                        return of(intLValue < intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(intLValue < longRValue);
+                        return of(intLValue < longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(intLValue < doubleRValue);
+                        return of(intLValue < doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(intLValue < floatRValue);
+                        return of(intLValue < floatRValue);
                     default:
                         return null;
                 }
@@ -722,19 +722,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(longLValue < charRValue);
+                        return of(longLValue < charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(longLValue < intRValue);
+                        return of(longLValue < intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(longLValue < longRValue);
+                        return of(longLValue < longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(longLValue < doubleRValue);
+                        return of(longLValue < doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(longLValue < floatRValue);
+                        return of(longLValue < floatRValue);
                     default:
                         return null;
                 }
@@ -743,19 +743,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(doubleLValue < charRValue);
+                        return of(doubleLValue < charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(doubleLValue < intRValue);
+                        return of(doubleLValue < intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(doubleLValue < longRValue);
+                        return of(doubleLValue < longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(doubleLValue < doubleRValue);
+                        return of(doubleLValue < doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(doubleLValue < floatRValue);
+                        return of(doubleLValue < floatRValue);
                     default:
                         return null;
                 }
@@ -764,19 +764,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(floatLValue < charRValue);
+                        return of(floatLValue < charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(floatLValue < intRValue);
+                        return of(floatLValue < intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(floatLValue < longRValue);
+                        return of(floatLValue < longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(floatLValue < doubleRValue);
+                        return of(floatLValue < doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(floatLValue < floatRValue);
+                        return of(floatLValue < floatRValue);
                     default:
                         return null;
                 }
@@ -799,19 +799,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(charLValue > charRValue);
+                        return of(charLValue > charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(charLValue > intRValue);
+                        return of(charLValue > intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(charLValue > longRValue);
+                        return of(charLValue > longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(charLValue > doubleRValue);
+                        return of(charLValue > doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(charLValue > floatRValue);
+                        return of(charLValue > floatRValue);
                     default:
                         return null;
                 }
@@ -820,19 +820,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(intLValue > charRValue);
+                        return of(intLValue > charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(intLValue > intRValue);
+                        return of(intLValue > intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(intLValue > longRValue);
+                        return of(intLValue > longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(intLValue > doubleRValue);
+                        return of(intLValue > doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(intLValue > floatRValue);
+                        return of(intLValue > floatRValue);
                     default:
                         return null;
                 }
@@ -841,19 +841,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(longLValue > charRValue);
+                        return of(longLValue > charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(longLValue > intRValue);
+                        return of(longLValue > intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(longLValue > longRValue);
+                        return of(longLValue > longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(longLValue > doubleRValue);
+                        return of(longLValue > doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(longLValue > floatRValue);
+                        return of(longLValue > floatRValue);
                     default:
                         return null;
                 }
@@ -862,19 +862,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(doubleLValue > charRValue);
+                        return of(doubleLValue > charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(doubleLValue > intRValue);
+                        return of(doubleLValue > intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(doubleLValue > longRValue);
+                        return of(doubleLValue > longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(doubleLValue > doubleRValue);
+                        return of(doubleLValue > doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(doubleLValue > floatRValue);
+                        return of(doubleLValue > floatRValue);
                     default:
                         return null;
                 }
@@ -883,19 +883,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(floatLValue > charRValue);
+                        return of(floatLValue > charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(floatLValue > intRValue);
+                        return of(floatLValue > intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(floatLValue > longRValue);
+                        return of(floatLValue > longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(floatLValue > doubleRValue);
+                        return of(floatLValue > doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(floatLValue > floatRValue);
+                        return of(floatLValue > floatRValue);
                     default:
                         return null;
                 }
@@ -918,19 +918,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(charLValue <= charRValue);
+                        return of(charLValue <= charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(charLValue <= intRValue);
+                        return of(charLValue <= intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(charLValue <= longRValue);
+                        return of(charLValue <= longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(charLValue <= doubleRValue);
+                        return of(charLValue <= doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(charLValue <= floatRValue);
+                        return of(charLValue <= floatRValue);
                     default:
                         return null;
                 }
@@ -939,19 +939,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(intLValue <= charRValue);
+                        return of(intLValue <= charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(intLValue <= intRValue);
+                        return of(intLValue <= intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(intLValue <= longRValue);
+                        return of(intLValue <= longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(intLValue <= doubleRValue);
+                        return of(intLValue <= doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(intLValue <= floatRValue);
+                        return of(intLValue <= floatRValue);
                     default:
                         return null;
                 }
@@ -960,19 +960,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(longLValue <= charRValue);
+                        return of(longLValue <= charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(longLValue <= intRValue);
+                        return of(longLValue <= intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(longLValue <= longRValue);
+                        return of(longLValue <= longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(longLValue <= doubleRValue);
+                        return of(longLValue <= doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(longLValue <= floatRValue);
+                        return of(longLValue <= floatRValue);
                     default:
                         return null;
                 }
@@ -981,19 +981,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(doubleLValue <= charRValue);
+                        return of(doubleLValue <= charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(doubleLValue <= intRValue);
+                        return of(doubleLValue <= intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(doubleLValue <= longRValue);
+                        return of(doubleLValue <= longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(doubleLValue <= doubleRValue);
+                        return of(doubleLValue <= doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(doubleLValue <= floatRValue);
+                        return of(doubleLValue <= floatRValue);
                     default:
                         return null;
                 }
@@ -1002,19 +1002,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(floatLValue <= charRValue);
+                        return of(floatLValue <= charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(floatLValue <= intRValue);
+                        return of(floatLValue <= intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(floatLValue <= longRValue);
+                        return of(floatLValue <= longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(floatLValue <= doubleRValue);
+                        return of(floatLValue <= doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(floatLValue <= floatRValue);
+                        return of(floatLValue <= floatRValue);
                     default:
                         return null;
                 }
@@ -1037,19 +1037,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(charLValue >= charRValue);
+                        return of(charLValue >= charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(charLValue >= intRValue);
+                        return of(charLValue >= intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(charLValue >= longRValue);
+                        return of(charLValue >= longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(charLValue >= doubleRValue);
+                        return of(charLValue >= doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(charLValue >= floatRValue);
+                        return of(charLValue >= floatRValue);
                     default:
                         return null;
                 }
@@ -1058,19 +1058,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(intLValue >= charRValue);
+                        return of(intLValue >= charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(intLValue >= intRValue);
+                        return of(intLValue >= intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(intLValue >= longRValue);
+                        return of(intLValue >= longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(intLValue >= doubleRValue);
+                        return of(intLValue >= doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(intLValue >= floatRValue);
+                        return of(intLValue >= floatRValue);
                     default:
                         return null;
                 }
@@ -1079,19 +1079,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(longLValue >= charRValue);
+                        return of(longLValue >= charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(longLValue >= intRValue);
+                        return of(longLValue >= intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(longLValue >= longRValue);
+                        return of(longLValue >= longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(longLValue >= doubleRValue);
+                        return of(longLValue >= doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(longLValue >= floatRValue);
+                        return of(longLValue >= floatRValue);
                     default:
                         return null;
                 }
@@ -1100,19 +1100,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(doubleLValue >= charRValue);
+                        return of(doubleLValue >= charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(doubleLValue >= intRValue);
+                        return of(doubleLValue >= intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(doubleLValue >= longRValue);
+                        return of(doubleLValue >= longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(doubleLValue >= doubleRValue);
+                        return of(doubleLValue >= doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(doubleLValue >= floatRValue);
+                        return of(doubleLValue >= floatRValue);
                     default:
                         return null;
                 }
@@ -1121,19 +1121,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(floatLValue >= charRValue);
+                        return of(floatLValue >= charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(floatLValue >= intRValue);
+                        return of(floatLValue >= intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(floatLValue >= longRValue);
+                        return of(floatLValue >= longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(floatLValue >= doubleRValue);
+                        return of(floatLValue >= doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(floatLValue >= floatRValue);
+                        return of(floatLValue >= floatRValue);
                     default:
                         return null;
                 }
@@ -1150,22 +1150,22 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(charLValue + charRValue);
+                        return of(charLValue + charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(charLValue + intRValue);
+                        return of(charLValue + intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(charLValue + longRValue);
+                        return of(charLValue + longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(charLValue + doubleRValue);
+                        return of(charLValue + doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(charLValue + floatRValue);
+                        return of(charLValue + floatRValue);
                     case STRING_LITERAL:
                         String stringRValue = (String) rightPayload;
-                        return Value.of(charLValue + stringRValue);
+                        return of(charLValue + stringRValue);
                     default:
                         return null;
                 }
@@ -1174,22 +1174,22 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(intLValue + charRValue);
+                        return of(intLValue + charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(intLValue + intRValue);
+                        return of(intLValue + intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(intLValue + longRValue);
+                        return of(intLValue + longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(intLValue + doubleRValue);
+                        return of(intLValue + doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(intLValue + floatRValue);
+                        return of(intLValue + floatRValue);
                     case STRING_LITERAL:
                         String stringRValue = (String) rightPayload;
-                        return Value.of(Integer.toString(intLValue) + stringRValue);
+                        return of(Integer.toString(intLValue) + stringRValue);
                     default:
                         return null;
                 }
@@ -1198,22 +1198,22 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(longLValue + charRValue);
+                        return of(longLValue + charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(longLValue + intRValue);
+                        return of(longLValue + intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(longLValue + longRValue);
+                        return of(longLValue + longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(longLValue + doubleRValue);
+                        return of(longLValue + doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(longLValue + floatRValue);
+                        return of(longLValue + floatRValue);
                     case STRING_LITERAL:
                         String stringRValue = (String) rightPayload;
-                        return Value.of(Long.toString(longLValue) + stringRValue);
+                        return of(Long.toString(longLValue) + stringRValue);
                     default:
                         return null;
                 }
@@ -1222,22 +1222,22 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(doubleLValue + charRValue);
+                        return of(doubleLValue + charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(doubleLValue + intRValue);
+                        return of(doubleLValue + intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(doubleLValue + longRValue);
+                        return of(doubleLValue + longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(doubleLValue + doubleRValue);
+                        return of(doubleLValue + doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(doubleLValue + floatRValue);
+                        return of(doubleLValue + floatRValue);
                     case STRING_LITERAL:
                         String stringRValue = (String) rightPayload;
-                        return Value.of(Double.toString(doubleLValue) + stringRValue);
+                        return of(Double.toString(doubleLValue) + stringRValue);
                     default:
                         return null;
                 }
@@ -1246,22 +1246,22 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(floatLValue + charRValue);
+                        return of(floatLValue + charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(floatLValue + intRValue);
+                        return of(floatLValue + intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(floatLValue + longRValue);
+                        return of(floatLValue + longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(floatLValue + doubleRValue);
+                        return of(floatLValue + doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(floatLValue + floatRValue);
+                        return of(floatLValue + floatRValue);
                     case STRING_LITERAL:
                         String stringRValue = (String) rightPayload;
-                        return Value.of(Float.toString(floatLValue) + stringRValue);
+                        return of(Float.toString(floatLValue) + stringRValue);
                     default:
                         return null;
                 }
@@ -1270,22 +1270,22 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(stringLValue + charRValue);
+                        return of(stringLValue + charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(stringLValue + intRValue);
+                        return of(stringLValue + intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(stringLValue + longRValue);
+                        return of(stringLValue + longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(stringLValue + doubleRValue);
+                        return of(stringLValue + doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(stringLValue + floatRValue);
+                        return of(stringLValue + floatRValue);
                     case STRING_LITERAL:
                         String stringRValue = (String) rightPayload;
-                        return Value.of(stringLValue + stringRValue);
+                        return of(stringLValue + stringRValue);
                     default:
                         return null;
                 }
@@ -1308,19 +1308,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(charLValue - charRValue);
+                        return of(charLValue - charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(charLValue - intRValue);
+                        return of(charLValue - intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(charLValue - longRValue);
+                        return of(charLValue - longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(charLValue - doubleRValue);
+                        return of(charLValue - doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(charLValue - floatRValue);
+                        return of(charLValue - floatRValue);
                     default:
                         return null;
                 }
@@ -1329,19 +1329,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(intLValue - charRValue);
+                        return of(intLValue - charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(intLValue - intRValue);
+                        return of(intLValue - intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(intLValue - longRValue);
+                        return of(intLValue - longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(intLValue - doubleRValue);
+                        return of(intLValue - doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(intLValue - floatRValue);
+                        return of(intLValue - floatRValue);
                     default:
                         return null;
                 }
@@ -1350,19 +1350,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(longLValue - charRValue);
+                        return of(longLValue - charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(longLValue - intRValue);
+                        return of(longLValue - intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(longLValue - longRValue);
+                        return of(longLValue - longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(longLValue - doubleRValue);
+                        return of(longLValue - doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(longLValue - floatRValue);
+                        return of(longLValue - floatRValue);
                     default:
                         return null;
                 }
@@ -1371,19 +1371,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(doubleLValue - charRValue);
+                        return of(doubleLValue - charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(doubleLValue - intRValue);
+                        return of(doubleLValue - intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(doubleLValue - longRValue);
+                        return of(doubleLValue - longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(doubleLValue - doubleRValue);
+                        return of(doubleLValue - doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(doubleLValue - floatRValue);
+                        return of(doubleLValue - floatRValue);
                     default:
                         return null;
                 }
@@ -1392,19 +1392,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(floatLValue - charRValue);
+                        return of(floatLValue - charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(floatLValue - intRValue);
+                        return of(floatLValue - intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(floatLValue - longRValue);
+                        return of(floatLValue - longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(floatLValue - doubleRValue);
+                        return of(floatLValue - doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(floatLValue - floatRValue);
+                        return of(floatLValue - floatRValue);
                     default:
                         return null;
                 }
@@ -1427,19 +1427,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(charLValue * charRValue);
+                        return of(charLValue * charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(charLValue * intRValue);
+                        return of(charLValue * intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(charLValue * longRValue);
+                        return of(charLValue * longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(charLValue * doubleRValue);
+                        return of(charLValue * doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(charLValue * floatRValue);
+                        return of(charLValue * floatRValue);
                     default:
                         return null;
                 }
@@ -1448,19 +1448,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(intLValue * charRValue);
+                        return of(intLValue * charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(intLValue * intRValue);
+                        return of(intLValue * intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(intLValue * longRValue);
+                        return of(intLValue * longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(intLValue * doubleRValue);
+                        return of(intLValue * doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(intLValue * floatRValue);
+                        return of(intLValue * floatRValue);
                     default:
                         return null;
                 }
@@ -1469,19 +1469,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(longLValue * charRValue);
+                        return of(longLValue * charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(longLValue * intRValue);
+                        return of(longLValue * intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(longLValue * longRValue);
+                        return of(longLValue * longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(longLValue * doubleRValue);
+                        return of(longLValue * doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(longLValue * floatRValue);
+                        return of(longLValue * floatRValue);
                     default:
                         return null;
                 }
@@ -1490,19 +1490,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(doubleLValue * charRValue);
+                        return of(doubleLValue * charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(doubleLValue * intRValue);
+                        return of(doubleLValue * intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(doubleLValue * longRValue);
+                        return of(doubleLValue * longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(doubleLValue * doubleRValue);
+                        return of(doubleLValue * doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(doubleLValue * floatRValue);
+                        return of(doubleLValue * floatRValue);
                     default:
                         return null;
                 }
@@ -1511,19 +1511,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(floatLValue * charRValue);
+                        return of(floatLValue * charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(floatLValue * intRValue);
+                        return of(floatLValue * intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(floatLValue * longRValue);
+                        return of(floatLValue * longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(floatLValue * doubleRValue);
+                        return of(floatLValue * doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(floatLValue * floatRValue);
+                        return of(floatLValue * floatRValue);
                     default:
                         return null;
                 }
@@ -1546,19 +1546,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(charLValue / charRValue);
+                        return of(charLValue / charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(charLValue / intRValue);
+                        return of(charLValue / intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(charLValue / longRValue);
+                        return of(charLValue / longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(charLValue / doubleRValue);
+                        return of(charLValue / doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(charLValue / floatRValue);
+                        return of(charLValue / floatRValue);
                     default:
                         return null;
                 }
@@ -1567,19 +1567,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(intLValue / charRValue);
+                        return of(intLValue / charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(intLValue / intRValue);
+                        return of(intLValue / intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(intLValue / longRValue);
+                        return of(intLValue / longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(intLValue / doubleRValue);
+                        return of(intLValue / doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(intLValue / floatRValue);
+                        return of(intLValue / floatRValue);
                     default:
                         return null;
                 }
@@ -1588,19 +1588,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(longLValue / charRValue);
+                        return of(longLValue / charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(longLValue / intRValue);
+                        return of(longLValue / intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(longLValue / longRValue);
+                        return of(longLValue / longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(longLValue / doubleRValue);
+                        return of(longLValue / doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(longLValue / floatRValue);
+                        return of(longLValue / floatRValue);
                     default:
                         return null;
                 }
@@ -1609,19 +1609,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(doubleLValue / charRValue);
+                        return of(doubleLValue / charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(doubleLValue / intRValue);
+                        return of(doubleLValue / intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(doubleLValue / longRValue);
+                        return of(doubleLValue / longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(doubleLValue / doubleRValue);
+                        return of(doubleLValue / doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(doubleLValue / floatRValue);
+                        return of(doubleLValue / floatRValue);
                     default:
                         return null;
                 }
@@ -1630,19 +1630,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(floatLValue / charRValue);
+                        return of(floatLValue / charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(floatLValue / intRValue);
+                        return of(floatLValue / intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(floatLValue / longRValue);
+                        return of(floatLValue / longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(floatLValue / doubleRValue);
+                        return of(floatLValue / doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(floatLValue / floatRValue);
+                        return of(floatLValue / floatRValue);
                     default:
                         return null;
                 }
@@ -1665,19 +1665,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(charLValue % charRValue);
+                        return of(charLValue % charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(charLValue % intRValue);
+                        return of(charLValue % intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(charLValue % longRValue);
+                        return of(charLValue % longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(charLValue % doubleRValue);
+                        return of(charLValue % doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(charLValue % floatRValue);
+                        return of(charLValue % floatRValue);
                     default:
                         return null;
                 }
@@ -1686,19 +1686,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(intLValue % charRValue);
+                        return of(intLValue % charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(intLValue % intRValue);
+                        return of(intLValue % intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(intLValue % longRValue);
+                        return of(intLValue % longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(intLValue % doubleRValue);
+                        return of(intLValue % doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(intLValue % floatRValue);
+                        return of(intLValue % floatRValue);
                     default:
                         return null;
                 }
@@ -1707,19 +1707,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(longLValue % charRValue);
+                        return of(longLValue % charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(longLValue % intRValue);
+                        return of(longLValue % intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(longLValue % longRValue);
+                        return of(longLValue % longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(longLValue % doubleRValue);
+                        return of(longLValue % doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(longLValue % floatRValue);
+                        return of(longLValue % floatRValue);
                     default:
                         return null;
                 }
@@ -1729,19 +1729,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(doubleLValue % charRValue);
+                        return of(doubleLValue % charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(doubleLValue % intRValue);
+                        return of(doubleLValue % intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(doubleLValue % longRValue);
+                        return of(doubleLValue % longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(doubleLValue % doubleRValue);
+                        return of(doubleLValue % doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(doubleLValue % floatRValue);
+                        return of(doubleLValue % floatRValue);
                     default:
                         return null;
                 }
@@ -1750,19 +1750,19 @@ class Value {
                 switch (rightKind) {
                     case CHAR_LITERAL:
                         char charRValue = (Character) rightPayload;
-                        return Value.of(floatLValue % charRValue);
+                        return of(floatLValue % charRValue);
                     case INT_LITERAL:
                         int intRValue = (Integer) rightPayload;
-                        return Value.of(floatLValue % intRValue);
+                        return of(floatLValue % intRValue);
                     case LONG_LITERAL:
                         long longRValue = (Long) rightPayload;
-                        return Value.of(floatLValue % longRValue);
+                        return of(floatLValue % longRValue);
                     case DOUBLE_LITERAL:
                         double doubleRValue = (Double) rightPayload;
-                        return Value.of(floatLValue % doubleRValue);
+                        return of(floatLValue % doubleRValue);
                     case FLOAT_LITERAL:
                         float floatRValue = (Float) rightPayload;
-                        return Value.of(floatLValue % floatRValue);
+                        return of(floatLValue % floatRValue);
                     default:
                         return null;
                 }
@@ -1777,21 +1777,21 @@ class Value {
             return null;
         }
 
-        boolean boolValue = (Boolean) payload;
-        return Value.of(!boolValue);
+        boolean invertedValue = !(Boolean) payload;
+        return of(invertedValue);
     }
 
     private static Value bitwiseNegate(Object payload, Kind kind) {
         switch (kind) {
             case CHAR_LITERAL:
                 char charValue = (Character) payload;
-                return Value.of(~charValue);
+                return of(~charValue);
             case INT_LITERAL:
                 int intValue = (Integer) payload;
-                return Value.of(~intValue);
+                return of(~intValue);
             case LONG_LITERAL:
                 long longValue = (Long) payload;
-                return Value.of(~longValue);
+                return of(~longValue);
             case FLOAT_LITERAL:
             case DOUBLE_LITERAL:
             case BOOLEAN_LITERAL:
@@ -1811,19 +1811,19 @@ class Value {
         switch (kind) {
             case CHAR_LITERAL:
                 char charValue = (Character) payload;
-                return Value.of(-charValue);
+                return of(-charValue);
             case INT_LITERAL:
                 int intValue = (Integer) payload;
-                return Value.of(-intValue);
+                return of(-intValue);
             case LONG_LITERAL:
                 long longValue = (Long) payload;
-                return Value.of(-longValue);
+                return of(-longValue);
             case FLOAT_LITERAL:
                 float floatValue = (Float) payload;
-                return Value.of(-floatValue);
+                return of(-floatValue);
             case DOUBLE_LITERAL:
                 double doubleValue = (Double) payload;
-                return Value.of(-doubleValue);
+                return of(-doubleValue);
             case BOOLEAN_LITERAL:
             case STRING_LITERAL:
             case NULL_LITERAL:
@@ -1902,26 +1902,26 @@ class Value {
         typetag = TypeTag.UNKNOWN;
     }
 
-    public static Value of(Object value) {
+    public static Value of(Object inValue) {
         // Urgh.
-        if (value instanceof Byte) {
-            return new Value((Byte) value);
-        } else if (value instanceof Character) {
-            return new Value((Character) value);
-        } else if (value instanceof Short) {
-            return new Value((Short) value);
-        } else if (value instanceof Integer) {
-            return new Value((Integer) value);
-        } else if (value instanceof Long) {
-            return new Value((Long) value);
-        } else if (value instanceof Float) {
-            return new Value((Float) value);
-        } else if (value instanceof Double) {
-            return new Value((Double) value);
-        } else if (value instanceof Boolean) {
-            return new Value((Boolean) value);
-        } else if (value instanceof String) {
-            return new Value((String) value);
+        if (inValue instanceof Byte) {
+            return new Value((Byte) inValue);
+        } else if (inValue instanceof Character) {
+            return new Value((Character) inValue);
+        } else if (inValue instanceof Short) {
+            return new Value((Short) inValue);
+        } else if (inValue instanceof Integer) {
+            return new Value((Integer) inValue);
+        } else if (inValue instanceof Long) {
+            return new Value((Long) inValue);
+        } else if (inValue instanceof Float) {
+            return new Value((Float) inValue);
+        } else if (inValue instanceof Double) {
+            return new Value((Double) inValue);
+        } else if (inValue instanceof Boolean) {
+            return new Value((Boolean) inValue);
+        } else if (inValue instanceof String) {
+            return new Value((String) inValue);
         } else {
             return UNKNOWN;
         }
