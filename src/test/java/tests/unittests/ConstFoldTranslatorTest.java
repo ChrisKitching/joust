@@ -1,16 +1,18 @@
 package tests.unittests;
 
-import static com.sun.tools.javac.tree.JCTree.*;
-import static junitparams.JUnitParamsRunner.$;
-import static tests.unittests.ExpressionFactory.*;
-
-import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.util.List;
 import joust.optimisers.translators.ConstFoldTranslator;
+import joust.tree.annotatedtree.AJCTree;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static joust.tree.annotatedtree.AJCTree.*;
+import static junitparams.JUnitParamsRunner.$;
+import static tests.unittests.ShorthandExpressionFactory.*;
+import static joust.utils.StaticCompilerUtils.treeMaker;
 
 /**
  * Test for the constant folder.
@@ -18,32 +20,24 @@ import org.junit.runner.RunWith;
  * as expected.
  * Due to the JUnitParamsRunner, test X gets its param set from a method called parametersForX.
  */
+@Log4j2
 @RunWith(JUnitParamsRunner.class)
-public @Log4j2
+public
 class ConstFoldTranslatorTest extends BaseTreeTranslatorTest<ConstFoldTranslator> {
     public ConstFoldTranslatorTest() {
         super(ConstFoldTranslator.class);
     }
 
-    @Override
     @Test
     @Parameters(method = "unaryArgs")
-    public void testVisitUnary(JCUnary input, JCTree expected) throws Exception {
-        super.testVisitUnary(input, expected);
+    public void testVisitUnary(AJCUnary input, AJCExpression expected) {
+        testVisitNode(treeMaker.Exec(input), treeMaker.Exec(expected));
     }
 
-    @Override
     @Test
     @Parameters(method = "binaryArgs")
-    public void testVisitBinary(JCBinary input, JCTree expected) throws Exception {
-        super.testVisitBinary(input, expected);
-    }
-
-    @Override
-    @Test
-    @Parameters(method = "parensArgs")
-    public void testVisitParens(JCParens input, JCTree expected) throws Exception {
-        super.testVisitParens(input, expected);
+    public void testVisitBinary(AJCBinary input, AJCExpression expected) {
+        testVisitNode(treeMaker.Exec(input), treeMaker.Exec(expected));
     }
 
     public Object[] unaryArgs() {
@@ -80,16 +74,8 @@ class ConstFoldTranslatorTest extends BaseTreeTranslatorTest<ConstFoldTranslator
             $(plus(l('a'), l('c')), l('a' + 'c')),
             $(plus(l(Double.NaN), l(Integer.MAX_VALUE)), l(Double.NaN + Integer.MAX_VALUE)),
 
-            $(mul(parens(urShift(l(2), l('t'))), l(6L)), l(6L * (2 >>> 't'))),
+            $(mul(urShift(l(2), l('t')), l(6L)), l(6L * (2 >>> 't'))),
             $(eq(lt(div(l(8), l(2)), l(4)), or(l(true), l(false))), l(((8 / 2) < 4) == (true || false)))
-        );
-    }
-
-    public Object[] parensArgs() {
-        return
-        $(
-            $(parens(l(42)), l(42)),
-            $(parens(parens(plus(l(42), l(52)))), l(94))
         );
     }
 }

@@ -8,8 +8,8 @@ import static org.junit.Assert.*;
 
 public class OptimiserOptionsTest {
     @Test
-    public void testConfigureFromArgumentArray() throws Exception {
-        String[] testArgs = new String[] {};
+    public void testConfigureFromArgumentArray() {
+        String[] testArgs = {};
         assertTrue(OptimiserOptions.configureFromArgumentArray(testArgs));
         assertFalse(OptimiserOptions.stripAssertions);
 

@@ -2,6 +2,7 @@ package joust.utils;
 
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symtab;
+import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
@@ -40,18 +41,38 @@ public class StaticCompilerUtils {
     public static NonStupidJCTreeCopier<Void> javacTreeCopier;
 
     public static void init(ProcessingEnvironment env) {
+        if (isInitialised()) {
+            return;
+        }
+
         trees = Trees.instance(env);
 
         // We typecast the processing environment to the one used by javac. This dirty trick allows
         // us to alter the AST - something not generally possible in annotation processors.
         Context context = ((JavacProcessingEnvironment) env).getContext();
+        initWithContext(context);
+    }
+
+    public static void initWithContext(Context context) {
+        if (isInitialised()) {
+            return;
+        }
+
+        fileManager = context.get(JavaFileManager.class);
+        if (fileManager == null) {
+            fileManager = new JavacFileManager(context, true, null);
+            context.put(JavaFileManager.class, fileManager);
+        }
 
         javacTreeMaker = TreeMaker.instance(context);
         treeMaker = AJCTreeFactory.instance(context);
         treeCopier = AJCTreeCopier.instance(context);
-        javacTreeCopier = new NonStupidJCTreeCopier<Void>(javacTreeMaker);
+        javacTreeCopier = new NonStupidJCTreeCopier<>(javacTreeMaker);
         names = Names.instance(context);
         symtab = Symtab.instance(context);
-        fileManager = context.get(JavaFileManager.class);
+    }
+
+    public static boolean isInitialised() {
+        return symtab != null;
     }
 }

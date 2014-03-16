@@ -121,7 +121,7 @@ public class ListTest {
         List<Integer> someMoreIntegers = List.of(1, 2);
         someMoreIntegers = JavacListUtils.removeElement(someMoreIntegers, 1);
         someMoreIntegers = JavacListUtils.removeElement(someMoreIntegers, 2);
-        assertEquals(someMoreIntegers, List.nil());
+        assertEquals(someMoreIntegers, List.<Integer>nil());
     }
 
     @Rule
