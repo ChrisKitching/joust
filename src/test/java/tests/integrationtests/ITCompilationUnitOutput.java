@@ -13,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
@@ -204,8 +205,8 @@ class ITCompilationUnitOutput {
         BaseIntegrationTestCase t = null;
 
         try {
-            t = targetClass.newInstance();
-        } catch (IllegalAccessException | InstantiationException e) {
+            t = targetClass.getConstructor().newInstance();
+        } catch (IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
             e.printStackTrace();
         }
 
