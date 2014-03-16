@@ -157,6 +157,7 @@
           </execution>
         </executions>
         <configuration>
+          <debugForkedProcess>true</debugForkedProcess>
           <includes>
             <include>tests/integrationtests/*.java</include>
           </includes>
