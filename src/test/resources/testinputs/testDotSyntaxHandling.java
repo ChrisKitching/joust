@@ -8,9 +8,9 @@ import testutils.BaseIntegrationTestCase;
 public class testDotSyntaxHandling extends BaseIntegrationTestCase {
     @Override
     protected void test() {
-        A a = new A();
-        B b = new B();
-        C c = new C();
+        testDotSyntaxHandling.A a = new A();
+        testDotSyntaxHandling.B b = new B();
+        testDotSyntaxHandling.C c = new C();
         a.b = b;
         b.c = c;
 

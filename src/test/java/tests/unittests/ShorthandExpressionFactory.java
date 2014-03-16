@@ -23,79 +23,79 @@ public final class ShorthandExpressionFactory {
      * Binary operators...
      */
 
-    public static AJCBinary plus(AJCExpression lValue, AJCExpression rValue) {
+    public static AJCBinary plus(AJCExpressionTree lValue, AJCExpressionTree rValue) {
         return treeMaker.Binary(Tag.PLUS, lValue, rValue);
     }
 
-    public static AJCBinary minus(AJCExpression lValue, AJCExpression rValue) {
+    public static AJCBinary minus(AJCExpressionTree lValue, AJCExpressionTree rValue) {
         return treeMaker.Binary(Tag.MINUS, lValue, rValue);
     }
 
-    public static AJCBinary mul(AJCExpression lValue, AJCExpression rValue) {
+    public static AJCBinary mul(AJCExpressionTree lValue, AJCExpressionTree rValue) {
         return treeMaker.Binary(Tag.MUL, lValue, rValue);
     }
 
-    public static AJCBinary div(AJCExpression lValue, AJCExpression rValue) {
+    public static AJCBinary div(AJCExpressionTree lValue, AJCExpressionTree rValue) {
         return treeMaker.Binary(Tag.DIV, lValue, rValue);
     }
 
-    public static AJCBinary mod(AJCExpression lValue, AJCExpression rValue) {
+    public static AJCBinary mod(AJCExpressionTree lValue, AJCExpressionTree rValue) {
         return treeMaker.Binary(Tag.MOD, lValue, rValue);
     }
 
-    public static AJCBinary and(AJCExpression lValue, AJCExpression rValue) {
+    public static AJCBinary and(AJCExpressionTree lValue, AJCExpressionTree rValue) {
         return treeMaker.Binary(Tag.AND, lValue, rValue);
     }
 
-    public static AJCBinary or(AJCExpression lValue, AJCExpression rValue) {
+    public static AJCBinary or(AJCExpressionTree lValue, AJCExpressionTree rValue) {
         return treeMaker.Binary(Tag.OR, lValue, rValue);
     }
 
-    public static AJCBinary bitAnd(AJCExpression lValue, AJCExpression rValue) {
+    public static AJCBinary bitAnd(AJCExpressionTree lValue, AJCExpressionTree rValue) {
         return treeMaker.Binary(Tag.BITAND, lValue, rValue);
     }
 
-    public static AJCBinary bitOr(AJCExpression lValue, AJCExpression rValue) {
+    public static AJCBinary bitOr(AJCExpressionTree lValue, AJCExpressionTree rValue) {
         return treeMaker.Binary(Tag.BITOR, lValue, rValue);
     }
 
-    public static AJCBinary bitXor(AJCExpression lValue, AJCExpression rValue) {
+    public static AJCBinary bitXor(AJCExpressionTree lValue, AJCExpressionTree rValue) {
         return treeMaker.Binary(Tag.BITXOR, lValue, rValue);
     }
 
-    public static AJCBinary lShift(AJCExpression lValue, AJCExpression rValue) {
+    public static AJCBinary lShift(AJCExpressionTree lValue, AJCExpressionTree rValue) {
         return treeMaker.Binary(Tag.SL, lValue, rValue);
     }
 
-    public static AJCBinary rShift(AJCExpression lValue, AJCExpression rValue) {
+    public static AJCBinary rShift(AJCExpressionTree lValue, AJCExpressionTree rValue) {
         return treeMaker.Binary(Tag.SR, lValue, rValue);
     }
 
-    public static AJCBinary urShift(AJCExpression lValue, AJCExpression rValue) {
+    public static AJCBinary urShift(AJCExpressionTree lValue, AJCExpressionTree rValue) {
         return treeMaker.Binary(Tag.USR, lValue, rValue);
     }
 
-    public static AJCBinary eq(AJCExpression lValue, AJCExpression rValue) {
+    public static AJCBinary eq(AJCExpressionTree lValue, AJCExpressionTree rValue) {
         return treeMaker.Binary(Tag.EQ, lValue, rValue);
     }
 
-    public static AJCBinary neq(AJCExpression lValue, AJCExpression rValue) {
+    public static AJCBinary neq(AJCExpressionTree lValue, AJCExpressionTree rValue) {
         return treeMaker.Binary(Tag.NE, lValue, rValue);
     }
 
-    public static AJCBinary lt(AJCExpression lValue, AJCExpression rValue) {
+    public static AJCBinary lt(AJCExpressionTree lValue, AJCExpressionTree rValue) {
         return treeMaker.Binary(Tag.LT, lValue, rValue);
     }
 
-    public static AJCBinary gt(AJCExpression lValue, AJCExpression rValue) {
+    public static AJCBinary gt(AJCExpressionTree lValue, AJCExpressionTree rValue) {
         return treeMaker.Binary(Tag.GT, lValue, rValue);
     }
 
-    public static AJCBinary le(AJCExpression lValue, AJCExpression rValue) {
+    public static AJCBinary le(AJCExpressionTree lValue, AJCExpressionTree rValue) {
         return treeMaker.Binary(Tag.LE, lValue, rValue);
     }
 
-    public static AJCBinary ge(AJCExpression lValue, AJCExpression rValue) {
+    public static AJCBinary ge(AJCExpressionTree lValue, AJCExpressionTree rValue) {
         return treeMaker.Binary(Tag.GE, lValue, rValue);
     }
 
@@ -103,19 +103,19 @@ public final class ShorthandExpressionFactory {
      * Unary operators...
      */
 
-    public static AJCUnary pos(AJCExpression lValue) {
+    public static AJCUnary pos(AJCExpressionTree lValue) {
         return treeMaker.Unary(Tag.POS, lValue);
     }
 
-    public static AJCUnary neg(AJCExpression lValue) {
+    public static AJCUnary neg(AJCExpressionTree lValue) {
         return treeMaker.Unary(Tag.NEG, lValue);
     }
 
-    public static AJCUnary not(AJCExpression lValue) {
+    public static AJCUnary not(AJCExpressionTree lValue) {
         return treeMaker.Unary(Tag.NOT, lValue);
     }
 
-    public static AJCUnary comp(AJCExpression lValue) {
+    public static AJCUnary comp(AJCExpressionTree lValue) {
         return treeMaker.Unary(Tag.COMPL, lValue);
     }
 }

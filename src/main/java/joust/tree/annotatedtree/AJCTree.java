@@ -1,7 +1,6 @@
 package joust.tree.annotatedtree;
 
 import com.sun.source.tree.*;
-import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeTag;
@@ -77,7 +76,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
                         Class<? extends JCTree> underlyingClass = mParentNode.decoratedTree.getClass();
                         Field targetField = underlyingClass.getDeclaredField(fields[i].getName());
                         targetField.set(mParentNode.decoratedTree, replacement.decoratedTree);
-                        log.debug("Swapping {} for {} in field {}", this, replacement, fields[i].getName());
+                        AJCTree.log.debug("Swapping {} for {} in field {}", this, replacement, fields[i].getName());
                         return;
                     }
 
@@ -94,10 +93,10 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
                 }
             } catch (IllegalAccessException e) {
                 // Ostensibly can never happen, because setAccessible is called...
-                log.error("IllegalAccessException accessing field {} on {}", fields[i], pClass.getCanonicalName(), e);
+                AJCTree.log.error("IllegalAccessException accessing field {} on {}", fields[i], pClass.getCanonicalName(), e);
                 LogUtils.raiseCompilerError("IllegalAccessException accessing field " + fields[i] + " on " + pClass.getCanonicalName());
             } catch (NoSuchFieldException e) {
-                log.error("NoSuchFieldException accessing field {} on {}", fields[i], pClass.getCanonicalName(), e);
+                AJCTree.log.error("NoSuchFieldException accessing field {} on {}", fields[i], pClass.getCanonicalName(), e);
                 LogUtils.raiseCompilerError("NoSuchFieldException accessing field " + fields[i] + " on " + pClass.getCanonicalName());
             }
         }
@@ -121,23 +120,6 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
     @Override
     public String toString() {
         return decoratedTree.toString();
-    }
-
-    public static class AJCImport extends AJCTree implements ImportTree {
-        @Delegate @Getter private final JCImport decoratedTree;
-
-        // The imported class(es).
-        public AJCTree qualid;
-
-        protected AJCImport(JCImport tree) {
-            super(tree);
-            decoratedTree = tree;
-        }
-
-        protected AJCImport(JCImport tree, AJCTree id) {
-            this(tree);
-            qualid = id;
-        }
     }
 
     /**
@@ -170,8 +152,8 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
 
             if (mParentNode instanceof AJCStatement) {
                 return ((AJCStatement) mParentNode).getEnclosingBlock();
-            } else if (mParentNode instanceof AJCExpression) {
-                return ((AJCExpression) mParentNode).getEnclosingBlock();
+            } else if (mParentNode instanceof AJCExpressionTree) {
+                return ((AJCExpressionTree) mParentNode).getEnclosingBlock();
             }
 
             LogUtils.raiseCompilerError("Failed to find enclosing block for statement: " + this);
@@ -200,7 +182,12 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         }
     }
 
-    public abstract static class AJCExpression extends AJCEffectAnnotatedTree implements ExpressionTree {
+    /**
+     * Marker interface for expressions.
+     */
+    public interface AJCExpression {}
+
+    public abstract static class AJCExpressionTree extends AJCEffectAnnotatedTree implements ExpressionTree, AJCExpression {
         @Delegate @Getter private final JCExpression decoratedTree;
 
         /**
@@ -228,7 +215,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             return getEnclosingStatement().getEnclosingBlock();
         }
 
-        protected AJCExpression(JCExpression tree) {
+        protected AJCExpressionTree(JCExpression tree) {
             super(tree);
             decoratedTree = tree;
         }
@@ -238,19 +225,19 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         }
     }
 
-    public static class AJCConditional extends AJCExpression implements ConditionalExpressionTree {
+    public static class AJCConditional extends AJCExpressionTree implements ConditionalExpressionTree {
         @Delegate @Getter private final JCConditional decoratedTree;
 
-        public AJCExpression cond;
-        public AJCExpression truepart;
-        public AJCExpression falsepart;
+        public AJCExpressionTree cond;
+        public AJCExpressionTree truepart;
+        public AJCExpressionTree falsepart;
 
         protected AJCConditional(JCConditional tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCConditional(JCConditional tree, AJCExpression c, AJCExpression tPart, AJCExpression fPart) {
+        protected AJCConditional(JCConditional tree, AJCExpressionTree c, AJCExpressionTree tPart, AJCExpressionTree fPart) {
             this(tree);
             cond = c;
             truepart = tPart;
@@ -261,19 +248,17 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
     public static class AJCCall extends AJCSymbolRefTree<MethodSymbol> implements MethodInvocationTree {
         @Delegate @Getter private final JCMethodInvocation decoratedTree;
 
-        public List<AJCExpression> typeargs;
         @Delegate
         public AJCSymbolRefTree<MethodSymbol> meth;
-        public List<AJCExpression> args;
+        public List<AJCExpressionTree> args;
 
         protected AJCCall(JCMethodInvocation tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCCall(JCMethodInvocation tree, List<AJCExpression> tArgs, AJCSymbolRefTree<MethodSymbol> m, List<AJCExpression> arg) {
+        protected AJCCall(JCMethodInvocation tree, AJCSymbolRefTree<MethodSymbol> m, List<AJCExpressionTree> arg) {
             this(tree);
-            typeargs = tArgs;
             meth = m;
             args = arg;
         }
@@ -282,10 +267,8 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
     public static class AJCNewClass extends AJCSymbolRefTree<MethodSymbol> implements NewClassTree {
         @Delegate @Getter private final JCNewClass decoratedTree;
 
-        public AJCExpression encl;
-        public List<AJCExpression> typeargs;
-        public AJCExpression clazz;
-        public List<AJCExpression> args;
+        public AJCSymbolRefTree<ClassSymbol> clazz;
+        public List<AJCExpressionTree> args;
         public AJCClassDecl def;
 
         protected AJCNewClass(JCNewClass tree) {
@@ -293,11 +276,9 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             decoratedTree = tree;
         }
 
-        protected AJCNewClass(JCNewClass tree, AJCExpression enc, List<AJCExpression> tArgs, AJCExpression clasz,
-                             List<AJCExpression> arg, AJCClassDecl defn) {
+        protected AJCNewClass(JCNewClass tree, AJCSymbolRefTree<ClassSymbol> clasz,
+                             List<AJCExpressionTree> arg, AJCClassDecl defn) {
             this(tree);
-            encl = enc;
-            typeargs = (tArgs == null) ? List.<AJCExpression>nil() : typeargs;
             clazz = clasz;
             args = arg;
             def = defn;
@@ -310,43 +291,14 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         }
     }
 
-    public abstract static class AJCFunctionalExpression extends AJCExpression {
-        @Delegate @Getter private final JCFunctionalExpression decoratedTree;
-
-        protected AJCFunctionalExpression(JCFunctionalExpression tree) {
-            super(tree);
-            decoratedTree = tree;
-        }
-    }
-
-    public static class AJCLambda extends AJCFunctionalExpression implements LambdaExpressionTree {
-        @Delegate @Getter private final JCLambda decoratedTree;
-
-        public List<AJCVariableDecl> params;
-        public AJCTree body;
-
-        protected AJCLambda(JCLambda tree) {
-            super(tree);
-            decoratedTree = tree;
-        }
-
-        protected AJCLambda(JCLambda tree, List<AJCVariableDecl> param, AJCTree bod) {
-            this(tree);
-            params = param;
-            body = bod;
-        }
-    }
-
     public static class AJCClassDecl extends AJCTree implements ClassTree {
         @Delegate @Getter private final JCClassDecl decoratedTree;
 
         public AJCModifiers mods;
-        /** formal class parameters */
-        public List<AJCTypeParameter> typarams;
         /** the classes this class extends */
-        public AJCExpression extending;
+        public AJCExpressionTree extending;
         /** the interfaces implemented by this class */
-        public List<AJCExpression> implementing;
+        public List<AJCExpressionTree> implementing;
 
         // Fields defined in this class.
         public List<AJCVariableDecl> fields;
@@ -362,12 +314,11 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             decoratedTree = tree;
         }
 
-        protected AJCClassDecl(JCClassDecl tree, AJCModifiers mods, List<AJCTypeParameter> typarams,
-                              AJCExpression extending, List<AJCExpression> implementing, List<AJCVariableDecl> fields,
+        protected AJCClassDecl(JCClassDecl tree, AJCModifiers mods,
+                              AJCExpressionTree extending, List<AJCExpressionTree> implementing, List<AJCVariableDecl> fields,
                               List<AJCMethodDecl> methods, List<AJCClassDecl> classes) {
             this(tree);
             this.mods = mods;
-            this.typarams = typarams;
             this.extending = extending;
             this.implementing = implementing;
             this.fields = fields;
@@ -385,19 +336,17 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
 
         public AJCModifiers mods;
         /** type of method return value */
-        public AJCExpression restype;
-        /** type parameters */
-        public List<AJCTypeParameter> typarams;
+        public AJCTypeExpression restype;
         /** receiver parameter */
         public AJCVariableDecl recvparam;
         /** value parameters */
         public List<AJCVariableDecl> params;
         /** exceptions thrown by this method */
-        public List<AJCExpression> thrown;
+        public List<AJCExpressionTree> thrown;
         /** statements in the method */
         public AJCBlock body;
         /** default value, for annotation types */
-        public AJCExpression defaultValue;
+        public AJCExpressionTree defaultValue;
 
         // All symbols ever live within the body of this method.
         public Set<VarSymbol> everLive;
@@ -407,14 +356,13 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             decoratedTree = tree;
         }
 
-        protected AJCMethodDecl(JCMethodDecl tree, AJCModifiers mods, AJCExpression restype,  List<AJCTypeParameter> typarams,
-                               AJCVariableDecl recvparam, List<AJCVariableDecl> params, List<AJCExpression> thrown, AJCBlock body,
-                               AJCExpression defaultValue)
+        protected AJCMethodDecl(JCMethodDecl tree, AJCModifiers mods, AJCTypeExpression restype,
+                               AJCVariableDecl recvparam, List<AJCVariableDecl> params, List<AJCExpressionTree> thrown, AJCBlock body,
+                               AJCExpressionTree defaultValue)
         {
             this(tree);
             this.mods = mods;
             this.restype = restype;
-            this.typarams = typarams;
             this.params = params;
             this.recvparam = recvparam;
             this.thrown = thrown;
@@ -433,11 +381,11 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
 
         public AJCModifiers mods;
         /** variable name expression */
-        public AJCExpression nameexpr;
+        public AJCExpressionTree nameexpr;
         /** type of the variable */
         public AJCTypeExpression vartype;
         /** variable's initial value */
-        @Getter protected AJCExpression init = new AJCEmptyExpression();
+        @Getter protected AJCExpressionTree init = new AJCEmptyExpression();
 
         protected AJCVariableDecl(JCVariableDecl tree) {
             super(tree);
@@ -446,14 +394,14 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
 
 
         protected AJCVariableDecl(JCVariableDecl tree, AJCModifiers mods, AJCTypeExpression vartype,
-                                 AJCExpression init) {
+                                 AJCExpressionTree init) {
             this(tree);
             this.mods = mods;
             this.vartype = vartype;
             this.init = init;
         }
 
-        public void setInit(AJCExpression expr) {
+        public void setInit(AJCExpressionTree expr) {
             init = expr;
             decoratedTree.init = expr.decoratedTree;
         }
@@ -467,7 +415,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
     /**
      * An expression that does nothing.
      */
-    public static class AJCEmptyExpression extends AJCExpression {
+    public static class AJCEmptyExpression extends AJCExpressionTree {
         protected AJCEmptyExpression() {
             super(null);
         }
@@ -582,14 +530,14 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         @Delegate @Getter private final JCDoWhileLoop decoratedTree;
 
         public AJCBlock body;
-        public AJCExpression cond;
+        public AJCExpressionTree cond;
 
         protected AJCDoWhileLoop(JCDoWhileLoop tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCDoWhileLoop(JCDoWhileLoop tree, AJCBlock body, AJCExpression cond) {
+        protected AJCDoWhileLoop(JCDoWhileLoop tree, AJCBlock body, AJCExpressionTree cond) {
             this(tree);
             this.body = body;
             this.cond = cond;
@@ -599,7 +547,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
     public static class AJCWhileLoop extends AJCStatement implements WhileLoopTree {
         @Delegate @Getter private final JCWhileLoop decoratedTree;
 
-        public AJCExpression cond;
+        public AJCExpressionTree cond;
         public AJCBlock body;
 
         protected AJCWhileLoop(JCWhileLoop tree) {
@@ -607,7 +555,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             decoratedTree = tree;
         }
 
-        protected AJCWhileLoop(JCWhileLoop tree, AJCExpression cond, AJCBlock body) {
+        protected AJCWhileLoop(JCWhileLoop tree, AJCExpressionTree cond, AJCBlock body) {
             this(tree);
             this.body = body;
             this.cond = cond;
@@ -618,7 +566,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         @Delegate @Getter private final JCForLoop decoratedTree;
 
         public List<AJCStatement> init;
-        public AJCExpression cond;
+        public AJCExpressionTree cond;
         public List<AJCExpressionStatement> step;
         public AJCBlock body;
 
@@ -628,31 +576,11 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         }
 
 
-        protected AJCForLoop(JCForLoop tree, List<AJCStatement> init, AJCExpression cond, List<AJCExpressionStatement> update, AJCBlock body) {
+        protected AJCForLoop(JCForLoop tree, List<AJCStatement> init, AJCExpressionTree cond, List<AJCExpressionStatement> update, AJCBlock body) {
             this(tree);
             this.init = init;
             this.cond = cond;
             this.step = update;
-            this.body = body;
-        }
-    }
-
-    public static class AJCForEachLoop extends AJCStatement implements EnhancedForLoopTree {
-        @Delegate @Getter private final JCEnhancedForLoop decoratedTree;
-
-        public AJCVariableDecl var;
-        public AJCExpression expr;
-        public AJCBlock body;
-
-        protected AJCForEachLoop(JCEnhancedForLoop tree) {
-            super(tree);
-            decoratedTree = tree;
-        }
-
-        protected AJCForEachLoop(JCEnhancedForLoop tree, AJCVariableDecl var, AJCExpression expr, AJCBlock body) {
-            this(tree);
-            this.var = var;
-            this.expr = expr;
             this.body = body;
         }
     }
@@ -676,7 +604,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
     public static class AJCSwitch extends AJCStatement implements SwitchTree {
         @Delegate @Getter private final JCSwitch decoratedTree;
 
-        public AJCExpression selector;
+        public AJCExpressionTree selector;
         public List<AJCCase> cases;
 
         protected AJCSwitch(JCSwitch tree) {
@@ -684,7 +612,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             decoratedTree = tree;
         }
 
-        protected AJCSwitch(JCSwitch tree, AJCExpression selector, List<AJCCase> cases) {
+        protected AJCSwitch(JCSwitch tree, AJCExpressionTree selector, List<AJCCase> cases) {
             this(tree);
             this.selector = selector;
             this.cases = cases;
@@ -695,7 +623,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         @Delegate @Getter private final JCCase decoratedTree;
 
         // The empty expression here represents the default case.
-        public AJCExpression pat = new AJCEmptyExpression();
+        public AJCExpressionTree pat = new AJCEmptyExpression();
         public List<AJCStatement> stats;
 
         protected AJCCase(JCCase tree) {
@@ -703,7 +631,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             decoratedTree = tree;
         }
 
-        protected AJCCase(JCCase tree, AJCExpression pat, List<AJCStatement> stats) {
+        protected AJCCase(JCCase tree, AJCExpressionTree pat, List<AJCStatement> stats) {
             this(tree);
             this.pat = pat;
             this.stats = stats;
@@ -713,7 +641,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
     public static class AJCSynchronized extends AJCStatement implements SynchronizedTree {
         @Delegate @Getter private final JCSynchronized decoratedTree;
 
-        public AJCExpression lock;
+        public AJCExpressionTree lock;
         public AJCBlock body;
 
         protected AJCSynchronized(JCSynchronized tree) {
@@ -721,7 +649,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             decoratedTree = tree;
         }
 
-        protected AJCSynchronized(JCSynchronized tree, AJCExpression lock, AJCBlock body) {
+        protected AJCSynchronized(JCSynchronized tree, AJCExpressionTree lock, AJCBlock body) {
             this(tree);
             this.lock = lock;
             this.body = body;
@@ -734,19 +662,17 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         public AJCBlock body;
         public List<AJCCatch> catchers;
         public AJCBlock finalizer;
-        public List<AJCEffectAnnotatedTree> resources;
 
         protected AJCTry(JCTry tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCTry(JCTry tree, List<AJCEffectAnnotatedTree> resources, AJCBlock body, List<AJCCatch> catchers, AJCBlock finalizer) {
+        protected AJCTry(JCTry tree, AJCBlock body, List<AJCCatch> catchers, AJCBlock finalizer) {
             this(tree);
             this.body = body;
             this.catchers = catchers;
             this.finalizer = finalizer;
-            this.resources = resources;
         }
     }
 
@@ -771,7 +697,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
     public static class AJCIf extends AJCStatement implements IfTree {
         @Delegate @Getter private final JCIf decoratedTree;
 
-        public AJCExpression cond;
+        public AJCExpressionTree cond;
         public AJCBlock thenpart;
         public AJCBlock elsepart;
 
@@ -780,7 +706,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             decoratedTree = tree;
         }
 
-        protected AJCIf(JCIf tree, AJCExpression cond, AJCBlock thenpart, AJCBlock elsepart) {
+        protected AJCIf(JCIf tree, AJCExpressionTree cond, AJCBlock thenpart, AJCBlock elsepart) {
             this(tree);
             this.cond = cond;
             this.thenpart = thenpart;
@@ -791,14 +717,14 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
     public static class AJCExpressionStatement extends AJCStatement implements ExpressionStatementTree {
         @Delegate @Getter private final JCExpressionStatement decoratedTree;
 
-        public AJCExpression expr;
+        public AJCExpressionTree expr;
 
         protected AJCExpressionStatement(JCExpressionStatement tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCExpressionStatement(JCExpressionStatement tree, AJCExpression expr) {
+        protected AJCExpressionStatement(JCExpressionStatement tree, AJCExpressionTree expr) {
             this(tree);
             this.expr = expr;
         }
@@ -829,14 +755,14 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
     public static class AJCReturn extends AJCStatement implements ReturnTree {
         @Delegate @Getter private final JCReturn decoratedTree;
 
-        public AJCExpression expr;
+        public AJCExpressionTree expr;
 
         protected AJCReturn(JCReturn tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCReturn(JCReturn tree, AJCExpression expr) {
+        protected AJCReturn(JCReturn tree, AJCExpressionTree expr) {
             this(tree);
             this.expr = expr;
         }
@@ -845,54 +771,36 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
     public static class AJCThrow extends AJCStatement implements ThrowTree {
         @Delegate @Getter private final JCThrow decoratedTree;
 
-        public AJCExpression expr;
+        public AJCExpressionTree expr;
 
         protected AJCThrow(JCThrow tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCThrow(JCThrow tree, AJCExpression expr) {
+        protected AJCThrow(JCThrow tree, AJCExpressionTree expr) {
             this(tree);
             this.expr = expr;
         }
     }
 
-    public static class AJCAssert extends AJCStatement implements AssertTree {
-        @Delegate @Getter private final JCAssert decoratedTree;
-
-        public AJCExpression cond;
-        public AJCExpression detail;
-
-        protected AJCAssert(JCAssert tree) {
-            super(tree);
-            decoratedTree = tree;
-        }
-
-        protected AJCAssert(JCAssert tree, AJCExpression cond, AJCExpression detail) {
-            this(tree);
-            this.cond = cond;
-            this.detail = detail;
-        }
-    }
-
-    public static class AJCNewArray extends AJCExpression implements NewArrayTree {
+    public static class AJCNewArray extends AJCExpressionTree implements NewArrayTree {
         @Delegate @Getter private final JCNewArray decoratedTree;
 
-        public AJCExpression elemtype;
-        public List<AJCExpression> dims;
+        public AJCTypeExpression elemtype;
+        public List<AJCExpressionTree> dims;
         // type annotations on inner-most component
         public List<AJCAnnotation> annotations = List.nil();
         // type annotations on dimensions
         public List<List<AJCAnnotation>> dimAnnotations = List.nil();
-        public List<AJCExpression> elems;
+        public List<AJCExpressionTree> elems;
 
         protected AJCNewArray(JCNewArray tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCNewArray(JCNewArray tree, AJCExpression elemtype, List<AJCExpression> dims, List<AJCExpression> elems) {
+        protected AJCNewArray(JCNewArray tree, AJCTypeExpression elemtype, List<AJCExpressionTree> dims, List<AJCExpressionTree> elems) {
             this(tree);
             this.elemtype = elemtype;
             this.dims = dims;
@@ -900,18 +808,18 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         }
     }
 
-    public static class AJCAssign extends AJCExpression implements AssignmentTree, AJCSymbolRef<VarSymbol> {
+    public static class AJCAssign extends AJCExpressionTree implements AssignmentTree, AJCSymbolRef<VarSymbol> {
         @Delegate @Getter private final JCAssign decoratedTree;
 
         public AJCSymbolRefTree<VarSymbol> lhs;
-        public AJCExpression rhs;
+        public AJCExpressionTree rhs;
 
         protected AJCAssign(JCAssign tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCAssign(JCAssign tree, AJCSymbolRefTree<VarSymbol> lhs, AJCExpression rhs) {
+        protected AJCAssign(JCAssign tree, AJCSymbolRefTree<VarSymbol> lhs, AJCExpressionTree rhs) {
             this(tree);
             this.lhs = lhs;
             this.rhs = rhs;
@@ -923,7 +831,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         }
     }
 
-    public abstract static class AJCOperatorExpression extends AJCExpression {
+    public abstract static class AJCOperatorExpression extends AJCExpressionTree {
         protected AJCOperatorExpression(JCExpression tree) {
             super(tree);
         }
@@ -952,14 +860,14 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
 
         @Delegate
         public AJCSymbolRefTree<VarSymbol> lhs;
-        public AJCExpression rhs;
+        public AJCExpressionTree rhs;
 
         protected AJCAssignOp(JCAssignOp tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCAssignOp(JCAssignOp tree, AJCSymbolRefTree<VarSymbol> lhs, AJCExpression rhs) {
+        protected AJCAssignOp(JCAssignOp tree, AJCSymbolRefTree<VarSymbol> lhs, AJCExpressionTree rhs) {
             this(tree);
             this.lhs = lhs;
             this.rhs = rhs;
@@ -969,14 +877,14 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
     public static class AJCUnary extends AJCOperatorExpression implements UnaryTree {
         @Delegate @Getter private final JCUnary decoratedTree;
 
-        public AJCExpression arg;
+        public AJCExpressionTree arg;
 
         protected AJCUnary(JCUnary tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCUnary(JCUnary tree, AJCExpression arg) {
+        protected AJCUnary(JCUnary tree, AJCExpressionTree arg) {
             this(tree);
             this.arg = arg;
         }
@@ -1005,71 +913,71 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
     public static class AJCBinary extends AJCOperatorExpression implements BinaryTree {
         @Delegate @Getter private final JCBinary decoratedTree;
 
-        public AJCExpression lhs;
-        public AJCExpression rhs;
+        public AJCExpressionTree lhs;
+        public AJCExpressionTree rhs;
 
         protected AJCBinary(JCBinary tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCBinary(JCBinary tree, AJCExpression lhs, AJCExpression rhs) {
+        protected AJCBinary(JCBinary tree, AJCExpressionTree lhs, AJCExpressionTree rhs) {
             this(tree);
             this.lhs = lhs;
             this.rhs = rhs;
         }
     }
 
-    public static class AJCTypeCast extends AJCExpression implements TypeCastTree {
+    public static class AJCTypeCast extends AJCExpressionTree implements TypeCastTree {
         @Delegate @Getter private final JCTypeCast decoratedTree;
 
-        public AJCTree clazz;
-        public AJCExpression expr;
+        public AJCTypeExpression clazz;
+        public AJCExpressionTree expr;
 
         protected AJCTypeCast(JCTypeCast tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCTypeCast(JCTypeCast tree, AJCTree clazz, AJCExpression expr) {
+        protected AJCTypeCast(JCTypeCast tree, AJCTypeExpression clazz, AJCExpressionTree expr) {
             this(tree);
             this.clazz = clazz;
             this.expr = expr;
         }
     }
 
-    public static class AJCInstanceOf extends AJCExpression implements InstanceOfTree, AJCSymbolRef<VarSymbol> {
+    public static class AJCInstanceOf extends AJCExpressionTree implements InstanceOfTree, AJCSymbolRef<VarSymbol> {
         @Delegate @Getter private final JCInstanceOf decoratedTree;
 
         @Delegate
         public AJCSymbolRefTree<VarSymbol> expr;
-        public AJCTree clazz;
+        public AJCSymbolRefTree<ClassSymbol> clazz;
 
         protected AJCInstanceOf(JCInstanceOf tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCInstanceOf(JCInstanceOf tree, AJCSymbolRefTree<VarSymbol> expr, AJCTree clazz) {
+        protected AJCInstanceOf(JCInstanceOf tree, AJCSymbolRefTree<VarSymbol> expr, AJCSymbolRefTree<ClassSymbol> clazz) {
             this(tree);
             this.expr = expr;
             this.clazz = clazz;
         }
     }
 
-    public static class AJCArrayAccess extends AJCExpression implements ArrayAccessTree, AJCSymbolRef<VarSymbol>  {
+    public static class AJCArrayAccess extends AJCExpressionTree implements ArrayAccessTree, AJCSymbolRef<VarSymbol>  {
         @Delegate @Getter private final JCArrayAccess decoratedTree;
 
         @Delegate
         public AJCSymbolRefTree<VarSymbol> indexed;
-        public AJCExpression index;
+        public AJCExpressionTree index;
 
         protected AJCArrayAccess(JCArrayAccess tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCArrayAccess(JCArrayAccess tree, AJCSymbolRefTree<VarSymbol> indexed, AJCExpression index) {
+        protected AJCArrayAccess(JCArrayAccess tree, AJCSymbolRefTree<VarSymbol> indexed, AJCExpressionTree index) {
             this(tree);
             this.indexed = indexed;
             this.index = index;
@@ -1080,47 +988,22 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         @Delegate @Getter private final JCFieldAccess decoratedTree;
 
         /** selected Tree hierarchy */
-        public AJCSymbolRefTree selected;
+        public AJCSymbolRefTree<T> selected;
 
         protected AJCFieldAccess(JCFieldAccess tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCFieldAccess(JCFieldAccess tree, AJCSymbolRefTree selected) {
+        protected AJCFieldAccess(JCFieldAccess tree, AJCSymbolRefTree<T> selected) {
             this(tree);
             this.selected = selected;
         }
 
-        @SuppressWarnings("unchecked")
-        public T getSym() {
-            return (T) decoratedTree.sym;
-        }
-
-        /**
-         * The target symbol is that of the one at the end of the chain of references...
-         */
-        @SuppressWarnings("unchecked")
         @Override
+        @SuppressWarnings("unchecked")
         public T getTargetSymbol() {
-            return (T) selected.getTargetSymbol();
-        }
-    }
-
-    // TODO: Implements AJCSymbolRefTree?
-    public static class AJCMemberReference extends AJCFunctionalExpression implements MemberReferenceTree {
-        @Delegate @Getter private final JCMemberReference decoratedTree;
-
-        public AJCExpression expr;
-        public List<AJCExpression> typeargs;
-
-        protected AJCMemberReference(JCMemberReference tree) {
-            super(tree);
-            decoratedTree = tree;
-        }
-
-        public Symbol getSym() {
-            return decoratedTree.sym;
+            return (T) decoratedTree.sym;
         }
     }
 
@@ -1143,7 +1026,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         }
     }
 
-    public static class AJCLiteral extends AJCExpression implements LiteralTree {
+    public static class AJCLiteral extends AJCExpressionTree implements LiteralTree {
         @Delegate @Getter private final JCLiteral decoratedTree;
 
         protected AJCLiteral(JCLiteral tree) {
@@ -1152,17 +1035,10 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         }
     }
 
-
-    public abstract static class AJCTypeTree extends AJCTree {
-        protected AJCTypeTree(JCTree tree) {
-            super(tree);
-        }
-    }
-
     /**
      * Base class of type expressions - may not hold an effect annotation.
      */
-    public abstract static class AJCTypeExpression extends AJCTypeTree implements ExpressionTree {
+    public abstract static class AJCTypeExpression extends AJCTree implements ExpressionTree, AJCExpression {
         @Delegate @Getter private final JCExpression decoratedTree;
 
         protected AJCTypeExpression(JCExpression tree) {
@@ -1180,131 +1056,66 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         }
     }
 
+    /**
+     * Non-primitive type tree...
+     */
+    public static class AJCObjectTypeTree extends AJCTypeExpression implements AJCSymbolRef<ClassSymbol>{
+        @Delegate @Getter private final AJCSymbolRefTree<ClassSymbol> underlyingSymbol;
+
+        protected AJCObjectTypeTree(AJCSymbolRefTree<ClassSymbol> tree) {
+            super(tree.getDecoratedTree());
+            underlyingSymbol = tree;
+        }
+    }
+
+    /**
+     * Class for array types. Represents an array of type elemtype.
+     */
     public static class AJCArrayTypeTree extends AJCTypeExpression implements ArrayTypeTree {
         @Delegate @Getter private final JCArrayTypeTree decoratedTree;
 
-        public AJCExpression elemtype;
+        public AJCTypeExpression elemtype;
 
         protected AJCArrayTypeTree(JCArrayTypeTree tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCArrayTypeTree(JCArrayTypeTree tree, AJCExpression elemtype) {
+        protected AJCArrayTypeTree(JCArrayTypeTree tree, AJCTypeExpression elemtype) {
             this(tree);
             this.elemtype = elemtype;
-        }
-    }
-
-    public static class AJCTypeApply extends AJCTypeExpression implements ParameterizedTypeTree {
-        @Delegate @Getter private final JCTypeApply decoratedTree;
-
-        public AJCExpression clazz;
-        public List<AJCExpression> arguments;
-
-        protected AJCTypeApply(JCTypeApply tree) {
-            super(tree);
-            decoratedTree = tree;
-        }
-
-        protected AJCTypeApply(JCTypeApply tree, AJCExpression clazz, List<AJCExpression> arguments) {
-            this(tree);
-            this.clazz = clazz;
-            this.arguments = arguments;
         }
     }
 
     public static class AJCTypeUnion extends AJCTypeExpression implements UnionTypeTree {
         @Delegate @Getter private final JCTypeUnion decoratedTree;
 
-        public List<AJCExpression> alternatives;
+        public List<AJCTypeExpression> alternatives;
 
         protected AJCTypeUnion(JCTypeUnion tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCTypeUnion(JCTypeUnion tree, List<AJCExpression> components) {
+        protected AJCTypeUnion(JCTypeUnion tree, List<AJCTypeExpression> components) {
             this(tree);
-            this.alternatives = components;
+            alternatives = components;
         }
     }
 
-    public static class AJCTypeIntersection extends AJCTypeExpression implements IntersectionTypeTree {
-        @Delegate @Getter private final JCTypeIntersection decoratedTree;
-
-        public List<AJCExpression> bounds;
-
-        protected AJCTypeIntersection(JCTypeIntersection tree) {
-            super(tree);
-            decoratedTree = tree;
-        }
-
-        protected AJCTypeIntersection(JCTypeIntersection tree, List<AJCExpression> bounds) {
-            this(tree);
-            this.bounds = bounds;
-        }
-    }
-
-    public static class AJCTypeParameter extends AJCTypeTree implements TypeParameterTree {
-        @Delegate @Getter private final JCTypeParameter decoratedTree;
-
-        /** bounds */
-        public List<AJCExpression> bounds;
-        /** type annotations on type parameter */
-        public List<AJCAnnotation> annotations;
-
-        protected AJCTypeParameter(JCTypeParameter tree) {
-            super(tree);
-            decoratedTree = tree;
-        }
-
-        protected AJCTypeParameter(JCTypeParameter tree, List<AJCExpression> bounds, List<AJCAnnotation> annotations) {
-            this(tree);
-            this.bounds = bounds;
-            this.annotations = annotations;
-        }
-    }
-
-    public static class AJCWildcard extends AJCTypeExpression implements WildcardTree {
-        @Delegate @Getter private final JCWildcard decoratedTree;
-
-        public AJCTree inner;
-        public AJCTypeBoundKind kind;
-
-        protected AJCWildcard(JCWildcard tree) {
-            super(tree);
-            decoratedTree = tree;
-        }
-
-        protected AJCWildcard(JCWildcard tree, AJCTypeBoundKind kind, AJCTree inner) {
-            this(tree);
-            this.kind = kind;
-            this.inner = inner;
-        }
-    }
-
-    public static class AJCTypeBoundKind extends AJCTypeTree {
-        @Delegate @Getter private final TypeBoundKind decoratedTree;
-
-        protected AJCTypeBoundKind(TypeBoundKind tree) {
-            super(tree);
-            decoratedTree = tree;
-        }
-    }
-
-    public static class AJCAnnotation extends AJCExpression implements AnnotationTree {
+    public static class AJCAnnotation extends AJCExpressionTree implements AnnotationTree {
         @Delegate @Getter private final JCAnnotation decoratedTree;
 
+        // TODO: Type expression?
         public AJCTree annotationType;
-        public List<AJCExpression> args;
+        public List<AJCExpressionTree> args;
 
         protected AJCAnnotation(JCAnnotation tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCAnnotation(JCAnnotation tree, AJCTree annotationType, List<AJCExpression> args) {
+        protected AJCAnnotation(JCAnnotation tree, AJCTree annotationType, List<AJCExpressionTree> args) {
             this(tree);
             this.annotationType = annotationType;
             this.args = args;
@@ -1331,22 +1142,20 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
     public static class AJCAnnotatedType extends AJCTypeExpression implements AnnotatedTypeTree {
         @Delegate @Getter private final JCAnnotatedType decoratedTree;
 
-        public List<AJCAnnotation> annotations;
-        public AJCExpression underlyingType;
+        public AJCExpressionTree underlyingType;
 
         protected AJCAnnotatedType(JCAnnotatedType tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCAnnotatedType(JCAnnotatedType tree, List<AJCAnnotation> annotations, AJCExpression underlyingType) {
+        protected AJCAnnotatedType(JCAnnotatedType tree, AJCExpressionTree underlyingType) {
             this(tree);
-            this.annotations = annotations;
             this.underlyingType = underlyingType;
         }
     }
 
-    public static class AJCErroneous extends AJCExpression {
+    public static class AJCErroneous extends AJCExpressionTree {
         @Delegate @Getter private final JCErroneous decoratedTree;
 
         protected AJCErroneous(JCErroneous tree) {
@@ -1355,18 +1164,18 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         }
     }
 
-    public static class AJCLetExpr extends AJCExpression {
+    public static class AJCLetExpr extends AJCExpressionTree {
         @Delegate @Getter private final LetExpr decoratedTree;
 
         public List<AJCVariableDecl> defs;
-        public AJCExpression expr;
+        public AJCExpressionTree expr;
 
         protected AJCLetExpr(LetExpr tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCLetExpr(LetExpr tree, List<AJCVariableDecl> defs, AJCExpression expr) {
+        protected AJCLetExpr(LetExpr tree, List<AJCVariableDecl> defs, AJCExpressionTree expr) {
             this(tree);
             this.defs = defs;
             this.expr = expr;
@@ -1376,7 +1185,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
     /**
      * An abstract class for nodes that represent references to symbols - Idents and FieldAccesses, mostly.
      */
-    public abstract static class AJCSymbolRefTree<T extends Symbol> extends AJCExpression implements AJCSymbolRef<T> {
+    public abstract static class AJCSymbolRefTree<T extends Symbol> extends AJCExpressionTree implements AJCSymbolRef<T> {
         protected AJCSymbolRefTree(JCExpression tree) {
             super(tree);
         }
@@ -1398,88 +1207,71 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
 
     /** An interface for tree factories */
     public interface Factory {
-        AJCImport Import(AJCTree qualid, boolean staticImport);
-        AJCClassDecl ClassDef(AJCModifiers mods, Name name, List<AJCTypeParameter> typarams, AJCExpression extending,
-                              List<AJCExpression> implementing, List<AJCVariableDecl> fields, List<AJCMethodDecl> methods, List<AJCClassDecl> classes);
+        AJCClassDecl ClassDef(AJCModifiers mods, Name name, AJCExpressionTree extending,
+                              List<AJCExpressionTree> implementing, List<AJCVariableDecl> fields, List<AJCMethodDecl> methods, List<AJCClassDecl> classes);
         AJCMethodDecl MethodDef(AJCModifiers mods,
                                Name name,
-                               AJCExpression restype,
-                               List<AJCTypeParameter> typarams,
+                               AJCTypeExpression restype,
                                AJCVariableDecl recvparam,
                                List<AJCVariableDecl> params,
-                               List<AJCExpression> thrown,
+                               List<AJCExpressionTree> thrown,
                                AJCBlock body,
-                               AJCExpression defaultValue);
-        AJCMethodDecl MethodDef(AJCModifiers mods, Name name, AJCExpression restype, List<AJCTypeParameter> typarams, List<AJCVariableDecl> params, List<AJCExpression> thrown, AJCBlock body, AJCExpression defaultValue);
+                               AJCExpressionTree defaultValue);
+        AJCMethodDecl MethodDef(AJCModifiers mods, Name name, AJCTypeExpression restype, List<AJCVariableDecl> params, List<AJCExpressionTree> thrown, AJCBlock body, AJCExpressionTree defaultValue);
         AJCVariableDecl VarDef(AJCModifiers mods,
                               Name name,
                               AJCTypeExpression vartype,
-                              AJCExpression init);
+                              AJCExpressionTree init);
         AJCEmptyExpression EmptyExpression();
         AJCSkip Skip();
         AJCBlock Block(long flags, List<AJCStatement> stats);
-        AJCDoWhileLoop DoLoop(AJCBlock body, AJCExpression cond);
-        AJCWhileLoop WhileLoop(AJCExpression cond, AJCBlock body);
+        AJCDoWhileLoop DoLoop(AJCBlock body, AJCExpressionTree cond);
+        AJCWhileLoop WhileLoop(AJCExpressionTree cond, AJCBlock body);
         AJCForLoop ForLoop(List<AJCStatement> init,
-                          AJCExpression cond,
+                          AJCExpressionTree cond,
                           List<AJCExpressionStatement> step,
                           AJCBlock body);
-        AJCForEachLoop ForeachLoop(AJCVariableDecl var, AJCExpression expr, AJCBlock body);
         AJCLabeledStatement Labelled(Name label, AJCStatement body);
-        AJCSwitch Switch(AJCExpression selector, List<AJCCase> cases);
-        AJCCase Case(AJCExpression pat, List<AJCStatement> stats);
-        AJCSynchronized Synchronized(AJCExpression lock, AJCBlock body);
+        AJCSwitch Switch(AJCExpressionTree selector, List<AJCCase> cases);
+        AJCCase Case(AJCExpressionTree pat, List<AJCStatement> stats);
+        AJCSynchronized Synchronized(AJCExpressionTree lock, AJCBlock body);
         AJCTry Try(AJCBlock body, List<AJCCatch> catchers, AJCBlock finalizer);
-        AJCTry Try(List<AJCEffectAnnotatedTree> resources, AJCBlock body, List<AJCCatch> catchers, AJCBlock finalizer);
         AJCCatch Catch(AJCVariableDecl param, AJCBlock body);
-        AJCConditional Conditional(AJCExpression cond,
-                                  AJCExpression thenpart,
-                                  AJCExpression elsepart);
-        AJCIf If(AJCExpression cond, AJCBlock thenpart, AJCBlock elsepart);
-        AJCExpressionStatement Exec(AJCExpression expr);
+        AJCConditional Conditional(AJCExpressionTree cond,
+                                  AJCExpressionTree thenpart,
+                                  AJCExpressionTree elsepart);
+        AJCIf If(AJCExpressionTree cond, AJCBlock thenpart, AJCBlock elsepart);
+        AJCExpressionStatement Exec(AJCExpressionTree expr);
         AJCBreak Break(Name label);
         AJCContinue Continue(Name label);
-        AJCReturn Return(AJCExpression expr);
-        AJCThrow Throw(AJCExpression expr);
-        AJCAssert Assert(AJCExpression cond, AJCExpression detail);
-        AJCCall Call(List<AJCExpression> typeargs, AJCSymbolRefTree<MethodSymbol> fn, List<AJCExpression> args);
-        AJCNewClass NewClass(AJCExpression encl,
-                            List<AJCExpression> typeargs,
-                            AJCExpression clazz,
-                            List<AJCExpression> args,
-                            AJCClassDecl def);
-        AJCNewArray NewArray(AJCExpression elemtype,
-                            List<AJCExpression> dims,
-                            List<AJCExpression> elems);
-        AJCAssign Assign(AJCSymbolRefTree<VarSymbol> lhs, AJCExpression rhs);
-        AJCAssignOp Assignop(Tag opcode, AJCSymbolRefTree<VarSymbol> lhs, AJCExpression rhs);
-        AJCUnary Unary(Tag opcode, AJCExpression arg);
+        AJCReturn Return(AJCExpressionTree expr);
+        AJCThrow Throw(AJCExpressionTree expr);
+        AJCCall Call(AJCSymbolRefTree<MethodSymbol> fn, List<AJCExpressionTree> args);
+        AJCNewClass NewClass(AJCSymbolRefTree<ClassSymbol> clazz, List<AJCExpressionTree> args, AJCClassDecl def);
+        AJCNewArray NewArray(AJCTypeExpression elemtype, List<AJCExpressionTree> dims, List<AJCExpressionTree> elems);
+        AJCAssign Assign(AJCSymbolRefTree<VarSymbol> lhs, AJCExpressionTree rhs);
+        AJCAssignOp Assignop(Tag opcode, AJCSymbolRefTree<VarSymbol> lhs, AJCExpressionTree rhs);
+        AJCUnary Unary(Tag opcode, AJCExpressionTree arg);
         AJCUnaryAsg UnaryAsg(Tag opcode, AJCSymbolRefTree<VarSymbol> arg);
-        AJCBinary Binary(Tag opcode, AJCExpression lhs, AJCExpression rhs);
-        AJCTypeCast TypeCast(AJCTree clazz, AJCExpression expr);
-        AJCInstanceOf InstanceOf(AJCSymbolRefTree<VarSymbol> expr, AJCTree clazz);
-        AJCArrayAccess ArrayAccess(AJCExpression indexed, AJCExpression index);
-        AJCFieldAccess Select(AJCSymbolRefTree selected, Name selector);
-        AJCFieldAccess Select(AJCSymbolRefTree base, Symbol sym);
+        AJCBinary Binary(Tag opcode, AJCExpressionTree lhs, AJCExpressionTree rhs);
+        AJCTypeCast TypeCast(AJCTypeExpression clazz, AJCExpressionTree expr);
+        AJCInstanceOf InstanceOf(AJCSymbolRefTree<VarSymbol> expr, AJCSymbolRefTree<ClassSymbol> clazz);
+        AJCArrayAccess ArrayAccess(AJCExpressionTree indexed, AJCExpressionTree index);
+        <T extends Symbol> AJCFieldAccess Select(AJCSymbolRefTree<T> selected, Name selector);
+        <T extends Symbol> AJCFieldAccess Select(AJCSymbolRefTree<T> base, Symbol sym);
         AJCIdent Ident(Name idname);
         AJCIdent Ident(Symbol sym);
         AJCLiteral Literal(TypeTag tag, Object value);
         AJCLiteral Literal(Object value);
         AJCPrimitiveTypeTree TypeIdent(TypeTag typetag);
-        AJCArrayTypeTree TypeArray(AJCExpression elemtype);
-        AJCTypeApply TypeApply(AJCExpression clazz, List<AJCExpression> arguments);
-        AJCTypeUnion TypeUnion(List<AJCExpression> components);
-        AJCTypeIntersection TypeIntersection(List<AJCExpression> components);
-        AJCTypeParameter TypeParameter(Name name, List<AJCExpression> bounds);
-        AJCTypeParameter TypeParameter(Name name, List<AJCExpression> bounds, List<AJCAnnotation> annos);
-        AJCWildcard Wildcard(AJCTypeBoundKind kind, AJCTree type);
-        AJCTypeBoundKind TypeBoundKind(BoundKind kind);
-        AJCAnnotation Annotation(AJCTree annotationType, List<AJCExpression> args);
+        AJCArrayTypeTree TypeArray(AJCTypeExpression elemtype);
+        AJCTypeUnion TypeUnion(List<AJCTypeExpression> components);
+        AJCAnnotation Annotation(AJCTree annotationType, List<AJCExpressionTree> args);
         AJCModifiers Modifiers(long flags, List<AJCAnnotation> annotations);
         AJCModifiers Modifiers(long flags);
-        AJCAnnotatedType AnnotatedType(List<AJCAnnotation> annotations, AJCExpression underlyingType);
+        AJCAnnotatedType AnnotatedType(AJCExpressionTree underlyingType);
         AJCErroneous Erroneous(List<? extends AJCTree> errs);
-        AJCLetExpr LetExpr(List<AJCVariableDecl> defs, AJCExpression expr);
+        AJCLetExpr LetExpr(List<AJCVariableDecl> defs, AJCExpressionTree expr);
     }
 
 }

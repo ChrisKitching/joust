@@ -68,13 +68,6 @@ public class Live extends AJCTreeVisitorImpl {
     }
 
     @Override
-    public void visitForeachLoop(AJCForEachLoop jcEnhancedForLoop) {
-        enterBlock();
-        super.visitForeachLoop(jcEnhancedForLoop);
-        leaveBlock();
-    }
-
-    @Override
     public void visitIf(AJCIf jcIf) {
         log.debug("Visiting if: {}", jcIf);
         log.debug("On entry: {}", recentlyKilled);
@@ -205,12 +198,6 @@ public class Live extends AJCTreeVisitorImpl {
     public void visitFieldAccess(AJCFieldAccess jcFieldAccess) {
         super.visitFieldAccess(jcFieldAccess);
         processReference(jcFieldAccess);
-    }
-
-    @Override
-    public void visitMemberReference(AJCMemberReference jcMemberReference) {
-        log.info("Visiting reference: {}", jcMemberReference);
-        super.visitMemberReference(jcMemberReference);
     }
 
     @Override

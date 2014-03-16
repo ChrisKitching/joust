@@ -166,7 +166,7 @@ public final class JavacBrutaliser extends OptimisationRunnable {
 
         List<JCTree.JCCompilationUnit> compilationUnitList = List.nil();
 
-        for (JCTree.JCCompilationUnit unit : Optimiser.stashedTrees) {
+        for (JCTree.JCCompilationUnit unit : Optimiser.conventionalTrees) {
             compilationUnitList = compilationUnitList.append(unit);
         }
 

@@ -141,14 +141,6 @@ public class SideEffectVisitor extends AJCTreeVisitorImpl {
     }
 
     @Override
-    public void visitForeachLoop(AJCForEachLoop that) {
-        super.visitForeachLoop(that);
-
-        that.effects = Effects.unionTrees(that.body, that.expr);
-    }
-
-
-    @Override
     public void visitLabelledStatement(AJCLabeledStatement that) {
         super.visitLabelledStatement(that);
 
@@ -183,8 +175,7 @@ public class SideEffectVisitor extends AJCTreeVisitorImpl {
         super.visitTry(that);
 
         Effects catcherEffects = Effects.unionTrees(that.catchers);
-        Effects resourceEffects = Effects.unionTrees(that.resources);
-        that.effects = Effects.unionOf(catcherEffects, resourceEffects, that.body.effects, that.finalizer.effects);
+        that.effects = Effects.unionOf(catcherEffects, that.body.effects, that.finalizer.effects);
     }
 
     @Override
@@ -243,17 +234,10 @@ public class SideEffectVisitor extends AJCTreeVisitorImpl {
         that.effects = Effects.unionWithDirect(new EffectSet(EffectType.EXCEPTION), that.expr.effects);
     }
 
-    @Override
-    public void visitAssert(AJCAssert that) {
-        super.visitAssert(that);
-
-        that.effects = Effects.unionWithDirect(new EffectSet(EffectType.EXCEPTION), that.cond.effects, that.detail.effects);
-    }
-
     /**
      * Get the CandidateEffectSet for a particular call (constructor or regular) given args and a MethodSymbol.
      */
-    private void handleCallEffects(List<AJCExpression> args, AJCSymbolRefTree<MethodSymbol> that) {
+    private void handleCallEffects(List<AJCExpressionTree> args, AJCSymbolRefTree<MethodSymbol> that) {
         MethodSymbol methodSym = that.getTargetSymbol();
 
         // The effects of the arguments to the function.
@@ -404,22 +388,6 @@ public class SideEffectVisitor extends AJCTreeVisitorImpl {
     public void visitInstanceOf(AJCInstanceOf that) {
         super.visitInstanceOf(that);
         that.effects = that.expr.effects;
-    }
-
-    @Override
-    public void visitMemberReference(AJCMemberReference that) {
-        super.visitMemberReference(that);
-        Symbol referenced = that.getSym();
-
-        Effects exprEffects = that.expr.effects;
-
-        if (referenced instanceof VarSymbol) {
-            that.effects = Effects.unionWithDirect(read((VarSymbol) referenced), exprEffects);
-        } else {
-            // It could be a reference to a method, for example. These have no side-effects. (But the
-            // associated call might.)
-            that.effects = Effects.unionOf(exprEffects);
-        }
     }
 
     @Override

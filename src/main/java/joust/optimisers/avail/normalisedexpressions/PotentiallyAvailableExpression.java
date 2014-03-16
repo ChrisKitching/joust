@@ -24,7 +24,7 @@ public abstract class PotentiallyAvailableExpression {
     public Set<PossibleSymbol> deps = new HashSet<>();
 
     // The node from which this PAE was deduced.
-    public AJCExpression sourceNode;
+    public AJCExpressionTree sourceNode;
 
     // A computed node, possibly equivalent to sourceNode, that properly represents this expression (After
     // coalescing its various virtual dependent expressions.)

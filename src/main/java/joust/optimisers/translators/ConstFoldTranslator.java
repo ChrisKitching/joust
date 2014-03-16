@@ -22,7 +22,7 @@ class ConstFoldTranslator extends BaseTranslator {
         super.visitUnary(tree);
         // Determine the type of this unary operation.
         final Tag nodeTag = tree.getTag();
-        final AJCExpression expr = tree.arg;
+        final AJCExpressionTree expr = tree.arg;
 
         // Replace each unary operation on a literal with a literal of the new value.
         if (!(expr instanceof AJCLiteral)) {
@@ -41,8 +41,8 @@ class ConstFoldTranslator extends BaseTranslator {
         super.visitBinary(tree);
         // Determine the type of this unary operation.
         final Tag nodeTag = tree.getTag();
-        AJCExpression leftOperand = tree.lhs;
-        AJCExpression rightOperand = tree.rhs;
+        AJCExpressionTree leftOperand = tree.lhs;
+        AJCExpressionTree rightOperand = tree.rhs;
 
         // Ensure this is an operation on literals before proceeding.
         if (!(leftOperand instanceof AJCLiteral && rightOperand instanceof AJCLiteral)) {

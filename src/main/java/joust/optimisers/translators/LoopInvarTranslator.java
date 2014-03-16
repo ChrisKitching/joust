@@ -1,18 +1,11 @@
 package joust.optimisers.translators;
 
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.List;
 import joust.optimisers.avail.Avail;
 import joust.optimisers.avail.normalisedexpressions.PossibleSymbol;
 import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableExpression;
-import joust.optimisers.visitors.sideeffects.SideEffectVisitor;
-import joust.tree.annotatedtree.AJCTree;
-import joust.tree.annotatedtree.AJCTreeVisitor;
-import joust.tree.annotatedtree.AJCTreeVisitorImpl;
 import joust.treeinfo.EffectSet;
-import joust.treeinfo.TreeInfoManager;
-import joust.utils.LogUtils;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.Arrays;
@@ -21,7 +14,6 @@ import java.util.Iterator;
 import java.util.Set;
 
 import static joust.tree.annotatedtree.AJCTree.*;
-import static com.sun.tools.javac.tree.JCTree.*;
 import static joust.utils.StaticCompilerUtils.treeCopier;
 
 /**
@@ -74,12 +66,6 @@ public class LoopInvarTranslator extends BaseTranslator {
         //log.info("Modified loop context: \n{}", visitedStack.peek());
 
         super.visitForLoop(forLoop);
-    }
-
-    @Override
-    public void visitForeachLoop(AJCForEachLoop jcEnhancedForLoop) {
-        super.visitForeachLoop(jcEnhancedForLoop);
-        LogUtils.raiseCompilerError("Unexpected EnhancedForEachLoop encountered in LoopInvarTranslator. This should've been desugared by now!");
     }
 
     /**
@@ -180,7 +166,7 @@ public class LoopInvarTranslator extends BaseTranslator {
             enclosingBlock.insertBefore(loopNode, newStatements);
 
             // Now replace references to expressions like this one with references to the newly-created variable.
-            AJCExpression tempRef = pae.expressionNode;
+            AJCExpressionTree tempRef = pae.expressionNode;
 
             for (int b = 0; b < invarArray.length; b++) {
                 PotentiallyAvailableExpression candidate = invarArray[b];

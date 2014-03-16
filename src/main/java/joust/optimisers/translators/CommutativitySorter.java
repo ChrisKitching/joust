@@ -27,7 +27,7 @@ public class CommutativitySorter extends AJCTreeVisitorImpl {
     private final AJCBinary targetTree;
 
     // The list of elements combined by the commutative subtree of interest.
-    private final ArrayList<AJCExpression> combinedElements = new ArrayList<>();
+    private final ArrayList<AJCExpressionTree> combinedElements = new ArrayList<>();
 
     public CommutativitySorter(AJCBinary tree) {
         currentSubtreeTag = tree.getTag();
@@ -48,13 +48,13 @@ public class CommutativitySorter extends AJCTreeVisitorImpl {
         log.info("Elements: {}", Arrays.toString(combinedElements.toArray()));
 
         // Build the tree from the sorted elements.
-        Iterator<AJCExpression> iterator = combinedElements.iterator();
+        Iterator<AJCExpressionTree> iterator = combinedElements.iterator();
         AJCBinary replacementTree = treeMaker.Binary(currentSubtreeTag, iterator.next(), iterator.next());
         replacementTree.setType(targetTree.getNodeType());
         replacementTree.setOperator(targetTree.getOperator());
 
         while (iterator.hasNext()) {
-            AJCExpression expr = iterator.next();
+            AJCExpressionTree expr = iterator.next();
             replacementTree = treeMaker.Binary(currentSubtreeTag, replacementTree, expr);
             replacementTree.setType(targetTree.getNodeType());
             replacementTree.setOperator(targetTree.getOperator());

@@ -3,8 +3,7 @@ package joust.tree.conversion;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeTranslator;
 import com.sun.tools.javac.util.List;
-import joust.OptimiserOptions;
-import joust.optimisers.translators.BaseTranslator;
+import joust.utils.JavacListUtils;
 import lombok.extern.log4j.Log4j2;
 
 import static com.sun.tools.javac.tree.JCTree.*;
@@ -20,25 +19,28 @@ import static joust.utils.StaticCompilerUtils.*;
  * as it means that, in order to process such nodes, one has to first check the runtime type of the
  * node under consideration. (Instead of iterating a single-element block).
  * If enabled, stripping of assertions. No point converting them just to throw them away...
- *
- * Elimination of type parameters (They're replaced with their erasure).
+ * Elimination of the empty blocks that javac puts in instead of inner classes..... (WAT).
  */
 @Log4j2
 public class TreePreparationTranslator extends TreeTranslator {
     @Override
-    public void visitMethodDef(JCMethodDecl jcMethodDecl) {
-        log.debug("Encountered method:\n{}", jcMethodDecl);
-        super.visitMethodDef(jcMethodDecl);
+    public void visitClassDef(JCClassDecl jcClassDecl) {
+        int i = 0;
+
+        for (JCTree t : jcClassDecl.defs) {
+            if (t instanceof JCBlock) {
+                jcClassDecl.defs = JavacListUtils.removeAtIndex(jcClassDecl.defs, i);
+                i--;
+            }
+            i++;
+        }
+        super.visitClassDef(jcClassDecl);
     }
 
     @Override
-    public void visitAssert(JCAssert jcAssert) {
-        super.visitAssert(jcAssert);
-
-        // Drop assertions if we don't care about them. Doing this as early as possible...
-        if (OptimiserOptions.stripAssertions) {
-            result = javacTreeMaker.Skip();
-        }
+    public void visitMethodDef(JCMethodDecl jcMethodDecl) {
+        log.debug("Encountered method:\n{}", jcMethodDecl);
+        super.visitMethodDef(jcMethodDecl);
     }
 
     @Override

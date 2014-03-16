@@ -2,7 +2,6 @@ package joust.optimisers.avail;
 
 import com.sun.tools.javac.code.Scope;
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.tree.JCTree;
 import joust.optimisers.avail.normalisedexpressions.PossibleSymbol;
 import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableBinary;
 import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableExpression;
@@ -269,7 +268,7 @@ public class AvailScope extends Scope {
         nullary.sourceNode = expr;
 
         // Tack on the PAEs (Previously generated) of the arguments to this call.
-        for (AJCExpression arg : expr.args) {
+        for (AJCExpressionTree arg : expr.args) {
             PotentiallyAvailableExpression pae = treeMapping.get(arg);
             nullary.args = nullary.args.append(pae);
             nullary.deps.addAll(pae.deps);

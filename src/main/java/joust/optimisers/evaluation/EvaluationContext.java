@@ -3,7 +3,6 @@ package joust.optimisers.evaluation;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.util.List;
 import joust.utils.LogUtils;
-import joust.utils.TreeUtils;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
@@ -184,7 +183,7 @@ class EvaluationContext {
         return Value.UNKNOWN;
     }
 
-    public Value evaluate(AJCExpression e) {
+    public Value evaluate(AJCExpressionTree e) {
         // More horrors.
         if (e instanceof AJCAssign) {
             return evaluate((AJCAssign) e);

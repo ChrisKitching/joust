@@ -16,9 +16,7 @@ public abstract class AJCTreeVisitorImpl implements AJCTreeVisitor {
             return;
         }
 
-        if (that instanceof AJCImport) {
-            visitImport((AJCImport) that);
-        } else if (that instanceof AJCClassDecl) {
+        if (that instanceof AJCClassDecl) {
             visitClassDef((AJCClassDecl) that);
         } else if (that instanceof AJCMethodDecl) {
             visitMethodDef((AJCMethodDecl) that);
@@ -34,8 +32,6 @@ public abstract class AJCTreeVisitorImpl implements AJCTreeVisitor {
             visitWhileLoop((AJCWhileLoop) that);
         } else if (that instanceof AJCForLoop) {
             visitForLoop((AJCForLoop) that);
-        } else if (that instanceof AJCForEachLoop) {
-            visitForeachLoop((AJCForEachLoop) that);
         } else if (that instanceof AJCLabeledStatement) {
             visitLabelledStatement((AJCLabeledStatement) that);
         } else if (that instanceof AJCSwitch) {
@@ -62,16 +58,12 @@ public abstract class AJCTreeVisitorImpl implements AJCTreeVisitor {
             visitReturn((AJCReturn) that);
         } else if (that instanceof AJCThrow) {
             visitThrow((AJCThrow) that);
-        } else if (that instanceof AJCAssert) {
-            visitAssert((AJCAssert) that);
         } else if (that instanceof AJCCall) {
             visitCall((AJCCall) that);
         } else if (that instanceof AJCNewClass) {
             visitNewClass((AJCNewClass) that);
         } else if (that instanceof AJCNewArray) {
             visitNewArray((AJCNewArray) that);
-        } else if (that instanceof AJCLambda) {
-            visitLambda((AJCLambda) that);
         } else if (that instanceof AJCAssign) {
             visitAssign((AJCAssign) that);
         } else if (that instanceof AJCAssignOp) {
@@ -90,8 +82,6 @@ public abstract class AJCTreeVisitorImpl implements AJCTreeVisitor {
             visitArrayAccess((AJCArrayAccess) that);
         } else if (that instanceof AJCFieldAccess) {
             visitFieldAccess((AJCFieldAccess) that);
-        } else if (that instanceof AJCMemberReference) {
-            visitMemberReference((AJCMemberReference) that);
         } else if (that instanceof AJCIdent) {
             visitIdent((AJCIdent) that);
         } else if (that instanceof AJCLiteral) {
@@ -100,18 +90,8 @@ public abstract class AJCTreeVisitorImpl implements AJCTreeVisitor {
             visitPrimitiveType((AJCPrimitiveTypeTree) that);
         } else if (that instanceof AJCArrayTypeTree) {
             visitArrayType((AJCArrayTypeTree) that);
-        } else if (that instanceof AJCTypeApply) {
-            visitTypeApply((AJCTypeApply) that);
         } else if (that instanceof AJCTypeUnion) {
             visitTypeUnion((AJCTypeUnion) that);
-        } else if (that instanceof AJCTypeIntersection) {
-            visitTypeIntersection((AJCTypeIntersection) that);
-        } else if (that instanceof AJCTypeParameter) {
-            visitTypeParameter((AJCTypeParameter) that);
-        } else if (that instanceof AJCWildcard) {
-            visitWildcard((AJCWildcard) that);
-        } else if (that instanceof AJCTypeBoundKind) {
-            visitTypeBoundKind((AJCTypeBoundKind) that);
         } else if (that instanceof AJCAnnotation) {
             visitAnnotation((AJCAnnotation) that);
         } else if (that instanceof AJCModifiers) {
@@ -138,14 +118,8 @@ public abstract class AJCTreeVisitorImpl implements AJCTreeVisitor {
     }
 
     @Override
-    public void visitImport(AJCImport that) {
-        visit(that.qualid);
-    }
-
-    @Override
     public void visitClassDef(AJCClassDecl that) {
         visit(that.mods);
-        visit(that.typarams);
         visit(that.extending);
         visit(that.implementing);
         visit(that.fields);
@@ -155,9 +129,8 @@ public abstract class AJCTreeVisitorImpl implements AJCTreeVisitor {
 
     @Override
     public void visitMethodDef(AJCMethodDecl that) {
-        visit(that.mods);
         visit(that.restype);
-        visit(that.typarams);
+        visit(that.mods);
         visit(that.recvparam);
         visit(that.params);
         visit(that.thrown);
@@ -169,8 +142,8 @@ public abstract class AJCTreeVisitorImpl implements AJCTreeVisitor {
     public void visitVariableDecl(AJCVariableDecl that) {
         visit(that.mods);
         visit(that.nameexpr);
-        visit(that.vartype);
         visit(that.init);
+        visit(that.vartype);
     }
 
     @Override
@@ -205,13 +178,6 @@ public abstract class AJCTreeVisitorImpl implements AJCTreeVisitor {
     }
 
     @Override
-    public void visitForeachLoop(AJCForEachLoop that) {
-        visit(that.var);
-        visit(that.expr);
-        visit(that.body);
-    }
-
-    @Override
     public void visitLabelledStatement(AJCLabeledStatement that) {
         visit(that.body);
     }
@@ -236,7 +202,6 @@ public abstract class AJCTreeVisitorImpl implements AJCTreeVisitor {
 
     @Override
     public void visitTry(AJCTry that) {
-        visit(that.resources);
         visit(that.body);
         visit(that.catchers);
         visit(that.finalizer);
@@ -284,22 +249,13 @@ public abstract class AJCTreeVisitorImpl implements AJCTreeVisitor {
     }
 
     @Override
-    public void visitAssert(AJCAssert that) {
-        visit(that.cond);
-        visit(that.detail);
-    }
-
-    @Override
     public void visitCall(AJCCall that) {
-        visit(that.typeargs);
         visit(that.meth);
         visit(that.args);
     }
 
     @Override
     public void visitNewClass(AJCNewClass that) {
-        visit(that.encl);
-        visit(that.typeargs);
         visit(that.clazz);
         visit(that.args);
         visit(that.def);
@@ -314,12 +270,6 @@ public abstract class AJCTreeVisitorImpl implements AJCTreeVisitor {
         visit(that.elemtype);
         visit(that.dims);
         visit(that.elems);
-    }
-
-    @Override
-    public void visitLambda(AJCLambda that) {
-        visit(that.params);
-        visit(that.body);
     }
 
     @Override
@@ -374,12 +324,6 @@ public abstract class AJCTreeVisitorImpl implements AJCTreeVisitor {
     }
 
     @Override
-    public void visitMemberReference(AJCMemberReference that) {
-        visit(that.typeargs);
-        visit(that.expr);
-    }
-
-    @Override
     public void visitIdent(AJCIdent that) { }
 
     @Override
@@ -394,35 +338,9 @@ public abstract class AJCTreeVisitorImpl implements AJCTreeVisitor {
     }
 
     @Override
-    public void visitTypeApply(AJCTypeApply that) {
-        visit(that.clazz);
-        visit(that.arguments);
-    }
-
-    @Override
     public void visitTypeUnion(AJCTypeUnion that) {
         visit(that.alternatives);
     }
-
-    @Override
-    public void visitTypeIntersection(AJCTypeIntersection that) {
-        visit(that.bounds);
-    }
-
-    @Override
-    public void visitTypeParameter(AJCTypeParameter that) {
-        visit(that.annotations);
-        visit(that.bounds);
-    }
-
-    @Override
-    public void visitWildcard(AJCWildcard that) {
-        visit(that.kind);
-        visit(that.inner);
-    }
-
-    @Override
-    public void visitTypeBoundKind(AJCTypeBoundKind that) { }
 
     @Override
     public void visitAnnotation(AJCAnnotation that) {
@@ -437,7 +355,6 @@ public abstract class AJCTreeVisitorImpl implements AJCTreeVisitor {
 
     @Override
     public void visitAnnotatedType(AJCAnnotatedType that) {
-        visit(that.annotations);
         visit(that.underlyingType);
     }
 

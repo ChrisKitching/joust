@@ -5,6 +5,8 @@ import com.sun.tools.javac.tree.JCTree;
 import joust.joustcache.ChecksumUtils;
 import joust.joustcache.JOUSTCache;
 import joust.optimisers.avail.normalisedexpressions.PossibleSymbol;
+import joust.optimisers.runnables.AssertionStrip;
+import joust.optimisers.runnables.TreeConverter;
 import joust.optimisers.utils.OptimisationPhaseManager;
 import joust.tree.annotatedtree.AJCForest;
 import joust.treeinfo.TreeInfoManager;
@@ -34,8 +36,8 @@ import static joust.utils.StaticCompilerUtils.javaElements;
 public class Optimiser extends AbstractProcessor {
     public static AJCForest inputTrees;
 
-    // Stash the trees between the annotation processing and desugaring steps...
-    public static LinkedHashSet<JCTree.JCCompilationUnit> stashedTrees;
+    // The untranslated input JCTrees. The route to the AST prior to the desugaring step.
+    public static LinkedHashSet<JCTree.JCCompilationUnit> conventionalTrees;
 
     public static JavacProcessingEnvironment environ;
 
@@ -55,7 +57,7 @@ public class Optimiser extends AbstractProcessor {
             return;
         }
 
-        stashedTrees = new LinkedHashSet<>();
+        conventionalTrees = new LinkedHashSet<>();
 
         JOUSTCache.init();
         ChecksumUtils.init();
@@ -64,6 +66,12 @@ public class Optimiser extends AbstractProcessor {
 
         OptimisationPhaseManager.init(env);
         OptimisationPhaseManager.register(new JavacBrutaliser(), AFTER, ANNOTATION_PROCESSING);
+
+        OptimisationPhaseManager.register(new AssertionStrip(), AFTER, ANNOTATION_PROCESSING);
+
+        // As it happens, almost all our phases operate on the virtual AFTER DESUGAR phase (as this turns out to be
+        // very much more convenient than working on the actual tree if you don't care about the desugared things.)
+        OptimisationPhaseManager.register(new TreeConverter(), AFTER, DESUGAR);
 
         // The post-compilation pass to populate the disk cache with the results of classes processed
         // during this job. Needs to happen here so we can compute a checksum over the bytecode and
@@ -79,7 +87,7 @@ public class Optimiser extends AbstractProcessor {
             // Stash the root elements for later use...
             JCTree.JCCompilationUnit unit = javaElements.getTreeAndTopLevel(element, null, null).snd;
 
-            stashedTrees.add(unit);
+            conventionalTrees.add(unit);
         }
 
         return false;

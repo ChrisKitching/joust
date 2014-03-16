@@ -1,5 +1,6 @@
 package joust.tree.annotatedtree;
 
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.List;
@@ -7,6 +8,7 @@ import joust.utils.LogUtils;
 import lombok.extern.log4j.Log4j2;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Stack;
 
@@ -31,20 +33,17 @@ public class InitialASTConverter extends TreeScanner {
     public static void init() {
         FIELD_MAPPINGS = new HashMap<Class<? extends AJCTree>, String[]>() {
             {
-                put(AJCImport.class, new String[] {"qualid"});
                 put(AJCConditional.class, new String[] {"falsepart", "truepart", "cond"});
-                put(AJCCall.class, new String[] {"args", "meth", "typeargs"});
-                put(AJCNewClass.class, new String[] {"def", "args", "clazz", "typeargs", "encl"});
-                put(AJCLambda.class, new String[] {"params", "body"});
-                put(AJCClassDecl.class, new String[] {"implementing", "extending", "typarams", "mods"});
-                put(AJCMethodDecl.class, new String[] {"body", "defaultValue", "thrown", "params", "recvparam", "typarams", "restype", "mods"});
-                put(AJCVariableDecl.class, new String[] {"init", "nameexpr", "vartype", "mods"});
+                put(AJCCall.class, new String[] {"args", "meth"});
+                put(AJCNewClass.class, new String[] {"def", "args", "clazz"});
+                put(AJCClassDecl.class, new String[] {"implementing", "extending", "mods"});
+                put(AJCMethodDecl.class, new String[] {"body", "defaultValue", "thrown", "params", "recvparam", "mods"});
+                put(AJCVariableDecl.class, new String[] {"init", "nameexpr", "mods"});
                 put(AJCSkip.class, NONE);
                 put(AJCBlock.class, new String[] {"stats"});
                 put(AJCDoWhileLoop.class, new String[] {"cond", "body"});
                 put(AJCWhileLoop.class, new String[] {"body", "cond"});
                 put(AJCForLoop.class, new String[] {"body", "step", "cond", "init"});
-                put(AJCForEachLoop.class, new String[] {"body", "expr", "var"});
                 put(AJCLabeledStatement.class, new String[] {"body"});
                 put(AJCSwitch.class, new String[] {"cases", "selector"});
                 put(AJCCase.class, new String[] {"stats", "pat"});
@@ -57,32 +56,27 @@ public class InitialASTConverter extends TreeScanner {
                 put(AJCBreak.class, NONE);
                 put(AJCContinue.class, NONE);
                 put(AJCReturn.class, new String[] {"expr"});
-                put(AJCAssert.class, new String[] {"detail", "cond"});
-                put(AJCNewArray.class, new String[] {"elems", "dimAnnotations", "dims", "elemtype", "annotations"});
+                put(AJCNewArray.class, new String[] {"elems", "dimAnnotations", "dims", "annotations"});
                 put(AJCAssign.class, new String[] {"rhs", "lhs"});
                 put(AJCAssignOp.class, new String[] {"rhs", "lhs"});
                 put(AJCUnary.class, new String[] {"arg"});
                 put(AJCUnaryAsg.class, new String[] {"arg"});
                 put(AJCBinary.class, new String[] {"rhs", "lhs"});
-                put(AJCTypeCast.class, new String[] {"expr", "clazz"});
+                put(AJCTypeCast.class, new String[] {"expr"});
                 put(AJCInstanceOf.class, new String[] {"clazz", "expr"});
                 put(AJCArrayAccess.class, new String[] {"index", "indexed"});
                 put(AJCFieldAccess.class, new String[] {"selected"});
-                put(AJCMemberReference.class, new String[] {"typeargs", "expr"});
                 put(AJCIdent.class, NONE);
                 put(AJCLiteral.class, NONE);
                 put(AJCPrimitiveTypeTree.class, NONE);
                 put(AJCArrayTypeTree.class, new String[] {"elemtype"});
-                put(AJCTypeApply.class, new String[] {"arguments", "clazz"});
                 put(AJCTypeUnion.class, new String[] {"alternatives"});
-                put(AJCTypeIntersection.class, new String[] {"bounds"});
-                put(AJCWildcard.class, new String[] {"inner", "kind"});
-                put(AJCTypeBoundKind.class, NONE);
                 put(AJCAnnotation.class, new String[] {"args", "annotationType"});
                 put(AJCModifiers.class, new String[] {"annotations"});
-                put(AJCAnnotatedType.class, new String[] {"underlyingType", "annotations"});
+                put(AJCAnnotatedType.class, new String[] {"underlyingType"});
                 put(AJCErroneous.class, NONE);
                 put(AJCLetExpr.class, new String[] {"expr", "defs"});
+                put(AJCThrow.class, new String[] {"expr"});
             }
         };
     }
@@ -129,6 +123,13 @@ public class InitialASTConverter extends TreeScanner {
         Class<? extends AJCTree> destClass = destinationTree.getClass();
         Class<? extends JCTree> sourceClass = sourceTree.getClass();
 
+//        log.debug("Setting fields for {}:{}", sourceTree, sourceTree.getClass().getCanonicalName());
+//        int ii = 0;
+//        for (AJCTree t : results) {
+//            log.debug("{} : {}", ii, t);
+//            ii++;
+//        }
+
         String[] fieldNames = FIELD_MAPPINGS.get(destClass);
         if (fieldNames == null) {
             LogUtils.raiseCompilerError("Unable to find field mappings for class: " + destClass.getCanonicalName());
@@ -156,9 +157,10 @@ public class InitialASTConverter extends TreeScanner {
                     continue;
                 }
 
-                log.debug("Field type: {}", fieldType.getCanonicalName());
+//              log.debug("Field {} : {}", fieldName, fieldType.getCanonicalName());
                 if (!"com.sun.tools.javac.util.List".equals(fieldType.getCanonicalName())) {
                     AJCTree value = results.pop();
+//                  log.debug("Assigning: {}:{}", value, value.getClass().getCanonicalName());
                     value.mParentNode = destinationTree;
                     destField.set(destinationTree, value);
                     continue;
@@ -178,6 +180,7 @@ public class InitialASTConverter extends TreeScanner {
                 // Is this a list of lists?
                 if (!"com.sun.tools.javac.util.List".equals(thatList.get(0).getClass().getCanonicalName())) {
                     List<?> targetList = listFromIntermediatesWithParent(neededElements, destinationTree);
+                    //log.debug("-> {}  ({})", Arrays.toString(targetList.toArray()), neededElements);
 
                     // Finally, assign the list to the field.
                     destField.set(destinationTree, targetList);
@@ -202,11 +205,11 @@ public class InitialASTConverter extends TreeScanner {
                 // Finally, assign the list to the field, and weep for my sanity.
                 destField.set(destinationTree, reconstitutedList);
             } catch (NoSuchFieldException e) {
+                log.error("Unable to find field {} on {}!" , fieldName, destClass.getSimpleName(), e);
                 LogUtils.raiseCompilerError("Unable to find field " + fieldName + " on " + destClass.getSimpleName());
-                e.printStackTrace();
             } catch (IllegalAccessException e) {
+                log.error("IllegalAccessException during tree conversion.", e);
                 LogUtils.raiseCompilerError("IllegalAccessException during tree conversion.");
-                e.printStackTrace();
             }
         }
     }
@@ -224,17 +227,6 @@ public class InitialASTConverter extends TreeScanner {
     }
 
     // Visitor methods...
-
-    @Override
-    public void visitImport(JCImport jcImport) {
-        super.visitImport(jcImport);
-
-        AJCImport Import = new AJCImport(jcImport);
-        setFields(Import, jcImport);
-
-        results.push(Import);
-    }
-
     @Override
     public void visitClassDef(JCClassDecl jcClassDecl) {
         super.visitClassDef(jcClassDecl);
@@ -278,7 +270,19 @@ public class InitialASTConverter extends TreeScanner {
         // Make the object despite the fact we can't populate it just yet - the clients will point to it
         // just the same.
         enclosingMethod = new AJCMethodDecl(jcMethodDecl);
-        super.visitMethodDef(jcMethodDecl);
+
+        scan(jcMethodDecl.mods);
+        scan(jcMethodDecl.recvparam);
+        scan(jcMethodDecl.params);
+        scan(jcMethodDecl.thrown);
+        scan(jcMethodDecl.defaultValue);
+        scan(jcMethodDecl.body);
+        log.debug("Method restype: {}", jcMethodDecl.restype);
+        if (jcMethodDecl.restype != null) {
+            scan(jcMethodDecl.restype);
+
+            enclosingMethod.restype = convertToTypeExpression(results.pop());
+        }
 
         // Now pull in the results...
         setFields(enclosingMethod, jcMethodDecl);
@@ -286,13 +290,48 @@ public class InitialASTConverter extends TreeScanner {
     }
 
     @Override
-    public void visitVarDef(JCVariableDecl jcVariableDecl) {
-        super.visitVarDef(jcVariableDecl);
+    public void visitVarDef(JCVariableDecl tree) {
+        scan(tree.mods);
+        scan(tree.nameexpr);
+        scan(tree.init);
+        scan(tree.vartype);
 
-        AJCVariableDecl variableDecl = new AJCVariableDecl(jcVariableDecl);
-        setFields(variableDecl, jcVariableDecl);
+        AJCVariableDecl variableDecl = new AJCVariableDecl(tree);
+
+        // The type will be on the top of the stack...
+        variableDecl.vartype = convertToTypeExpression(results.pop());
+
+        setFields(variableDecl, tree);
 
         results.push(variableDecl);
+    }
+
+    /**
+     * Convert a given AJCTree node (Generally of type AJCIdent or AJCPrimitiveTypeTree to a type expression, if required.)
+     */
+    @SuppressWarnings("unchecked")
+    public AJCTypeExpression convertToTypeExpression(AJCTree tree) {
+        if (tree instanceof AJCPrimitiveTypeTree) {
+            return (AJCPrimitiveTypeTree) tree;
+        }
+
+        if (tree instanceof AJCSymbolRefTree) {
+            return new AJCObjectTypeTree((AJCSymbolRefTree<Symbol.ClassSymbol>) tree);
+        }
+
+        log.error("Unexpected type expression node type: {}:{}", tree, tree.getClass().getCanonicalName(), new Exception());
+        LogUtils.raiseCompilerError("Unexpected type expression node type!");
+
+        return null;
+    }
+    public List<AJCTypeExpression> convertToTypeExpression(List<AJCTree> trees) {
+        List<AJCTypeExpression> ret = List.nil();
+
+        for (AJCTree t : trees) {
+            ret = ret.prepend(convertToTypeExpression(t));
+        }
+
+        return ret;
     }
 
     @Override
@@ -343,16 +382,6 @@ public class InitialASTConverter extends TreeScanner {
         AJCForLoop node = new AJCForLoop(jcForLoop);
         node.enclosingBlock = enclosingBlock;
         setFields(node, jcForLoop);
-        results.push(node);
-    }
-
-    @Override
-    public void visitForeachLoop(JCEnhancedForLoop jcEnhancedForLoop) {
-        super.visitForeachLoop(jcEnhancedForLoop);
-
-        AJCForEachLoop node = new AJCForEachLoop(jcEnhancedForLoop);
-        node.enclosingBlock = enclosingBlock;
-        setFields(node, jcEnhancedForLoop);
         results.push(node);
     }
 
@@ -485,16 +514,6 @@ public class InitialASTConverter extends TreeScanner {
     }
 
     @Override
-    public void visitAssert(JCAssert jcAssert) {
-        super.visitAssert(jcAssert);
-
-        AJCAssert node = new AJCAssert(jcAssert);
-        node.enclosingBlock = enclosingBlock;
-        setFields(node, jcAssert);
-        results.push(node);
-    }
-
-    @Override
     public void visitApply(JCMethodInvocation jcMethodInvocation) {
         super.visitApply(jcMethodInvocation);
 
@@ -514,19 +533,23 @@ public class InitialASTConverter extends TreeScanner {
 
     @Override
     public void visitNewArray(JCNewArray jcNewArray) {
-        super.visitNewArray(jcNewArray);
+        if (jcNewArray == null) {
+            return;
+        }
+
+        scan(jcNewArray.annotations);
+        scan(jcNewArray.dims);
+
+        for (List<JCAnnotation> annos : jcNewArray.dimAnnotations) {
+            scan(annos);
+        }
+
+        scan(jcNewArray.elems);
+        scan(jcNewArray.elemtype);
 
         AJCNewArray node = new AJCNewArray(jcNewArray);
+        node.elemtype = convertToTypeExpression(results.pop());
         setFields(node, jcNewArray);
-        results.push(node);
-    }
-
-    @Override
-    public void visitLambda(JCLambda jcLambda) {
-        super.visitLambda(jcLambda);
-
-        AJCLambda node = new AJCLambda(jcLambda);
-        setFields(node, jcLambda);
         results.push(node);
     }
 
@@ -552,7 +575,7 @@ public class InitialASTConverter extends TreeScanner {
     public void visitUnary(JCUnary jcUnary) {
         super.visitUnary(jcUnary);
 
-        AJCExpression node;
+        AJCExpressionTree node;
 
         final Tag nodeTag = jcUnary.getTag();
         if (nodeTag == Tag.PREINC
@@ -578,11 +601,14 @@ public class InitialASTConverter extends TreeScanner {
     }
 
     @Override
-    public void visitTypeCast(JCTypeCast jcTypeCast) {
-        super.visitTypeCast(jcTypeCast);
+    public void visitTypeCast(JCTypeCast tree) {
+        scan(tree.expr);
+        scan(tree.clazz);
 
-        AJCTypeCast node = new AJCTypeCast(jcTypeCast);
-        setFields(node, jcTypeCast);
+        AJCTypeCast node = new AJCTypeCast(tree);
+        node.clazz = convertToTypeExpression(results.pop());
+
+        setFields(node, tree);
         results.push(node);
     }
 
@@ -610,15 +636,6 @@ public class InitialASTConverter extends TreeScanner {
 
         AJCFieldAccess node = new AJCFieldAccess(jcFieldAccess);
         setFields(node, jcFieldAccess);
-        results.push(node);
-    }
-
-    @Override
-    public void visitReference(JCMemberReference jcMemberReference) {
-        super.visitReference(jcMemberReference);
-
-        AJCMemberReference node = new AJCMemberReference(jcMemberReference);
-        setFields(node, jcMemberReference);
         results.push(node);
     }
 
@@ -654,16 +671,8 @@ public class InitialASTConverter extends TreeScanner {
         super.visitTypeArray(jcArrayTypeTree);
 
         AJCArrayTypeTree node = new AJCArrayTypeTree(jcArrayTypeTree);
-        setFields(node, jcArrayTypeTree);
-        results.push(node);
-    }
+        node.elemtype = convertToTypeExpression(results.pop());
 
-    @Override
-    public void visitTypeApply(JCTypeApply jcTypeApply) {
-        super.visitTypeApply(jcTypeApply);
-
-        AJCTypeApply node = new AJCTypeApply(jcTypeApply);
-        setFields(node, jcTypeApply);
         results.push(node);
     }
 
@@ -672,43 +681,9 @@ public class InitialASTConverter extends TreeScanner {
         super.visitTypeUnion(jcTypeUnion);
 
         AJCTypeUnion node = new AJCTypeUnion(jcTypeUnion);
+        // TODO: Something something list conversion.
+
         setFields(node, jcTypeUnion);
-        results.push(node);
-    }
-
-    @Override
-    public void visitTypeIntersection(JCTypeIntersection jcTypeIntersection) {
-        super.visitTypeIntersection(jcTypeIntersection);
-
-        AJCTypeIntersection node = new AJCTypeIntersection(jcTypeIntersection);
-        setFields(node, jcTypeIntersection);
-        results.push(node);
-    }
-
-    @Override
-    public void visitTypeParameter(JCTypeParameter jcTypeParameter) {
-        super.visitTypeParameter(jcTypeParameter);
-
-        AJCTypeParameter node = new AJCTypeParameter(jcTypeParameter);
-        setFields(node, jcTypeParameter);
-        results.push(node);
-    }
-
-    @Override
-    public void visitWildcard(JCWildcard jcWildcard) {
-        super.visitWildcard(jcWildcard);
-
-        AJCWildcard node = new AJCWildcard(jcWildcard);
-        setFields(node, jcWildcard);
-        results.push(node);
-    }
-
-    @Override
-    public void visitTypeBoundKind(TypeBoundKind typeBoundKind) {
-        super.visitTypeBoundKind(typeBoundKind);
-
-        AJCTypeBoundKind node = new AJCTypeBoundKind(typeBoundKind);
-        setFields(node, typeBoundKind);
         results.push(node);
     }
 

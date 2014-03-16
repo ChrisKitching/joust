@@ -24,9 +24,7 @@ public class AJCTreeCopier {
             return null;
         }
 
-        if (that instanceof AJCImport) {
-            return (T) copyImport((AJCImport) that);
-        } else if (that instanceof AJCClassDecl) {
+        if (that instanceof AJCClassDecl) {
             return (T) copyClassDef((AJCClassDecl) that);
         } else if (that instanceof AJCMethodDecl) {
             return (T) copyMethodDef((AJCMethodDecl) that);
@@ -42,8 +40,6 @@ public class AJCTreeCopier {
             return (T) copyWhileLoop((AJCWhileLoop) that);
         } else if (that instanceof AJCForLoop) {
             return (T) copyForLoop((AJCForLoop) that);
-        } else if (that instanceof AJCForEachLoop) {
-            return (T) copyForeachLoop((AJCForEachLoop) that);
         } else if (that instanceof AJCLabeledStatement) {
             return (T) copyLabelledStatement((AJCLabeledStatement) that);
         } else if (that instanceof AJCSwitch) {
@@ -70,16 +66,12 @@ public class AJCTreeCopier {
             return (T) copyReturn((AJCReturn) that);
         } else if (that instanceof AJCThrow) {
             return (T) copyThrow((AJCThrow) that);
-        } else if (that instanceof AJCAssert) {
-            return (T) copyAssert((AJCAssert) that);
         } else if (that instanceof AJCCall) {
             return (T) copyCall((AJCCall) that);
         } else if (that instanceof AJCNewClass) {
             return (T) copyNewClass((AJCNewClass) that);
         } else if (that instanceof AJCNewArray) {
             return (T) copyNewArray((AJCNewArray) that);
-        } else if (that instanceof AJCLambda) {
-            return (T) copyLambda((AJCLambda) that);
         } else if (that instanceof AJCAssign) {
             return (T) copyAssign((AJCAssign) that);
         } else if (that instanceof AJCAssignOp) {
@@ -98,8 +90,6 @@ public class AJCTreeCopier {
             return (T) copyArrayAccess((AJCArrayAccess) that);
         } else if (that instanceof AJCFieldAccess) {
             return (T) copyFieldAccess((AJCFieldAccess) that);
-        } else if (that instanceof AJCMemberReference) {
-            return (T) copyMemberReference((AJCMemberReference) that);
         } else if (that instanceof AJCIdent) {
             return (T) copyIdent((AJCIdent) that);
         } else if (that instanceof AJCLiteral) {
@@ -108,18 +98,8 @@ public class AJCTreeCopier {
             return (T) copyPrimitiveType((AJCPrimitiveTypeTree) that);
         } else if (that instanceof AJCArrayTypeTree) {
             return (T) copyArrayType((AJCArrayTypeTree) that);
-        } else if (that instanceof AJCTypeApply) {
-            return (T) copyTypeApply((AJCTypeApply) that);
         } else if (that instanceof AJCTypeUnion) {
             return (T) copyTypeUnion((AJCTypeUnion) that);
-        } else if (that instanceof AJCTypeIntersection) {
-            return (T) copyTypeIntersection((AJCTypeIntersection) that);
-        } else if (that instanceof AJCTypeParameter) {
-            return (T) copyTypeParameter((AJCTypeParameter) that);
-        } else if (that instanceof AJCWildcard) {
-            return (T) copyWildcard((AJCWildcard) that);
-        } else if (that instanceof AJCTypeBoundKind) {
-            return (T) copyTypeBoundKind((AJCTypeBoundKind) that);
         } else if (that instanceof AJCAnnotation) {
             return (T) copyAnnotation((AJCAnnotation) that);
         } else if (that instanceof AJCModifiers) {
@@ -150,23 +130,15 @@ public class AJCTreeCopier {
         List<T> ret = List.nil();
 
         for (T t : trees) {
-            ret = ret.prepend(this.<T>copy(t));
+            ret = ret.prepend(copy(t));
         }
 
         return ret.reverse();
     }
 
-    public AJCImport copyImport(AJCImport that) {
-        AJCImport imp = treeMaker.Import(copy(that.qualid), that.isStatic());
-        imp.getDecoratedTree().type = that.getDecoratedTree().type;
-        return imp;
-    }
-
-    
     public AJCClassDecl copyClassDef(AJCClassDecl that) {
         AJCClassDecl classDecl = treeMaker.ClassDef(copy(that.mods),
                                                     that.getDecoratedTree().name,
-                                                    copy(that.typarams),
                                                     copy(that.extending),
                                                     copy(that.implementing),
                                                     copy(that.fields),
@@ -184,7 +156,6 @@ public class AJCTreeCopier {
         AJCMethodDecl methodDecl = treeMaker.MethodDef(copy(that.mods),
                                                        that.getDecoratedTree().name,
                                                        copy(that.restype),
-                                                       copy(that.typarams),
                                                        copy(that.recvparam),
                                                        copy(that.params),
                                                        copy(that.thrown),
@@ -249,15 +220,6 @@ public class AJCTreeCopier {
         return loop;
     }
 
-    
-    public AJCForEachLoop copyForeachLoop(AJCForEachLoop that) {
-        AJCForEachLoop loop = treeMaker.ForeachLoop(copy(that.var), copy(that.expr), copy(that.body));
-
-        loop.getDecoratedTree().type = that.getDecoratedTree().type;
-        return loop;
-    }
-
-    
     public AJCLabeledStatement copyLabelledStatement(AJCLabeledStatement that) {
         AJCLabeledStatement node = treeMaker.Labelled(that.getDecoratedTree().label, copy(that.body));
 
@@ -291,7 +253,7 @@ public class AJCTreeCopier {
 
     
     public AJCTry copyTry(AJCTry that) {
-        AJCTry node = treeMaker.Try(copy(that.resources), copy(that.body), copy(that.catchers), copy(that.finalizer));
+        AJCTry node = treeMaker.Try(copy(that.body), copy(that.catchers), copy(that.finalizer));
 
         node.getDecoratedTree().type = that.getDecoratedTree().type;
         return node;
@@ -363,17 +325,8 @@ public class AJCTreeCopier {
         return node;
     }
 
-    
-    public AJCAssert copyAssert(AJCAssert that) {
-        AJCAssert node = treeMaker.Assert(copy(that.cond), copy(that.detail));
-
-        node.getDecoratedTree().type = that.getDecoratedTree().type;
-        return node;
-    }
-
-    
     public AJCCall copyCall(AJCCall that) {
-        AJCCall node = treeMaker.Call(copy(that.typeargs), copy(that.meth), copy(that.args));
+        AJCCall node = treeMaker.Call(copy(that.meth), copy(that.args));
 
         node.getDecoratedTree().type = that.getDecoratedTree().type;
         return node;
@@ -381,8 +334,7 @@ public class AJCTreeCopier {
 
     
     public AJCNewClass copyNewClass(AJCNewClass that) {
-        AJCNewClass node = treeMaker.NewClass(copy(that.encl),
-                copy(that.typeargs),
+        AJCNewClass node = treeMaker.NewClass(
                 copy(that.clazz),
                 copy(that.args),
                 copy(that.def));
@@ -399,12 +351,6 @@ public class AJCTreeCopier {
         return node;
     }
 
-    
-    public AJCLambda copyLambda(AJCLambda that) {
-        throw new UnsupportedOperationException("Lambdas not supported.");
-    }
-
-    
     public AJCAssign copyAssign(AJCAssign that) {
         AJCAssign node = treeMaker.Assign(copy(that.lhs), copy(that.rhs));
 
@@ -481,12 +427,6 @@ public class AJCTreeCopier {
         return node;
     }
 
-    
-    public AJCMemberReference copyMemberReference(AJCMemberReference that) {
-        throw new UnsupportedOperationException("Member references not supported.");
-    }
-
-    
     public AJCIdent copyIdent(AJCIdent that) {
         AJCIdent node = treeMaker.Ident(that.getTargetSymbol());
 
@@ -517,15 +457,6 @@ public class AJCTreeCopier {
         return node;
     }
 
-    
-    public AJCTypeApply copyTypeApply(AJCTypeApply that) {
-        AJCTypeApply node = treeMaker.TypeApply(copy(that.clazz), copy(that.arguments));
-
-        node.getDecoratedTree().type = that.getDecoratedTree().type;
-        return node;
-    }
-
-    
     public AJCTypeUnion copyTypeUnion(AJCTypeUnion that) {
         AJCTypeUnion node = treeMaker.TypeUnion(copy(that.alternatives));
 
@@ -533,39 +464,6 @@ public class AJCTreeCopier {
         return node;
     }
 
-    
-    public AJCTypeIntersection copyTypeIntersection(AJCTypeIntersection that) {
-        AJCTypeIntersection node = treeMaker.TypeIntersection(copy(that.bounds));
-
-        node.getDecoratedTree().type = that.getDecoratedTree().type;
-        return node;
-    }
-
-    
-    public AJCTypeParameter copyTypeParameter(AJCTypeParameter that) {
-        AJCTypeParameter node = treeMaker.TypeParameter(that.getName(), copy(that.bounds), copy(that.annotations));
-
-        node.getDecoratedTree().type = that.getDecoratedTree().type;
-        return node;
-    }
-
-    
-    public AJCWildcard copyWildcard(AJCWildcard that) {
-        AJCWildcard node = treeMaker.Wildcard(copy(that.kind), copy(that.inner));
-
-        node.getDecoratedTree().type = that.getDecoratedTree().type;
-        return node;
-    }
-
-    
-    public AJCTypeBoundKind copyTypeBoundKind(AJCTypeBoundKind that) {
-        AJCTypeBoundKind node = treeMaker.TypeBoundKind(that.getDecoratedTree().kind);
-
-        node.getDecoratedTree().type = that.getDecoratedTree().type;
-        return node;
-    }
-
-    
     public AJCAnnotation copyAnnotation(AJCAnnotation that) {
         AJCAnnotation node = treeMaker.Annotation(copy(that.annotationType), copy(that.args));
 
@@ -583,7 +481,7 @@ public class AJCTreeCopier {
 
     
     public AJCAnnotatedType copyAnnotatedType(AJCAnnotatedType that) {
-        AJCAnnotatedType node = treeMaker.AnnotatedType(copy(that.annotations), copy(that.underlyingType));
+        AJCAnnotatedType node = treeMaker.AnnotatedType(copy(that.underlyingType));
 
         node.getDecoratedTree().type = that.getDecoratedTree().type;
         return node;

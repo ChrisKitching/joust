@@ -45,13 +45,6 @@ public class BackwardsFlowVisitor extends AJCTreeVisitorImpl {
     }
 
     @Override
-    public void visitForeachLoop(AJCForEachLoop jcEnhancedForLoop) {
-        visit(jcEnhancedForLoop.body);
-        visit(jcEnhancedForLoop.expr);
-        visit(jcEnhancedForLoop.var);
-    }
-
-    @Override
     public void visitSwitch(AJCSwitch jcSwitch) {
         visitBackwards(jcSwitch.cases);
         visit(jcSwitch.selector);
@@ -74,7 +67,6 @@ public class BackwardsFlowVisitor extends AJCTreeVisitorImpl {
         visit(jcTry.finalizer);
         visitBackwards(jcTry.catchers);
         visit(jcTry.body);
-        visitBackwards(jcTry.resources);
     }
 
     @Override
@@ -98,18 +90,11 @@ public class BackwardsFlowVisitor extends AJCTreeVisitorImpl {
     }
 
     @Override
-    public void visitAssert(AJCAssert jcAssert) {
-        visit(jcAssert.detail);
-        visit(jcAssert.cond);
-    }
-
-    @Override
     public void visitMethodDef(AJCMethodDecl jcMethodDecl) {
         visit(jcMethodDecl.body);
         visit(jcMethodDecl.thrown);
         visit(jcMethodDecl.params);
         visit(jcMethodDecl.recvparam);
-        visit(jcMethodDecl.typarams);
         visit(jcMethodDecl.restype);
         visit(jcMethodDecl.mods);
     }
@@ -125,7 +110,6 @@ public class BackwardsFlowVisitor extends AJCTreeVisitorImpl {
         visit(jcNewClass.def);
         visitBackwards(jcNewClass.args);
         visit(jcNewClass.clazz);
-        visit(jcNewClass.encl);
     }
 
     @Override
@@ -139,12 +123,6 @@ public class BackwardsFlowVisitor extends AJCTreeVisitorImpl {
         }
 
         visitBackwards(jcNewArray.annotations);
-    }
-
-    @Override
-    public void visitLambda(AJCLambda jcLambda) {
-        visit(jcLambda.body);
-        visitBackwards(jcLambda.params);
     }
 
     @Override

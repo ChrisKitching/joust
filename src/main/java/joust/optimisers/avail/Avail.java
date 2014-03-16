@@ -110,12 +110,6 @@ public class Avail extends AJCTreeVisitorImpl {
     }
 
     @Override
-    public void visitForeachLoop(AJCForEachLoop jcEnhancedForLoop) {
-        markAvailableExpressions(jcEnhancedForLoop);
-        super.visitForeachLoop(jcEnhancedForLoop);
-    }
-
-    @Override
     public void visitWhileLoop(AJCWhileLoop jcWhileLoop) {
         markAvailableExpressions(jcWhileLoop);
         log.debug("Entering visitWhileLoop with scope:\n{}", currentScope);
@@ -230,12 +224,6 @@ public class Avail extends AJCTreeVisitorImpl {
     public void visitSkip(AJCSkip jcSkip) {
         markAvailableExpressions(jcSkip);
         super.visitSkip(jcSkip);
-    }
-
-    @Override
-    public void visitMemberReference(AJCMemberReference jcMemberReference) {
-        markAvailableExpressions(jcMemberReference);
-        super.visitMemberReference(jcMemberReference);
     }
 
     @Override

@@ -2,7 +2,6 @@ package joust.optimisers.utils;
 
 import com.sun.tools.javac.code.Symbol;
 import joust.utils.LogUtils;
-import joust.utils.TreeUtils;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.Collections;
@@ -19,14 +18,14 @@ import static com.sun.tools.javac.code.Symbol.*;
  * Provide an ordering over expression nodes.
  */
 @Log4j2
-public class CommutativitySorterComparator implements Comparator<AJCExpression> {
+public class CommutativitySorterComparator implements Comparator<AJCExpressionTree> {
     // Define a sort-of-mostly-arbitrary ordering on types of expressions.
     // Some vague attempt is made to make expensive operations tend to be on the right of an expression so
     // they're more likely to be short circuited away at runtime. Maybe. We live in hope.
-    private static final Map<Class<? extends AJCExpression>, Integer> nodeTypeOrderings;
+    private static final Map<Class<? extends AJCExpressionTree>, Integer> nodeTypeOrderings;
     static {
         // Irritating immutable map boilerplate...
-        final HashMap<Class<? extends AJCExpression>, Integer> orderings = new HashMap<Class<? extends AJCExpression>, Integer>() {
+        final HashMap<Class<? extends AJCExpressionTree>, Integer> orderings = new HashMap<Class<? extends AJCExpressionTree>, Integer>() {
             {
                 put(AJCLiteral.class, 1);
                 put(AJCIdent.class, 2);
@@ -117,7 +116,7 @@ public class CommutativitySorterComparator implements Comparator<AJCExpression> 
 
 
     @Override
-    public int compare(AJCExpression l, AJCExpression r) {
+    public int compare(AJCExpressionTree l, AJCExpressionTree r) {
         // Firstly, we sort by type.
         int lType = nodeTypeOrderings.get(l.getClass());
         int rType = nodeTypeOrderings.get(r.getClass());

@@ -6,7 +6,6 @@ import static joust.tree.annotatedtree.AJCTree.*;
  * Interface for tree visitors.
  */
 public interface AJCTreeVisitor {
-    void visitImport(AJCImport that);
     void visitClassDef(AJCClassDecl that);
     void visitMethodDef(AJCMethodDecl that);
     void visitVariableDecl(AJCVariableDecl that);
@@ -16,7 +15,6 @@ public interface AJCTreeVisitor {
     void visitDoWhileLoop(AJCDoWhileLoop that);
     void visitWhileLoop(AJCWhileLoop that);
     void visitForLoop(AJCForLoop that);
-    void visitForeachLoop(AJCForEachLoop that);
     void visitLabelledStatement(AJCLabeledStatement that);
     void visitSwitch(AJCSwitch that);
     void visitCase(AJCCase that);
@@ -30,11 +28,9 @@ public interface AJCTreeVisitor {
     void visitContinue(AJCContinue that);
     void visitReturn(AJCReturn that);
     void visitThrow(AJCThrow that);
-    void visitAssert(AJCAssert that);
     void visitCall(AJCCall that);
     void visitNewClass(AJCNewClass that);
     void visitNewArray(AJCNewArray that);
-    void visitLambda(AJCLambda that);
     void visitAssign(AJCAssign that);
     void visitAssignop(AJCAssignOp that);
     void visitUnary(AJCUnary that);
@@ -44,17 +40,11 @@ public interface AJCTreeVisitor {
     void visitInstanceOf(AJCInstanceOf that);
     void visitArrayAccess(AJCArrayAccess that);
     void visitFieldAccess(AJCFieldAccess that);
-    void visitMemberReference(AJCMemberReference that);
     void visitIdent(AJCIdent that);
     void visitLiteral(AJCLiteral that);
     void visitPrimitiveType(AJCPrimitiveTypeTree that);
     void visitArrayType(AJCArrayTypeTree that);
-    void visitTypeApply(AJCTypeApply that);
     void visitTypeUnion(AJCTypeUnion that);
-    void visitTypeIntersection(AJCTypeIntersection that);
-    void visitTypeParameter(AJCTypeParameter that);
-    void visitWildcard(AJCWildcard that);
-    void visitTypeBoundKind(AJCTypeBoundKind that);
     void visitAnnotation(AJCAnnotation that);
     void visitModifiers(AJCModifiers that);
     void visitAnnotatedType(AJCAnnotatedType that);

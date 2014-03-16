@@ -6,14 +6,11 @@ import joust.joustcache.data.ClassInfo;
 import joust.tree.conversion.TreePreparationTranslator;
 import lombok.extern.log4j.Log4j2;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import java.util.HashMap;
-import java.util.Set;
 
+import static com.sun.tools.javac.tree.JCTree.*;
 import static com.sun.tools.javac.code.Symbol.*;
 import static joust.tree.annotatedtree.AJCTree.*;
-import static joust.utils.StaticCompilerUtils.*;
 
 /**
  * A forest of annotated Java ASTs. Typically, the input to the optimiser will be converted into a single such
@@ -36,7 +33,7 @@ public class AJCForest {
      * Iterate the root elements converting them to our tree representation, populating the various tables
      * as you go.
      */
-    public static AJCForest init(Iterable<? extends Element> rootElements) {
+    public static AJCForest init(Iterable<JCCompilationUnit> rootElements) {
         List<AJCClassDecl> prospectiveRootNodes = List.nil();
 
         // Since it's stateless...
@@ -46,35 +43,38 @@ public class AJCForest {
         HashMap<String, VarSymbol> prospectiveVarSymbolTable = new HashMap<>();
 
         InitialASTConverter.init();
-        for (Element element : rootElements) {
-            log.debug("Element: {}", element);
-            if (element.getKind() != ElementKind.CLASS) {
-                log.info("Ignoring element of type {}" + element.getKind());
-                continue;
+        for (JCCompilationUnit element : rootElements) {
+            // Find the class definitions in here...
+            for (JCTree def : element.defs) {
+                if (def instanceof JCClassDecl) {
+                    log.debug("Commence translation of: {}", def);
+
+                    JCClassDecl classTree = (JCClassDecl) def;
+
+                    // Perform the sanity translations on the tree that are more convenient to do before the translation step...
+                    classTree.accept(sanity);
+
+                    // Translate the tree to our tree representation...
+                    InitialASTConverter converter = new InitialASTConverter();
+                    classTree.accept(converter);
+
+                    AJCClassDecl translatedTree = (AJCClassDecl) converter.getResult();
+                    log.debug("Translated tree: {}", translatedTree);
+
+                    // Populate method and varsym tables.
+                    for (AJCMethodDecl defN : translatedTree.methods) {
+                        prospectiveMethodTable.put(defN.getTargetSymbol(), defN);
+                        log.debug("Method: {}", defN.getTargetSymbol());
+                    }
+
+                    for (AJCVariableDecl defN : translatedTree.fields) {
+                        prospectiveVarSymbolTable.put(ClassInfo.getHashForVariable(defN.getTargetSymbol()), defN.getTargetSymbol());
+                        log.debug("Field: {}", defN.getTargetSymbol());
+                    }
+
+                    prospectiveRootNodes = prospectiveRootNodes.prepend(translatedTree);
+                }
             }
-
-            // A magic cast to the compiler-internal AST type gets us the read-write access we need...
-            JCTree.JCClassDecl classTree = (JCTree.JCClassDecl) trees.getTree(element);
-
-            // Perform the sanity translations on the tree that are more convenient to do before the translation step...
-            classTree.accept(sanity);
-
-            // Translate the tree to our tree represenation...
-            InitialASTConverter converter = new InitialASTConverter();
-            classTree.accept(converter);
-
-            AJCClassDecl translatedTree = (AJCClassDecl) converter.getResult();
-
-            // Populate method and varsym tables.
-            for (AJCMethodDecl def : translatedTree.methods) {
-                prospectiveMethodTable.put(def.getTargetSymbol(), def);
-            }
-
-            for (AJCVariableDecl def : translatedTree.fields) {
-                prospectiveVarSymbolTable.put(ClassInfo.getHashForVariable(def.getTargetSymbol()), def.getTargetSymbol());
-            }
-
-            prospectiveRootNodes = prospectiveRootNodes.prepend(translatedTree);
         }
 
         // Deallocate the annoying lookup table.

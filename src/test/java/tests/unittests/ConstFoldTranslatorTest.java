@@ -1,8 +1,6 @@
 package tests.unittests;
 
-import com.sun.tools.javac.util.List;
 import joust.optimisers.translators.ConstFoldTranslator;
-import joust.tree.annotatedtree.AJCTree;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import lombok.extern.log4j.Log4j2;
@@ -30,13 +28,13 @@ class ConstFoldTranslatorTest extends BaseTreeTranslatorTest<ConstFoldTranslator
 
     @Test
     @Parameters(method = "unaryArgs")
-    public void testVisitUnary(AJCUnary input, AJCExpression expected) {
+    public void testVisitUnary(AJCUnary input, AJCExpressionTree expected) {
         testVisitNode(treeMaker.Exec(input), treeMaker.Exec(expected));
     }
 
     @Test
     @Parameters(method = "binaryArgs")
-    public void testVisitBinary(AJCBinary input, AJCExpression expected) {
+    public void testVisitBinary(AJCBinary input, AJCExpressionTree expected) {
         testVisitNode(treeMaker.Exec(input), treeMaker.Exec(expected));
     }
 
