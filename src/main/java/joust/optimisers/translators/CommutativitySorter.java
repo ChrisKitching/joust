@@ -1,38 +1,40 @@
 package joust.optimisers.translators;
 
 import joust.optimisers.utils.CommutativitySorterComparator;
-import joust.optimisers.visitors.DepthFirstJavacTreeVisitor;
+import joust.tree.annotatedtree.AJCTreeVisitorImpl;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import static com.sun.tools.javac.tree.JCTree.*;
-import static joust.Optimiser.treeMaker;
+import static com.sun.tools.javac.tree.JCTree.Tag;
+import static joust.tree.annotatedtree.AJCTree.*;
+import static joust.utils.StaticCompilerUtils.treeMaker;
 
 /**
  * Arranges commutative subtrees into a standard structure, so semantically equivalent expressions that
  * differ in structure via commutativity are all transformed into identical trees. (Although we'll still
  * miss equivalent trees that are differently-structured via a distribution relationship, alas.).
  */
-public @Log4j2 class CommutativitySorter extends DepthFirstJavacTreeVisitor {
+@Log4j2
+public class CommutativitySorter extends AJCTreeVisitorImpl {
     // The commutative operator which combines elements in the commutative subtree of interest.
-    private Tag currentSubtreeTag;
+    private final Tag currentSubtreeTag;
 
-    private JCBinary targetTree;
+    private final AJCBinary targetTree;
 
     // The list of elements combined by the commutative subtree of interest.
-    private ArrayList<JCExpression> combinedElements = new ArrayList<>();
+    private final ArrayList<AJCExpression> combinedElements = new ArrayList<>();
 
-    public CommutativitySorter(JCBinary tree) {
+    public CommutativitySorter(AJCBinary tree) {
         currentSubtreeTag = tree.getTag();
         targetTree = tree;
     }
 
-    public JCBinary process() {
+    public AJCBinary process() {
         // Scan the tree and populate combinedElements.
-        targetTree.accept(this);
+        visit(targetTree);
 
         if (combinedElements.size() == 1) {
             return targetTree;
@@ -44,16 +46,16 @@ public @Log4j2 class CommutativitySorter extends DepthFirstJavacTreeVisitor {
         log.info("Elements: {}", Arrays.toString(combinedElements.toArray()));
 
         // Build the tree from the sorted elements.
-        Iterator<JCExpression> iterator = combinedElements.iterator();
-        JCBinary replacementTree = treeMaker.Binary(currentSubtreeTag, iterator.next(), iterator.next());
-        replacementTree.type = targetTree.type;
-        replacementTree.operator = targetTree.operator;
+        Iterator<AJCExpression> iterator = combinedElements.iterator();
+        AJCBinary replacementTree = treeMaker.Binary(currentSubtreeTag, iterator.next(), iterator.next());
+        replacementTree.setType(targetTree.getType());
+        replacementTree.setOperator(targetTree.getOperator());
 
         while (iterator.hasNext()) {
-            JCExpression expr = iterator.next();
+            AJCExpression expr = iterator.next();
             replacementTree = treeMaker.Binary(currentSubtreeTag, replacementTree, expr);
-            replacementTree.type = targetTree.type;
-            replacementTree.operator = targetTree.operator;
+            replacementTree.setType(targetTree.getType());
+            replacementTree.setOperator(targetTree.getOperator());
         }
 
         // Return result in some magical way...
@@ -61,7 +63,7 @@ public @Log4j2 class CommutativitySorter extends DepthFirstJavacTreeVisitor {
     }
 
     @Override
-    public void visitBinary(JCBinary tree) {
+    public void visitBinary(AJCBinary tree) {
         if (tree.getTag() != currentSubtreeTag) {
             // If it's not a continuation of the commutative subtree, it's a leaf thereof...
             combinedElements.add(tree);
@@ -71,10 +73,10 @@ public @Log4j2 class CommutativitySorter extends DepthFirstJavacTreeVisitor {
         // Even if it is, check if this is secretly string concatenation...
         if (currentSubtreeTag == Tag.PLUS) {
             log.info("Node: {}", tree.lhs);
-            log.info("Node type: {}", tree.lhs.type);
-            log.info("Node type: {}", tree.rhs.type);
-            if (tree.lhs.type.toString().equals("java.lang.String")
-             || tree.rhs.type.toString().equals("java.lang.String")) {
+            log.info("Node type: {}", tree.lhs.getType());
+            log.info("Node type: {}", tree.rhs.getType());
+            if ("java.lang.String".equals(tree.lhs.getType().toString())
+             || "java.lang.String".equals(tree.rhs.getType().toString())) {
                 log.info("String concat!");
                 combinedElements.add(tree);
                 return;
@@ -85,52 +87,57 @@ public @Log4j2 class CommutativitySorter extends DepthFirstJavacTreeVisitor {
     }
 
     @Override
-    public void visitUnary(JCUnary tree) {
+    public void visitUnary(AJCUnary tree) {
         combinedElements.add(tree);
     }
 
     @Override
-    public void visitApply(JCMethodInvocation jcMethodInvocation) {
+    public void visitUnaryAsg(AJCUnaryAsg tree) {
+        combinedElements.add(tree);
+    }
+
+    @Override
+    public void visitCall(AJCCall jcMethodInvocation) {
         combinedElements.add(jcMethodInvocation);
     }
 
     @Override
-    public void visitIdent(JCIdent jcIdent) {
+    public void visitIdent(AJCIdent jcIdent) {
         combinedElements.add(jcIdent);
     }
 
     @Override
-    public void visitSelect(JCFieldAccess jcFieldAccess) {
+    public void visitFieldAccess(AJCFieldAccess jcFieldAccess) {
         combinedElements.add(jcFieldAccess);
     }
 
     @Override
-    public void visitTypeTest(JCInstanceOf jcInstanceOf) {
+    public void visitInstanceOf(AJCInstanceOf jcInstanceOf) {
         combinedElements.add(jcInstanceOf);
     }
 
     @Override
-    public void visitLiteral(JCLiteral jcLiteral) {
+    public void visitLiteral(AJCLiteral jcLiteral) {
         combinedElements.add(jcLiteral);
     }
 
     @Override
-    public void visitTypeCast(JCTypeCast jcTypeCast) {
+    public void visitTypeCast(AJCTypeCast jcTypeCast) {
         combinedElements.add(jcTypeCast);
     }
 
     @Override
-    public void visitAssignop(JCAssignOp jcAssignOp) {
+    public void visitAssignop(AJCAssignOp jcAssignOp) {
         combinedElements.add(jcAssignOp);
     }
 
     @Override
-    public void visitAssign(JCAssign jcAssign) {
+    public void visitAssign(AJCAssign jcAssign) {
         combinedElements.add(jcAssign);
     }
 
     @Override
-    public void visitConditional(JCConditional jcConditional) {
+    public void visitConditional(AJCConditional jcConditional) {
         combinedElements.add(jcConditional);
     }
 }
