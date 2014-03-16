@@ -3,6 +3,7 @@ package joust.utils;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.file.JavacFileManager;
+import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
@@ -12,12 +13,13 @@ import joust.tree.annotatedtree.NonStupidJCTreeCopier;
 import joust.tree.annotatedtree.AJCTreeFactory;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import com.sun.tools.javac.main.JavaCompiler;
 import javax.tools.JavaFileManager;
 
 /**
  * Class to hold the singleton utility classes pilfered from the running javac instance.
  */
-public class StaticCompilerUtils {
+public final class StaticCompilerUtils {
     // The Trees instance, used to map input elements to their ASTs.
     public static Trees trees;
 
@@ -40,6 +42,12 @@ public class StaticCompilerUtils {
     public static AJCTreeCopier treeCopier;
     public static NonStupidJCTreeCopier<Void> javacTreeCopier;
 
+    // The compilation context and compiler.
+    public static JavaCompiler javaCompiler;
+    public static Context context;
+
+    public static JavacElements javaElements;
+
     public static void init(ProcessingEnvironment env) {
         if (isInitialised()) {
             return;
@@ -49,30 +57,50 @@ public class StaticCompilerUtils {
 
         // We typecast the processing environment to the one used by javac. This dirty trick allows
         // us to alter the AST - something not generally possible in annotation processors.
-        Context context = ((JavacProcessingEnvironment) env).getContext();
-        initWithContext(context);
+        Context con = ((JavacProcessingEnvironment) env).getContext();
+
+        initWithContext(con);
     }
 
-    public static void initWithContext(Context context) {
+    public static void initWithContext(Context con) {
         if (isInitialised()) {
             return;
         }
 
-        fileManager = context.get(JavaFileManager.class);
+        context = con;
+
+        fileManager = con.get(JavaFileManager.class);
         if (fileManager == null) {
-            fileManager = new JavacFileManager(context, true, null);
-            context.put(JavaFileManager.class, fileManager);
+            fileManager = new JavacFileManager(con, true, null);
+            con.put(JavaFileManager.class, fileManager);
         }
 
-        javacTreeMaker = TreeMaker.instance(context);
-        treeMaker = AJCTreeFactory.instance(context);
-        treeCopier = AJCTreeCopier.instance(context);
+        javaCompiler = JavaCompiler.instance(con);
+        javaElements = JavacElements.instance(con);
+        javacTreeMaker = TreeMaker.instance(con);
+        treeMaker = AJCTreeFactory.instance(con);
+        treeCopier = AJCTreeCopier.instance(con);
         javacTreeCopier = new NonStupidJCTreeCopier<>(javacTreeMaker);
-        names = Names.instance(context);
-        symtab = Symtab.instance(context);
+        names = Names.instance(con);
+        symtab = Symtab.instance(con);
     }
 
     public static boolean isInitialised() {
         return symtab != null;
+    }
+
+    public static void uninit() {
+        context = null;
+        symtab = null;
+        fileManager = null;
+        javaCompiler = null;
+        javaElements = null;
+        javacTreeMaker = null;
+        treeMaker = null;
+        treeCopier = null;
+        javacTreeCopier = null;
+        names = null;
+        symtab = null;
+        trees = null;
     }
 }

@@ -26,6 +26,12 @@ import static joust.utils.StaticCompilerUtils.*;
 @Log4j2
 public class TreePreparationTranslator extends TreeTranslator {
     @Override
+    public void visitMethodDef(JCMethodDecl jcMethodDecl) {
+        log.debug("Encountered method:\n{}", jcMethodDecl);
+        super.visitMethodDef(jcMethodDecl);
+    }
+
+    @Override
     public void visitAssert(JCAssert jcAssert) {
         super.visitAssert(jcAssert);
 
@@ -79,24 +85,6 @@ public class TreePreparationTranslator extends TreeTranslator {
         jcIf.thenpart = ensureBlock(jcIf.thenpart);
         jcIf.elsepart = ensureBlock(jcIf.elsepart);
         result = jcIf;
-    }
-
-    @Override
-    public void visitTypeParameter(JCTypeParameter jcTypeParameter) {
-        log.warn("Encountered type parameter: {}", jcTypeParameter);
-        super.visitTypeParameter(jcTypeParameter);
-    }
-
-    @Override
-    public void visitTypeIdent(JCPrimitiveTypeTree jcPrimitiveTypeTree) {
-        log.warn("Encountered type ident: {}", jcPrimitiveTypeTree);
-        super.visitTypeIdent(jcPrimitiveTypeTree);
-    }
-
-    @Override
-    public void visitTypeBoundKind(TypeBoundKind typeBoundKind) {
-        log.warn("Encountered type ident: {}", typeBoundKind);
-        super.visitTypeBoundKind(typeBoundKind);
     }
 
     /**

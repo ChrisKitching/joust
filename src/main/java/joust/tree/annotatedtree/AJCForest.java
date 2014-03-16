@@ -36,7 +36,7 @@ public class AJCForest {
      * Iterate the root elements converting them to our tree representation, populating the various tables
      * as you go.
      */
-    public static AJCForest init(Set<? extends Element> rootElements) {
+    public static AJCForest init(Iterable<? extends Element> rootElements) {
         List<AJCClassDecl> prospectiveRootNodes = List.nil();
 
         // Since it's stateless...

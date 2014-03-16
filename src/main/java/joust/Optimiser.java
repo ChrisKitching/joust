@@ -1,9 +1,9 @@
 package joust;
 
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.tree.JCTree;
 import joust.joustcache.ChecksumUtils;
 import joust.joustcache.JOUSTCache;
-import joust.optimisers.runnables.ConstFold;
-import joust.optimisers.runnables.ExpressionNormalise;
 import joust.optimisers.avail.normalisedexpressions.PossibleSymbol;
 import joust.optimisers.utils.OptimisationPhaseManager;
 import joust.tree.annotatedtree.AJCForest;
@@ -18,11 +18,15 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
-import static com.sun.source.util.TaskEvent.Kind.*;
 import static joust.optimisers.utils.OptimisationPhaseManager.PhaseModifier.*;
+import static joust.optimisers.utils.OptimisationPhaseManager.VirtualPhase.*;
+import static com.sun.source.util.TaskEvent.Kind.*;
+import static joust.utils.StaticCompilerUtils.javaElements;
 
 @Log4j2
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
@@ -30,9 +34,17 @@ import static joust.optimisers.utils.OptimisationPhaseManager.PhaseModifier.*;
 public class Optimiser extends AbstractProcessor {
     public static AJCForest inputTrees;
 
+    // Stash the trees between the annotation processing and desugaring steps...
+    public static LinkedHashSet<JCTree.JCCompilationUnit> stashedTrees;
+
+    public static JavacProcessingEnvironment environ;
+
     @Override
     public synchronized void init(ProcessingEnvironment env) {
         super.init(env);
+        StaticCompilerUtils.uninit();
+
+        environ = (JavacProcessingEnvironment) env;
 
         // So we can log those fatal errors...
         LogUtils.init(processingEnv);
@@ -43,39 +55,32 @@ public class Optimiser extends AbstractProcessor {
             return;
         }
 
-        inputTrees = null;
+        stashedTrees = new LinkedHashSet<>();
 
         JOUSTCache.init();
         ChecksumUtils.init();
         PossibleSymbol.init();
         TreeInfoManager.init();
 
-        // Define when we run each optimisation.
         OptimisationPhaseManager.init(env);
-        OptimisationPhaseManager.register(new ConstFold(), AFTER, ANALYZE);
-        OptimisationPhaseManager.register(new ExpressionNormalise(), AFTER, ANALYZE);
-        //OptimisationPhaseManager.register(new SideEffects(), AFTER, ANALYZE);
-        //OptimisationPhaseManager.register(new AssignmentStrip(), AFTER, ANALYZE);
-        //OptimisationPhaseManager.register(new LoopInvar(), AFTER, ANALYZE);
-        //OptimisationPhaseManager.register(new Unroll(), AFTER, ANALYZE);
+        OptimisationPhaseManager.register(new JavacBrutaliser(), AFTER, ANNOTATION_PROCESSING);
 
         // The post-compilation pass to populate the disk cache with the results of classes processed
         // during this job. Needs to happen here so we can compute a checksum over the bytecode and
         // spot when things get sneakily changed when we weren't looking.
         //OptimisationPhaseManager.register(new ChecksumRunner(), AFTER, GENERATE);
 
-
         StaticCompilerUtils.init(env);
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> typeElements, RoundEnvironment roundEnvironment) {
-        if (roundEnvironment.processingOver()) {
-            return false;
-        }
+        for (Element element : roundEnvironment.getRootElements()) {
+            // Stash the root elements for later use...
+            JCTree.JCCompilationUnit unit = javaElements.getTreeAndTopLevel(element, null, null).snd;
 
-        // Construct the representation of the AST that we're going to be working with...
-        inputTrees = AJCForest.init(roundEnvironment.getRootElements());
+            stashedTrees.add(unit);
+        }
 
         return false;
     }
