@@ -1,5 +1,6 @@
 package joust.optimisers.utils;
 
+import com.sun.tools.javac.code.Symbol;
 import joust.utils.LogUtils;
 import joust.utils.TreeUtils;
 import lombok.extern.log4j.Log4j2;
@@ -9,32 +10,34 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.sun.tools.javac.tree.JCTree.*;
+import static joust.tree.annotatedtree.AJCTree.*;
+import static com.sun.tools.javac.tree.JCTree.Tag;
 import static com.sun.tools.javac.code.Symbol.*;
 
 /**
  * Provide an ordering over expression nodes.
  */
-public @Log4j2
-class CommutativitySorterComparator implements Comparator<JCExpression> {
+@Log4j2
+public class CommutativitySorterComparator implements Comparator<AJCExpression> {
     // Define a sort-of-mostly-arbitrary ordering on types of expressions.
     // Some vague attempt is made to make expensive operations tend to be on the right of an expression so
     // they're more likely to be short circuited away at runtime. Maybe. We live in hope.
-    private static final Map<Class<? extends JCExpression>, Integer> nodeTypeOrderings;
+    private static final Map<Class<? extends AJCExpression>, Integer> nodeTypeOrderings;
     static {
         // Irritating immutable map boilerplate...
-        final HashMap<Class<? extends JCExpression>, Integer> orderings = new HashMap<Class<? extends JCExpression>, Integer>() {
+        final HashMap<Class<? extends AJCExpression>, Integer> orderings = new HashMap<Class<? extends AJCExpression>, Integer>() {
             {
-                put(JCLiteral.class, 1);
-                put(JCIdent.class, 2);
-                put(JCFieldAccess.class, 3);
-                put(JCInstanceOf.class, 4);
-                put(JCUnary.class, 5);
-                put(JCBinary.class, 6);
-                put(JCAssign.class, 7);
-                put(JCAssignOp.class, 8);
-                put(JCConditional.class, 9);
-                put(JCMethodInvocation.class, 10);
+                put(AJCLiteral.class, 1);
+                put(AJCIdent.class, 2);
+                put(AJCFieldAccess.class, 3);
+                put(AJCInstanceOf.class, 4);
+                put(AJCUnary.class, 5);
+                put(AJCUnaryAsg.class, 6);
+                put(AJCBinary.class, 7);
+                put(AJCAssign.class, 8);
+                put(AJCAssignOp.class, 9);
+                put(AJCConditional.class, 10);
+                put(AJCCall.class, 11);
             }
         };
 
@@ -113,7 +116,7 @@ class CommutativitySorterComparator implements Comparator<JCExpression> {
 
 
     @Override
-    public int compare(JCExpression l, JCExpression r) {
+    public int compare(AJCExpression l, AJCExpression r) {
         // Firstly, we sort by type.
         int lType = nodeTypeOrderings.get(l.getClass());
         int rType = nodeTypeOrderings.get(r.getClass());
@@ -124,35 +127,37 @@ class CommutativitySorterComparator implements Comparator<JCExpression> {
         }
 
         // If they're the same, hand over to the various specialised functions for choosing between them...
-        if (l instanceof JCLiteral) {
-            return compareLiterals((JCLiteral) l, (JCLiteral) r);
-        } else if (l instanceof JCIdent) {
-            return compareIdents((JCIdent) l, (JCIdent) r);
-        } else if (l instanceof JCFieldAccess) {
-            return compareFieldAccesses((JCFieldAccess) l, (JCFieldAccess) r);
-        } else if (l instanceof JCInstanceOf) {
-            return compareInstanceOfs((JCInstanceOf) l, (JCInstanceOf) r);
-        } else if (l instanceof JCUnary) {
-            return compareUnaries((JCUnary) l, (JCUnary) r);
-        } else if (l instanceof JCBinary) {
-            return compareBinaries((JCBinary) l, (JCBinary) r);
-        } else if (l instanceof JCAssign) {
-            return compareAssigns((JCAssign) l, (JCAssign) r);
-        } else if (l instanceof JCAssignOp) {
-            return compareAssignOps((JCAssignOp) l, (JCAssignOp) r);
-        } else if (l instanceof JCConditional) {
-            return compareConditionals((JCConditional) l, (JCConditional) r);
-        } else if (l instanceof JCMethodInvocation) {
-            return compareCalls((JCMethodInvocation) l, (JCMethodInvocation) r);
+        if (l instanceof AJCLiteral) {
+            return compareLiterals((AJCLiteral) l, (AJCLiteral) r);
+        } else if (l instanceof AJCIdent) {
+            return compareIdents((AJCIdent) l, (AJCIdent) r);
+        } else if (l instanceof AJCFieldAccess) {
+            return compareFieldAccesses((AJCFieldAccess) l, (AJCFieldAccess) r);
+        } else if (l instanceof AJCInstanceOf) {
+            return compareInstanceOfs((AJCInstanceOf) l, (AJCInstanceOf) r);
+        } else if (l instanceof AJCUnary) {
+            return compareUnaries((AJCUnary) l, (AJCUnary) r);
+        } else if (l instanceof AJCUnaryAsg) {
+            return compareUnaryAsg((AJCUnaryAsg) l, (AJCUnaryAsg) r);
+        } else if (l instanceof AJCBinary) {
+            return compareBinaries((AJCBinary) l, (AJCBinary) r);
+        } else if (l instanceof AJCAssign) {
+            return compareAssigns((AJCAssign) l, (AJCAssign) r);
+        } else if (l instanceof AJCAssignOp) {
+            return compareAssignOps((AJCAssignOp) l, (AJCAssignOp) r);
+        } else if (l instanceof AJCConditional) {
+            return compareConditionals((AJCConditional) l, (AJCConditional) r);
+        } else if (l instanceof AJCCall) {
+            return compareCalls((AJCCall) l, (AJCCall) r);
         } else {
             LogUtils.raiseCompilerError("Unexpected expression type: " + l.getClass().getCanonicalName());
             return 0;
         }
     }
 
-    private int compareCalls(JCMethodInvocation l, JCMethodInvocation r) {
-        MethodSymbol mSymL = TreeUtils.getTargetSymbolForCall(l);
-        MethodSymbol mSymR = TreeUtils.getTargetSymbolForCall(r);
+    private int compareCalls(AJCCall l, AJCCall r) {
+        MethodSymbol mSymL = l.getTargetSymbol();
+        MethodSymbol mSymR = r.getTargetSymbol();
 
         int lParams = mSymL.params().length();
         int rParams = mSymR.params().length();
@@ -165,7 +170,7 @@ class CommutativitySorterComparator implements Comparator<JCExpression> {
         return mSymL.name.toString().compareTo(mSymR.name.toString());
     }
 
-    private int compareConditionals(JCConditional l, JCConditional r) {
+    private int compareConditionals(AJCConditional l, AJCConditional r) {
         int condCheck = compare(l.cond, r.cond);
         if (condCheck != 0) {
             return condCheck;
@@ -184,7 +189,7 @@ class CommutativitySorterComparator implements Comparator<JCExpression> {
         return 0;
     }
 
-    private int compareAssignOps(JCAssignOp l, JCAssignOp r) {
+    private int compareAssignOps(AJCAssignOp l, AJCAssignOp r) {
         int lTag = tagOrderings.get(l.getTag());
         int rTag = tagOrderings.get(r.getTag());
 
@@ -194,20 +199,20 @@ class CommutativitySorterComparator implements Comparator<JCExpression> {
             return -1;
         }
 
-        VarSymbol lSym = TreeUtils.getTargetSymbolForAssignment(l);
-        VarSymbol rSym = TreeUtils.getTargetSymbolForAssignment(r);
+        VarSymbol lSym = l.getTargetSymbol();
+        VarSymbol rSym = r.getTargetSymbol();
 
         return lSym.name.toString().compareTo(rSym.name.toString());
     }
 
-    private int compareAssigns(JCAssign l, JCAssign r) {
-        VarSymbol lSym = TreeUtils.getTargetSymbolForAssignment(l);
-        VarSymbol rSym = TreeUtils.getTargetSymbolForAssignment(r);
+    private int compareAssigns(AJCAssign l, AJCAssign r) {
+        VarSymbol lSym = l.getTargetSymbol();
+        VarSymbol rSym = r.getTargetSymbol();
 
         return lSym.name.toString().compareTo(rSym.name.toString());
     }
 
-    private int compareUnaries(JCUnary l, JCUnary r) {
+    private int compareUnaries(AJCUnary l, AJCUnary r) {
         int lTag = tagOrderings.get(l.getTag());
         int rTag = tagOrderings.get(r.getTag());
 
@@ -220,9 +225,22 @@ class CommutativitySorterComparator implements Comparator<JCExpression> {
         return compare(l.arg, r.arg);
     }
 
-    private int compareInstanceOfs(JCInstanceOf l, JCInstanceOf r) {
-        VarSymbol lSym = TreeUtils.getTargetSymbolForExpression(l);
-        VarSymbol rSym = TreeUtils.getTargetSymbolForExpression(r);
+    private int compareUnaryAsg(AJCUnaryAsg l, AJCUnaryAsg r) {
+        int lTag = tagOrderings.get(l.getTag());
+        int rTag = tagOrderings.get(r.getTag());
+
+        if (lTag > rTag) {
+            return 1;
+        } else if (rTag > lTag) {
+            return -1;
+        }
+
+        return compare(l.arg, r.arg);
+    }
+
+    private int compareInstanceOfs(AJCInstanceOf l, AJCInstanceOf r) {
+        VarSymbol lSym = l.getTargetSymbol();
+        VarSymbol rSym = r.getTargetSymbol();
 
         int check = lSym.name.toString().compareTo(rSym.name.toString());
         if (check != 0) {
@@ -234,14 +252,14 @@ class CommutativitySorterComparator implements Comparator<JCExpression> {
         return 0;
     }
 
-    private int compareFieldAccesses(JCFieldAccess l, JCFieldAccess r) {
-        VarSymbol lSym = TreeUtils.getTargetSymbolForExpression(l);
-        VarSymbol rSym = TreeUtils.getTargetSymbolForExpression(r);
+    private int compareFieldAccesses(AJCFieldAccess l, AJCFieldAccess r) {
+        Symbol lSym = l.getTargetSymbol();
+        Symbol rSym = l.getTargetSymbol();
 
         return lSym.name.toString().compareTo(rSym.name.toString());
     }
 
-    private int compareBinaries(JCBinary l, JCBinary r) {
+    private int compareBinaries(AJCBinary l, AJCBinary r) {
         int lTag = tagOrderings.get(l.getTag());
         int rTag = tagOrderings.get(r.getTag());
 
@@ -269,11 +287,11 @@ class CommutativitySorterComparator implements Comparator<JCExpression> {
         return compare(r.rhs, r.rhs);
     }
 
-    private int compareIdents(JCIdent l, JCIdent r) {
-        return l.name.toString().compareTo(r.name.toString());
+    private int compareIdents(AJCIdent l, AJCIdent r) {
+        return l.getName().toString().compareTo(r.getName().toString());
     }
 
-    private int compareLiterals(JCLiteral l, JCLiteral r) {
+    private int compareLiterals(AJCLiteral l, AJCLiteral r) {
         int lKind = literalKindOrderings.get(l.getKind());
         int rKind = literalKindOrderings.get(r.getKind());
 
