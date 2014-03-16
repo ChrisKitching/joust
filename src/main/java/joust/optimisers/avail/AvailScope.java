@@ -3,15 +3,13 @@ package joust.optimisers.avail;
 import com.sun.tools.javac.code.Scope;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.util.Name;
 import joust.optimisers.avail.normalisedexpressions.PossibleSymbol;
 import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableBinary;
 import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableExpression;
 import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableFunctionalExpression;
 import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableNullary;
 import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableUnary;
-import joust.utils.LogUtils;
-import joust.utils.TreeUtils;
+import joust.tree.annotatedtree.AJCTree;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.ArrayList;
@@ -20,7 +18,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.sun.tools.javac.tree.JCTree.*;
+import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.code.Symbol.*;
 
 /**
@@ -28,7 +26,8 @@ import static com.sun.tools.javac.code.Symbol.*;
  * expression analysis.
  * TODO: Use efficient hashing similar to openjdk's Scope, instead of a brutal hack.
  */
-public @Log4j2 class AvailScope extends Scope {
+@Log4j2
+public class AvailScope extends Scope {
     // Maps VarSymbols to the expressions that depend on them. The outermost scope owns the object,
     // subsequent scopes point back to the same map. Each PAE has an associated virtual symbol.
     public HashMap<PossibleSymbol, Set<PotentiallyAvailableExpression>> symbolMap;
@@ -37,7 +36,7 @@ public @Log4j2 class AvailScope extends Scope {
     public HashSet<PotentiallyAvailableExpression> availableExpressions;
 
     // A map relating trees to the corresponding PAEs.
-    private HashMap<JCTree, PotentiallyAvailableExpression> treeMapping;
+    private HashMap<AJCTree, PotentiallyAvailableExpression> treeMapping;
 
     // The symbols that are freshly-created in this scope.
     private ArrayList<PossibleSymbol> freshSyms = new ArrayList<>();
@@ -89,7 +88,7 @@ public @Log4j2 class AvailScope extends Scope {
      * @param expr The PAE to enter.
      * @param node The associated JCTree.
      */
-    private void registerPotentialExpression(PotentiallyAvailableExpression expr, JCTree node) {
+    private void registerPotentialExpression(PotentiallyAvailableExpression expr, AJCTree node) {
         log.debug("Register {} for node {}", expr, node);
 
         // Enter the virtual symbol into the symbol map (If it's a virtual symbol, that is.)
@@ -113,55 +112,12 @@ public @Log4j2 class AvailScope extends Scope {
 
     }
 
-    /**
-     * Enter the given JCExpression into this scope.
-     */
-    public PotentiallyAvailableExpression enterExpression(JCExpression expr) {
-        if (expr == null) {
-            return null;
-        }
-
-        // I hate this so much.
-        if (expr instanceof JCAssign) {
-            return enterExpression((JCAssign) expr);
-        } else if (expr instanceof JCAssignOp) {
-            return enterExpression((JCAssignOp) expr);
-        } else if (expr instanceof JCUnary) {
-            return enterExpression((JCUnary) expr);
-        } else if (expr instanceof JCBinary) {
-            return enterExpression((JCBinary) expr);
-        } else if (expr instanceof JCParens) {
-            return enterExpression((JCParens) expr);
-        } else if (expr instanceof JCIdent) {
-            return enterExpression((JCIdent) expr);
-        } else if (expr instanceof JCFieldAccess) {
-            return enterExpression((JCFieldAccess) expr);
-        } else if (expr instanceof JCLiteral) {
-            return enterExpression((JCLiteral) expr);
-        } else if (expr instanceof JCTypeCast) {
-            return enterExpression((JCTypeCast) expr);
-        } else if (expr instanceof JCInstanceOf) {
-            return enterExpression((JCInstanceOf) expr);
-        } else if (expr instanceof JCArrayAccess) {
-            return enterExpression((JCArrayAccess) expr);
-        } else if (expr instanceof JCMethodInvocation) {
-            return enterExpression((JCMethodInvocation) expr);
-        }
-
-        return null;
-    }
-
-    public PotentiallyAvailableExpression enterExpression(JCParens expr) {
-        LogUtils.raiseCompilerError("Unexpected JCParens entity encountered! " + expr);
-        return null;
-    }
-
     // TODO: Preprocessing step to eliminate chained-assignments.
-    public PotentiallyAvailableExpression enterExpression(JCAssign expr) {
+    public PotentiallyAvailableExpression enterExpression(AJCAssign expr) {
         // An assignment with =.
         // Break RHS into subexpressions and recurse on them.
         // Finally, identify and kill every expression depending on the LHS.
-        VarSymbol sym = TreeUtils.getTargetSymbolForAssignment(expr);
+        VarSymbol sym = expr.getTargetSymbol();
 
         // Kill everything that depends on the symbol being assigned.
         killExpressionsDependingOnSymbol(PossibleSymbol.getConcrete(sym));
@@ -175,9 +131,9 @@ public @Log4j2 class AvailScope extends Scope {
         return pae;
     }
 
-    public PotentiallyAvailableExpression enterExpression(JCAssignOp expr) {
+    public PotentiallyAvailableExpression enterExpression(AJCAssignOp expr) {
         // An assignop kills the lhs, and you have to build your own expression representing the change.
-        VarSymbol sym = TreeUtils.getTargetSymbolForAssignment(expr);
+        VarSymbol sym = expr.getTargetSymbol();
 
         // Get the concrete symbol for the target of this assignment.
         PossibleSymbol concreteSym = PossibleSymbol.getConcrete(sym);
@@ -212,26 +168,33 @@ public @Log4j2 class AvailScope extends Scope {
         return null;
     }
 
-    public PotentiallyAvailableExpression enterExpression(JCUnary expr) {
-        PotentiallyAvailableExpression operand = treeMapping.get(expr.getExpression());
+    public PotentiallyAvailableExpression enterExpression(AJCUnary expr) {
+        PotentiallyAvailableExpression operand = treeMapping.get(expr.arg);
 
         PotentiallyAvailableUnary unary = new PotentiallyAvailableUnary(operand, expr.getTag());
         unary.sourceNode = expr;
 
         registerPotentialExpression(unary, expr);
 
-        if (unary.opcode == Tag.PREINC
-         || unary.opcode == Tag.PREDEC
-         || unary.opcode == Tag.POSTINC
-         || unary.opcode == Tag.POSTDEC) {
-            killExpressionsDependingOnSymbol(PossibleSymbol.getConcrete(TreeUtils.getTargetSymbolForExpression(expr.getExpression())));
-        }
+        return unary;
+    }
+
+    public PotentiallyAvailableExpression enterExpression(AJCUnaryAsg expr) {
+        PotentiallyAvailableExpression operand = treeMapping.get(expr.arg);
+
+
+        PotentiallyAvailableUnary unary = new PotentiallyAvailableUnary(operand, expr.getTag());
+        unary.sourceNode = expr;
+
+        registerPotentialExpression(unary, expr);
+
+        killExpressionsDependingOnSymbol(PossibleSymbol.getConcrete(expr.getTargetSymbol()));
 
         return unary;
     }
 
 
-    public PotentiallyAvailableExpression enterExpression(JCBinary expr) {
+    public PotentiallyAvailableExpression enterExpression(AJCBinary expr) {
         log.debug("entering JCBinary:" +expr);
         PotentiallyAvailableExpression lhs = treeMapping.get(expr.lhs);
         PotentiallyAvailableExpression rhs = treeMapping.get(expr.rhs);
@@ -244,15 +207,11 @@ public @Log4j2 class AvailScope extends Scope {
         return binary;
     }
 
-    public PotentiallyAvailableExpression enterExpression(JCIdent expr) {
+    public PotentiallyAvailableExpression enterExpression(AJCIdent<VarSymbol> expr) {
         log.debug("entering JCIdent:" +expr);
-        if (!(expr.sym instanceof VarSymbol)) {
-            // log.warn("Encountered {} ident of unexpected type {}", expr, expr.sym.getClass().getCanonicalName());
-            return null;
-        }
 
-        log.debug("JCIDent symbol:" +expr.sym);
-        PotentiallyAvailableNullary nullary = new PotentiallyAvailableNullary(expr, (VarSymbol) expr.sym);
+        log.debug("JCIDent symbol:" +expr.getTargetSymbol());
+        PotentiallyAvailableNullary nullary = new PotentiallyAvailableNullary(expr);
         nullary.sourceNode = expr;
         log.debug("JCIDent pae:" +nullary);
 
@@ -261,23 +220,19 @@ public @Log4j2 class AvailScope extends Scope {
         return nullary;
     }
 
-    public PotentiallyAvailableExpression enterExpression(JCFieldAccess expr) {
+    public PotentiallyAvailableExpression enterExpression(AJCFieldAccess<VarSymbol> expr) {
         log.debug("entering JCFieldAccess:" +expr);
-        if (!(expr.sym instanceof VarSymbol)) {
-            log.warn("Encountered {} ident of unexpected type {}", expr, expr.sym.getClass().getCanonicalName());
-            return null;
-        }
 
         PotentiallyAvailableNullary nullary = new PotentiallyAvailableNullary(expr);
         nullary.sourceNode = expr;
-        nullary.setActualSymbol((VarSymbol) expr.sym);
+        nullary.setActualSymbol(expr.getTargetSymbol());
 
         registerPotentialExpression(nullary, expr);
 
         return nullary;
     }
 
-    public PotentiallyAvailableExpression enterExpression(JCLiteral expr) {
+    public PotentiallyAvailableExpression enterExpression(AJCLiteral expr) {
         log.debug("entering JCLiteral:" +expr);
         PotentiallyAvailableNullary nullary = new PotentiallyAvailableNullary(expr);
         nullary.sourceNode = expr;
@@ -287,35 +242,34 @@ public @Log4j2 class AvailScope extends Scope {
         return nullary;
     }
 
-
-    public PotentiallyAvailableExpression enterExpression(JCTypeCast expr) {
+    public PotentiallyAvailableExpression enterExpression(AJCTypeCast expr) {
         log.debug("entering expression:" +expr);
         // TODO: Handle these...
         log.info("JCTypeCast not implemented in AvailScope.");
         return null;
     }
 
-    public PotentiallyAvailableExpression enterExpression(JCInstanceOf expr) {
+    public PotentiallyAvailableExpression enterExpression(AJCInstanceOf expr) {
         log.debug("entering expression:" +expr);
         // TODO: Handle these... These can probably be considered as PotentiallyAvailableBinaries.
         log.info("JCInstanceOf not implemented in AvailScope.");
         return null;
     }
 
-    public PotentiallyAvailableExpression enterExpression(JCArrayAccess expr) {
+    public PotentiallyAvailableExpression enterExpression(AJCArrayAccess expr) {
         log.debug("entering expression:" +expr);
         // TODO: Handle these... Fucking complicated.
         log.info("JCArrayAccess not implemented in AvailScope.");
         return null;
     }
 
-    public PotentiallyAvailableExpression enterExpression(JCMethodInvocation expr) {
+    public PotentiallyAvailableExpression enterExpression(AJCCall expr) {
         log.debug("entering call:" +expr);
         PotentiallyAvailableFunctionalExpression nullary = new PotentiallyAvailableFunctionalExpression(expr);
         nullary.sourceNode = expr;
 
         // Tack on the PAEs (Previously generated) of the arguments to this call.
-        for (JCExpression arg : expr.args) {
+        for (AJCExpression arg : expr.args) {
             PotentiallyAvailableExpression pae = treeMapping.get(arg);
             nullary.args = nullary.args.append(pae);
             nullary.deps.addAll(pae.deps);
@@ -325,20 +279,6 @@ public @Log4j2 class AvailScope extends Scope {
         registerPotentialExpression(nullary, expr);
 
         return nullary;
-    }
-
-    /**
-     * Get a Name that is not in use in this scope to be used for.
-     * @return A Name currently unused in this scope. The naming convention ensures future collisions
-     *         are impossible.
-     */
-    public Name getUnusedName() {
-        Name proposedName;
-        do {
-            proposedName = NameFactory.getName();
-        } while (!isSentinelEntry(lookup(proposedName)));
-
-        return proposedName;
     }
 
     /**
@@ -428,7 +368,7 @@ public @Log4j2 class AvailScope extends Scope {
      * @param sym The symbol.
      * @param tree The tree.
      */
-    public void registerSymbolWithExpression(VarSymbol sym, JCTree tree) {
+    public void registerSymbolWithExpression(VarSymbol sym, AJCTree tree) {
         PotentiallyAvailableExpression expr = treeMapping.get(tree);
 
         if (expr != null) {

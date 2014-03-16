@@ -4,7 +4,7 @@ import com.sun.tools.javac.util.Name;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static joust.Optimiser.names;
+import static joust.utils.StaticCompilerUtils.names;
 
 /**
  * Class for creating unique character strings for use as temporary variable names.

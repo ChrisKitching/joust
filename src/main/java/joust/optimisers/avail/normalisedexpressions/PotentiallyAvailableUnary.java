@@ -6,9 +6,10 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 import joust.optimisers.avail.NameFactory;
 
-import static com.sun.tools.javac.tree.JCTree.*;
+import static joust.tree.annotatedtree.AJCTree.*;
+import static com.sun.tools.javac.tree.JCTree.Tag;
 import static com.sun.tools.javac.code.Symbol.*;
-import static joust.Optimiser.treeMaker;
+import static joust.utils.StaticCompilerUtils.treeMaker;
 
 public class PotentiallyAvailableUnary extends PotentiallyAvailableExpression {
     public PotentiallyAvailableExpression operand;
@@ -18,7 +19,6 @@ public class PotentiallyAvailableUnary extends PotentiallyAvailableExpression {
      * Create a PotentiallyAvailableUnary from the given JCUnary.
      */
     public PotentiallyAvailableUnary(PotentiallyAvailableExpression target, Tag op) {
-        super();
         operand = target;
         opcode = op;
 
@@ -27,21 +27,23 @@ public class PotentiallyAvailableUnary extends PotentiallyAvailableExpression {
     }
 
     @Override
-    public List<JCStatement> concretify(Symbol owningContext) {
-        List<JCStatement> neededStatements = operand.concretify(owningContext);
+    public List<AJCStatement> concretify(Symbol owningContext) {
+        List<AJCStatement> neededStatements = operand.concretify(owningContext);
 
         // Create a node representing this expression...
-        JCUnary thisExpr = treeMaker.Unary(opcode, operand.expressionNode);
-        thisExpr.operator = ((JCUnary) sourceNode).operator;
-        thisExpr.type = sourceNode.type;
+        AJCUnary thisExpr = treeMaker.Unary(opcode, operand.expressionNode);
+        // TODO: Hide this plumbing...
+        thisExpr.getDecoratedTree().operator = ((AJCUnary) sourceNode).getDecoratedTree().operator;
+        thisExpr.getDecoratedTree().type = ((AJCUnary) sourceNode).getDecoratedTree().type;
 
         // Create a new temporary variable to hold this expression.
         Name tempName = NameFactory.getName();
-        VarSymbol newSym = new VarSymbol(Flags.FINAL, tempName, sourceNode.type, owningContext);
+        VarSymbol newSym = new VarSymbol(Flags.FINAL, tempName, sourceNode.getType(), owningContext);
         concreteSym = PossibleSymbol.getConcrete(newSym);
         expressionNode = treeMaker.Ident(newSym);
 
-        JCVariableDecl newDecl = treeMaker.VarDef(newSym, thisExpr);
+        //TODO
+        AJCVariableDecl newDecl = null;//treeMaker.VarDef(newSym, thisExpr);
 
         return neededStatements.append(newDecl);
     }

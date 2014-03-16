@@ -3,22 +3,23 @@ package joust.optimisers.avail;
 import com.esotericsoftware.minlog.Log;
 import com.sun.tools.javac.tree.JCTree;
 import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableExpression;
+import joust.tree.annotatedtree.AJCTree;
+import joust.tree.annotatedtree.AJCTreeVisitorImpl;
 import joust.treeinfo.EffectSet;
-import joust.treeinfo.TreeInfoManager;
-import joust.optimisers.visitors.DepthFirstTreeVisitor;
 import lombok.extern.log4j.Log4j2;
 
 
 import java.util.Arrays;
 import java.util.HashSet;
 
-import static com.sun.tools.javac.tree.JCTree.*;
+import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.code.Symbol.*;
 
 /**
  * Perform available expression analysis on methods.
  */
-public @Log4j2 class Avail extends DepthFirstTreeVisitor {
+@Log4j2
+public class Avail extends AJCTreeVisitorImpl {
     // The symbol of the method currently being processed.
     MethodSymbol enclosingMethod;
 
@@ -39,18 +40,18 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
     }
 
     // Store a copy of the current available expression set in the TreeInfo structure for this node.
-    private void markAvailableExpressions(JCTree tree) {
+    private void markAvailableExpressions(AJCEffectAnnotatedTree tree) {
         HashSet<PotentiallyAvailableExpression> avail = new HashSet<>();
         avail.addAll(currentScope.availableExpressions);
         log.info("Marking available for {} as:\n{}", tree, Arrays.toString(avail.toArray()));
-        TreeInfoManager.registerAvailables(tree, avail);
+        tree.avail = avail;
     }
 
     @Override
-    public void visitMethodDef(JCMethodDecl jcMethodDecl) {
+    public void visitMethodDef(AJCMethodDecl jcMethodDecl) {
         log.debug("Visitng method: " + jcMethodDecl);
-        enclosingMethod = jcMethodDecl.sym;
-        currentScope = new AvailScope(jcMethodDecl.sym);
+        enclosingMethod = jcMethodDecl.getTargetSymbol();
+        currentScope = new AvailScope(jcMethodDecl.getTargetSymbol());
 
         // TODO: Something something nested classes.
         // TODO: Possibly need to prepopulate class scope at this point to avoid collisions...
@@ -58,23 +59,23 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
     }
 
     @Override
-    public void visitVarDef(JCVariableDecl jcVariableDecl) {
+    public void visitVariableDecl(AJCVariableDecl jcVariableDecl) {
         markAvailableExpressions(jcVariableDecl);
 
         // Enter the symbol.
-        currentScope.enter(jcVariableDecl.sym);
+        currentScope.enter(jcVariableDecl.getTargetSymbol());
 
-        super.visitVarDef(jcVariableDecl);
+        super.visitVariableDecl(jcVariableDecl);
 
         // Associate the concrete symbol with the PAE for the initialiser, if any exists.
-        JCTree init = jcVariableDecl.getInitializer();
+        AJCTree init = jcVariableDecl.getInit();
         if (init != null) {
-            currentScope.registerSymbolWithExpression(jcVariableDecl.sym, init);
+            currentScope.registerSymbolWithExpression(jcVariableDecl.getTargetSymbol(), init);
         }
     }
 
     @Override
-    public void visitBlock(JCBlock jcBlock) {
+    public void visitBlock(AJCBlock jcBlock) {
         log.info("Entering block for Avail: {}", jcBlock);
         boolean blockWasNewScope = nextBlockIsNewScope;
         if (nextBlockIsNewScope) {
@@ -94,13 +95,13 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
     }
 
     @Override
-    public void visitDoLoop(JCDoWhileLoop jcDoWhileLoop) {
+    public void visitDoWhileLoop(AJCDoWhileLoop jcDoWhileLoop) {
         markAvailableExpressions(jcDoWhileLoop);
-        super.visitDoLoop(jcDoWhileLoop);
+        super.visitDoWhileLoop(jcDoWhileLoop);
     }
 
     @Override
-    public void visitForLoop(JCForLoop jcForLoop) {
+    public void visitForLoop(AJCForLoop jcForLoop) {
         markAvailableExpressions(jcForLoop);
         enterScope();
         nextBlockIsNewScope = false;
@@ -109,13 +110,13 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
     }
 
     @Override
-    public void visitForeachLoop(JCEnhancedForLoop jcEnhancedForLoop) {
+    public void visitForeachLoop(AJCForEachLoop jcEnhancedForLoop) {
         markAvailableExpressions(jcEnhancedForLoop);
         super.visitForeachLoop(jcEnhancedForLoop);
     }
 
     @Override
-    public void visitWhileLoop(JCWhileLoop jcWhileLoop) {
+    public void visitWhileLoop(AJCWhileLoop jcWhileLoop) {
         markAvailableExpressions(jcWhileLoop);
         log.debug("Entering visitWhileLoop with scope:\n{}", currentScope);
 
@@ -123,8 +124,9 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
         log.debug("Exiting visitWhileLoop with scope:\n{}", currentScope);
     }
 
+    // TODO: Unused? Wat.
     @Override
-    public void visitCase(JCCase jcCase) {
+    public void visitCase(AJCCase jcCase) {
         // Although each case is in the same scope as the other cases, the "Scope" we're using here
         // is a crazy munging of lexical scope and flow analysis. This is safe. Honest.
         enterScope();
@@ -134,34 +136,27 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
 
     // TODO: Something something PolyExpression.
     @Override
-    public void visitConditional(JCConditional jcConditional) {
+    public void visitConditional(AJCConditional jcConditional) {
         markAvailableExpressions(jcConditional);
         super.visitConditional(jcConditional);
     }
 
     @Override
-    public void visitExec(JCExpressionStatement jcExpressionStatement) {
+    public void visitExpressionStatement(AJCExpressionStatement jcExpressionStatement) {
         markAvailableExpressions(jcExpressionStatement);
-        super.visitExec(jcExpressionStatement);
+        super.visitExpressionStatement(jcExpressionStatement);
     }
 
     @Override
-    public void visitAssign(JCAssign jcAssign) {
+    public void visitAssign(AJCAssign jcAssign) {
         Log.debug("Visit assign!");
-
-        if (mMarked.contains(jcAssign)) {
-            return;
-        }
-
         markAvailableExpressions(jcAssign);
         visit(jcAssign.rhs);
         currentScope.enterExpression(jcAssign);
-
-        mMarked.add(jcAssign);
     }
 
     @Override
-    public void visitAssignop(JCAssignOp jcAssignOp) {
+    public void visitAssignop(AJCAssignOp jcAssignOp) {
         markAvailableExpressions(jcAssignOp);
         if (!eligibleForCSE(jcAssignOp)) {
             return;
@@ -171,7 +166,7 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
     }
 
     @Override
-    public void visitUnary(JCUnary jcUnary) {
+    public void visitUnary(AJCUnary jcUnary) {
         markAvailableExpressions(jcUnary);
         if (!eligibleForCSE(jcUnary)) {
             return;
@@ -181,7 +176,7 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
     }
 
     @Override
-    public void visitBinary(JCBinary jcBinary) {
+    public void visitBinary(AJCBinary jcBinary) {
         markAvailableExpressions(jcBinary);
         if (!eligibleForCSE(jcBinary)) {
             return;
@@ -191,7 +186,7 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
     }
 
     @Override
-    public void visitTypeCast(JCTypeCast jcTypeCast) {
+    public void visitTypeCast(AJCTypeCast jcTypeCast) {
         markAvailableExpressions(jcTypeCast);
         if (!eligibleForCSE(jcTypeCast)) {
             return;
@@ -201,29 +196,29 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
     }
 
     @Override
-    public void visitTypeTest(JCInstanceOf jcInstanceOf) {
+    public void visitInstanceOf(AJCInstanceOf jcInstanceOf) {
         markAvailableExpressions(jcInstanceOf);
         if (!eligibleForCSE(jcInstanceOf)) {
             return;
         }
-        super.visitTypeTest(jcInstanceOf);
+        super.visitInstanceOf(jcInstanceOf);
         currentScope.enterExpression(jcInstanceOf);
     }
 
     @Override
-    public void visitIndexed(JCArrayAccess jcArrayAccess) {
+    public void visitArrayAccess(AJCArrayAccess jcArrayAccess) {
         markAvailableExpressions(jcArrayAccess);
         if (!eligibleForCSE(jcArrayAccess)) {
             return;
         }
-        super.visitIndexed(jcArrayAccess);
+        super.visitArrayAccess(jcArrayAccess);
         currentScope.enterExpression(jcArrayAccess);
     }
 
     @Override
-    public void visitSelect(JCFieldAccess jcFieldAccess) {
+    public void visitFieldAccess(AJCFieldAccess jcFieldAccess) {
         markAvailableExpressions(jcFieldAccess);
-        super.visitSelect(jcFieldAccess);
+        super.visitFieldAccess(jcFieldAccess);
     }
 
     /**
@@ -232,19 +227,19 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
      * added following.)
      */
     @Override
-    public void visitSkip(JCSkip jcSkip) {
+    public void visitSkip(AJCSkip jcSkip) {
         markAvailableExpressions(jcSkip);
         super.visitSkip(jcSkip);
     }
 
     @Override
-    public void visitReference(JCMemberReference jcMemberReference) {
+    public void visitMemberReference(AJCMemberReference jcMemberReference) {
         markAvailableExpressions(jcMemberReference);
-        super.visitReference(jcMemberReference);
+        super.visitMemberReference(jcMemberReference);
     }
 
     @Override
-    public void visitIdent(JCIdent jcIdent) {
+    public void visitIdent(AJCIdent jcIdent) {
         super.visitIdent(jcIdent);
         if (currentScope == null) {
             return;
@@ -254,7 +249,7 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
     }
 
     @Override
-    public void visitLiteral(JCLiteral jcLiteral) {
+    public void visitLiteral(AJCLiteral jcLiteral) {
         super.visitLiteral(jcLiteral);
         if (currentScope == null) {
             return;
@@ -264,12 +259,12 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
     }
 
     @Override
-    public void visitApply(JCMethodInvocation jcMethodInvocation) {
+    public void visitCall(AJCCall jcMethodInvocation) {
         markAvailableExpressions(jcMethodInvocation);
         if (!eligibleForCSE(jcMethodInvocation)) {
             return;
         }
-        super.visitApply(jcMethodInvocation);
+        super.visitCall(jcMethodInvocation);
 
         currentScope.enterExpression(jcMethodInvocation);
     }
@@ -277,14 +272,19 @@ public @Log4j2 class Avail extends DepthFirstTreeVisitor {
     /**
      * Helper function to determine if a particular node is eligible for CSE using effect information.
      */
-    private boolean eligibleForCSE(JCTree tree) {
-        EffectSet effects = TreeInfoManager.getEffects(tree);
+    private boolean eligibleForCSE(AJCEffectAnnotatedTree tree) {
+        EffectSet effects = tree.effects.getEffectSet();
         log.warn("Effects for {} are {}", tree, effects);
 
         // It's safe to consider a node for common subexpression elimination if it has either escaping
         // writes or escaping reads, but not if it has both.
         if (effects.contains(EffectSet.EffectType.READ_ESCAPING)
          && effects.contains(EffectSet.EffectType.WRITE_ESCAPING)) {
+            return false;
+        }
+
+        // Naturally, IO also needs to be retained...
+        if (effects.contains(EffectSet.EffectType.IO)) {
             return false;
         }
 

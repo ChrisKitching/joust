@@ -15,7 +15,8 @@ import static com.sun.tools.javac.code.Symbol.*;
  * If it's not a VarSymbol, it's a placeholder for one. It can be induced to create the VarSymbol.
  * Uses a hashmap to prevent multiple symbols pointing to the same symbol from existing.
  */
-public @Log4j2 class PossibleSymbol {
+@Log4j2
+public class PossibleSymbol {
     static HashMap<VarSymbol, PossibleSymbol> concreteSymbols;
     static int symbolId;
 
@@ -46,7 +47,7 @@ public @Log4j2 class PossibleSymbol {
      * @param s The VarSymbol this PossibleSymbol should begin to represent.
      */
     public void setSym(VarSymbol s) {
-        this.sym = s;
+        sym = s;
 
         if (!concreteSymbols.containsKey(s)) {
             concreteSymbols.put(s, this);
@@ -83,14 +84,6 @@ public @Log4j2 class PossibleSymbol {
 
         // temporaryVariable = new VarSymbol(names.fromString())
         return null;
-    }
-
-    /**
-     * Make this PossibleSymbol a concrete PossibleSymbol in scope s.
-     * @param s The scope in which the new symbol should be created.
-     */
-    public void makeConcreteInScope(Scope s) {
-        // TODO: Something something scopes.
     }
 
     /**

@@ -5,45 +5,43 @@ import com.sun.tools.javac.util.List;
 import joust.utils.TreeUtils;
 import lombok.extern.log4j.Log4j2;
 
-import static com.sun.tools.javac.tree.JCTree.*;
+import static joust.tree.annotatedtree.AJCTree.*;
+import static com.sun.tools.javac.tree.JCTree.Tag;
 import static com.sun.tools.javac.code.Symbol.*;
-import static joust.Optimiser.treeMaker;
+import static joust.utils.StaticCompilerUtils.treeMaker;
 
 /**
  * An ident, field access, or constant. Or something. Representative in some way of a thing which
  * refers to another thing. And stuff.
  */
-public @Log4j2 class PotentiallyAvailableNullary extends PotentiallyAvailableExpression {
-    JCExpression expr;
+@Log4j2
+public class PotentiallyAvailableNullary extends PotentiallyAvailableExpression {
+    AJCSymbolRefTree<VarSymbol> expr;
 
-    public PotentiallyAvailableNullary(JCExpression e, VarSymbol s) {
+    /**
+     * Construct with an ident or a field access.
+     */
+    public PotentiallyAvailableNullary(AJCSymbolRefTree<VarSymbol> e) {
         expr = e;
 
-        if (e instanceof JCIdent) {
-            JCIdent ident = (JCIdent) e;
-            deps.add(PossibleSymbol.getConcrete((VarSymbol) ident.sym));
-        } else if (e instanceof JCFieldAccess) {
-            JCFieldAccess acc = (JCFieldAccess) e;
-            deps.add(PossibleSymbol.getConcrete((VarSymbol) acc.sym));
-        }
-
-        if (s != null) {
-            concreteSym = PossibleSymbol.getConcrete(s);
-            virtualSym = concreteSym;
-        }
+        concreteSym = PossibleSymbol.getConcrete(e.getTargetSymbol());
+        virtualSym = concreteSym;
 
         deps.add(virtualSym);
     }
 
     @Override
-    public List<JCStatement> concretify(Symbol owningContext) {
+    public List<AJCStatement> concretify(Symbol owningContext) {
         expressionNode = expr;
 
         return List.nil();
     }
 
-    public PotentiallyAvailableNullary(JCExpression e) {
-        this(e, null);
+    /**
+     * Construct from a literal. We have no deps, no reference, nothing. Just a stub.
+     */
+    public PotentiallyAvailableNullary(AJCLiteral e) {
+        sourceNode = e;
     }
 
     @Override
@@ -58,9 +56,18 @@ public @Log4j2 class PotentiallyAvailableNullary extends PotentiallyAvailableExp
 
         PotentiallyAvailableNullary cast = (PotentiallyAvailableNullary) obj;
 
-        VarSymbol mySym = TreeUtils.getTargetSymbolForExpression(expr);
-        VarSymbol herSym = TreeUtils.getTargetSymbolForExpression(cast.expr);
+        if (expr != null) {
+            if (cast.expr == null) {
+                return false;
+            }
 
-        return mySym.equals(herSym);
+            return expr.getTargetSymbol().equals(cast.expr.getTargetSymbol());
+        } else if (cast.expr != null) {
+            return false;
+        }
+
+        log.warn("Unable to differentiate between PANs: {} or {}", this, cast);
+
+        return false;
     }
 }

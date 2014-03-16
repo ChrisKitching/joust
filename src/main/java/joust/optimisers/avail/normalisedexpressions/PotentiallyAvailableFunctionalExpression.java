@@ -5,23 +5,23 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 import joust.optimisers.avail.NameFactory;
-import joust.tree.annotatedtree.NonStupidJCTreeCopier;
-import joust.utils.TreeUtils;
 import lombok.extern.log4j.Log4j2;
 
-import static com.sun.tools.javac.tree.JCTree.*;
+import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.code.Symbol.*;
-import static joust.Optimiser.treeMaker;
+import static joust.utils.StaticCompilerUtils.*;
 
-public @Log4j2
-class PotentiallyAvailableFunctionalExpression extends PotentiallyAvailableNullary {
+//TODO: Really? Do we need this any more?
+@Log4j2
+public
+class PotentiallyAvailableFunctionalExpression extends PotentiallyAvailableExpression {
     public List<PotentiallyAvailableExpression> args = List.nil();
     public MethodSymbol callTarget;
 
-    public PotentiallyAvailableFunctionalExpression(JCMethodInvocation e) {
-        super(e);
-        callTarget = TreeUtils.getTargetSymbolForCall(e);
+    public PotentiallyAvailableFunctionalExpression(AJCCall e) {
+        callTarget = e.getTargetSymbol();
         deps.add(virtualSym);
+        sourceNode = e;
     }
 
     @Override
@@ -55,26 +55,24 @@ class PotentiallyAvailableFunctionalExpression extends PotentiallyAvailableNulla
     }
 
     @Override
-    public List<JCStatement> concretify(Symbol owningContext) {
+    public List<AJCStatement> concretify(Symbol owningContext) {
         log.debug("Concretifying {}", this);
 
-        // Create a node representing this call
-        NonStupidJCTreeCopier<Void> copier = new NonStupidJCTreeCopier<>(treeMaker);
-
         // Copy the associated node.
-        JCMethodInvocation thisExpr = (JCMethodInvocation) copier.visitMethodInvocation((JCMethodInvocation) expr, null);
+        AJCCall thisExpr = (AJCCall) treeCopier.copy(sourceNode);
 
         log.debug("thisExpr:{}", thisExpr);
 
         // Create a new temporary variable to hold this expression.
         Name tempName = NameFactory.getName();
-        VarSymbol newSym = new VarSymbol(Flags.FINAL, tempName, sourceNode.type, owningContext);
+        VarSymbol newSym = new VarSymbol(Flags.FINAL, tempName, sourceNode.getType(), owningContext);
         concreteSym = PossibleSymbol.getConcrete(newSym);
         expressionNode = treeMaker.Ident(newSym);
 
-        JCVariableDecl newDecl = treeMaker.VarDef(newSym, thisExpr);
+        // TODO
+        AJCVariableDecl newDecl = null;//treeMaker.VarDef(newSym, thisExpr);
         log.debug("newDecl:{}", newDecl);
 
-        return List.of((JCStatement) newDecl);
+        return List.of((AJCStatement) newDecl);
     }
 }

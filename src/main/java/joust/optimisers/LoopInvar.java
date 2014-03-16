@@ -26,7 +26,7 @@ class LoopInvar implements OptimisationRunnable {
                 // Unused assignment stripping... (Bins some of the junk Invar produces).
                 // (Note that a single pass of this is applied before we get to this point anyway.)
                 UnusedAssignmentStripper stripper = new UnusedAssignmentStripper();
-                tree.accept(stripper);
+                stripper.visit(tree);
             } while (translator.makingChanges());
         }
     }

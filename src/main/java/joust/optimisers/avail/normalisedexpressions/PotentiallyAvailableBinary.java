@@ -2,7 +2,6 @@ package joust.optimisers.avail.normalisedexpressions;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.Pretty;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
@@ -12,21 +11,22 @@ import lombok.extern.log4j.Log4j2;
 
 import java.io.StringWriter;
 
-import static com.sun.tools.javac.tree.JCTree.*;
-import static joust.Optimiser.treeMaker;
+import static joust.tree.annotatedtree.AJCTree.*;
+import static com.sun.tools.javac.tree.JCTree.Tag;
+import static joust.utils.StaticCompilerUtils.treeMaker;
 import static com.sun.tools.javac.code.Symbol.*;
 
 /**
  * A representation of a JCBinary allowing for the use of hypothetical symbols.
  */
-public @Log4j2
+@Log4j2
+public
 class PotentiallyAvailableBinary extends PotentiallyAvailableExpression {
     public PotentiallyAvailableExpression lhs;
     public PotentiallyAvailableExpression rhs;
     public Tag opcode;
 
     public PotentiallyAvailableBinary(PotentiallyAvailableExpression l, PotentiallyAvailableExpression r, Tag op) {
-        super();
         lhs = l;
         rhs = r;
         opcode = op;
@@ -59,9 +59,9 @@ class PotentiallyAvailableBinary extends PotentiallyAvailableExpression {
     }
 
     @Override
-    public List<JCStatement> concretify(Symbol owningContext) {
-        List<JCStatement> lhsStatements = lhs.concretify(owningContext);
-        List<JCStatement> rhsStatements = rhs.concretify(owningContext);
+    public List<AJCStatement> concretify(Symbol owningContext) {
+        List<AJCStatement> lhsStatements = lhs.concretify(owningContext);
+        List<AJCStatement> rhsStatements = rhs.concretify(owningContext);
 
         lhsStatements = lhsStatements.appendList(rhsStatements);
 
@@ -71,21 +71,22 @@ class PotentiallyAvailableBinary extends PotentiallyAvailableExpression {
         // Our turn!
 
         // Create a node representing this binary expression.. (lhsTemp OP rhsTemp).
-        JCBinary thisExpr = treeMaker.Binary(opcode, lhs.expressionNode, rhs.expressionNode);
+        AJCBinary thisExpr = treeMaker.Binary(opcode, lhs.expressionNode, rhs.expressionNode);
         // Pilfer the operator and type from the source node...
         // This is safe only if the source node is removed from the tree.
-        thisExpr.operator = ((JCBinary) sourceNode).operator;
-        thisExpr.type = sourceNode.type;
+        thisExpr.getDecoratedTree().operator = ((AJCBinary) sourceNode).getDecoratedTree().operator;
+        thisExpr.getDecoratedTree().type = ((AJCBinary) sourceNode).getDecoratedTree().type;
 
         log.debug("thisExpr:{}", thisExpr);
 
         // Create a new temporary variable to hold this expression.
         Name tempName = NameFactory.getName();
-        VarSymbol newSym = new VarSymbol(Flags.FINAL, tempName, sourceNode.type, owningContext);
+        VarSymbol newSym = new VarSymbol(Flags.FINAL, tempName, sourceNode.getType(), owningContext);
         concreteSym = PossibleSymbol.getConcrete(newSym);
         expressionNode = treeMaker.Ident(newSym);
 
-        JCVariableDecl newDecl = treeMaker.VarDef(newSym, thisExpr);
+        //TODO
+        AJCVariableDecl newDecl = null;//treeMaker.VarDef(newSym, thisExpr);
         log.debug("newDecl:{}", newDecl);
 
         return lhsStatements.append(newDecl);

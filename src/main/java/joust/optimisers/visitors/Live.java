@@ -168,7 +168,7 @@ public class Live extends AJCTreeVisitorImpl {
         super.visitVariableDecl(jcVariableDecl);
 
         markLive(jcVariableDecl);
-        if (!jcVariableDecl.init.isEmptyExpression()) {
+        if (!jcVariableDecl.getInit().isEmptyExpression()) {
             // If there's an assignment, we care. Otherwise this isn't interesting.
             VarSymbol referenced = jcVariableDecl.getTargetSymbol();
             currentlyLive.remove(referenced);
@@ -235,7 +235,7 @@ public class Live extends AJCTreeVisitorImpl {
         everLive.add(referenced);
     }
 
-    private void markLive(AJCTree tree) {
+    private void markLive(AJCEffectAnnotatedTree tree) {
         // TODO: Datastructure-fu to enable portions of this map to be shared...
         Set<VarSymbol> localCopy = new HashSet<>(currentlyLive);
         log.info("Registering: {} with: {}", localCopy, tree);

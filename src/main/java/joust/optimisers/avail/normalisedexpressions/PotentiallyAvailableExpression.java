@@ -6,7 +6,7 @@ import com.sun.tools.javac.util.List;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.sun.tools.javac.tree.JCTree.*;
+import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.code.Symbol.*;
 
 /**
@@ -24,11 +24,11 @@ public abstract class PotentiallyAvailableExpression {
     public Set<PossibleSymbol> deps = new HashSet<>();
 
     // The node from which this PAE was deduced.
-    public JCExpression sourceNode;
+    public AJCExpression sourceNode;
 
     // A computed node, possibly equivalent to sourceNode, that properly represents this expression (After
-    // coalescing its various virtual dependent expressions.
-    public JCExpression expressionNode;
+    // coalescing its various virtual dependent expressions.)
+    public AJCSymbolRefTree<VarSymbol> expressionNode;
 
     /**
      * Set the PossibleSymbol of the PAE to the concrete symbol, s.
@@ -64,5 +64,5 @@ public abstract class PotentiallyAvailableExpression {
      * Get the list of statements necessary to put this PAE into a temporary variable, set expressionNode
      * to a reference to the new temporary, and return the list of required statements.
      */
-    public abstract List<JCStatement> concretify(Symbol owningContext);
+    public abstract List<AJCStatement> concretify(Symbol owningContext);
 }

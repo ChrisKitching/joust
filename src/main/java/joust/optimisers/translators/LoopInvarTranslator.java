@@ -1,12 +1,16 @@
 package joust.optimisers.translators;
 
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.List;
 import joust.optimisers.avail.Avail;
 import joust.optimisers.avail.normalisedexpressions.PossibleSymbol;
 import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableExpression;
-import joust.optimisers.visitors.KillSetVisitor;
 import joust.optimisers.visitors.sideeffects.SideEffectVisitor;
+import joust.tree.annotatedtree.AJCTree;
+import joust.tree.annotatedtree.AJCTreeVisitor;
+import joust.tree.annotatedtree.AJCTreeVisitorImpl;
+import joust.treeinfo.EffectSet;
 import joust.treeinfo.TreeInfoManager;
 import joust.utils.LogUtils;
 import lombok.extern.log4j.Log4j2;
@@ -16,67 +20,64 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.tree.JCTree.*;
+import static joust.utils.StaticCompilerUtils.treeCopier;
 
 /**
  * Tree translator implementing loop-invariant code motion.
  */
-public @Log4j2 class LoopInvarTranslator extends TODOTranslator {
+@Log4j2
+public class LoopInvarTranslator extends BaseTranslator {
     @Override
-    public void visitMethodDef(JCMethodDecl jcMethodDecl) {
+    public void visitMethodDef(AJCMethodDecl jcMethodDecl) {
         // Run on-demand available expression analysis...
         Avail a  = new Avail();
         //jcMethodDecl.accept(a);
         super.visitMethodDef(jcMethodDecl);
-
-        if (mHasMadeAChange) {
-            // If we touched anything, bring the effect annotations up to date.
-            SideEffectVisitor effectVisitor = new SideEffectVisitor();
-            //jcMethodDecl.accept(effectVisitor);
-            effectVisitor.finaliseIncompleteEffectSets();
-        }
     }
 
+    // TODO: Stop repeating yourself here!
     @Override
-    public void visitDoLoop(JCDoWhileLoop jcDoWhileLoop) {
-        log.debug("Invar for: {}", jcDoWhileLoop);
+    public void visitDoWhileLoop(AJCDoWhileLoop doLoop) {
+        log.debug("Invar for: {}", doLoop);
         // Extract statement list from loop body (Which is always a JCBlock).
-        List<JCStatement> loopBody = ((JCBlock) jcDoWhileLoop.body).stats;
+        List<AJCStatement> loopBody = doLoop.body.stats;
 
-        translateInvariants(jcDoWhileLoop, loopBody);
+        translateInvariants(doLoop, loopBody, doLoop.getEnclosingBlock());
 
-        log.info("Modified loop context: \n{}", visitedStack.peek());
-        super.visitDoLoop(jcDoWhileLoop);
+        //log.info("Modified loop context: \n{}", visitedStack.peek());
+        super.visitDoWhileLoop(doLoop);
     }
 
     @Override
-    public void visitWhileLoop(JCWhileLoop jcWhileLoop) {
-        log.debug("Invar for: {}", jcWhileLoop);
+    public void visitWhileLoop(AJCWhileLoop whileLoop) {
+        log.debug("Invar for: {}", whileLoop);
 
-        // Extract statement list from loop body (Which is always a JCBlock).
-        List<JCStatement> loopBody = ((JCBlock) jcWhileLoop.body).stats;
+        // Extract statement list from loop body.
+        List<AJCStatement> loopBody = whileLoop.body.stats;
 
-        translateInvariants(jcWhileLoop, loopBody);
+        translateInvariants(whileLoop, loopBody, whileLoop.getEnclosingBlock());
 
-        log.info("Modified loop context: \n{}", visitedStack.peek());
-        super.visitWhileLoop(jcWhileLoop);
+        //log.info("Modified loop context: \n{}", visitedStack.peek());
+        super.visitWhileLoop(whileLoop);
     }
 
     @Override
-    public void visitForLoop(JCForLoop jcForLoop) {
-        log.debug("Invar for: {}", jcForLoop);
+    public void visitForLoop(AJCForLoop forLoop) {
+        log.debug("Invar for: {}", forLoop);
 
-        // Extract statement list from loop body (Which is always a JCBlock).
-        List<JCStatement> loopBody = ((JCBlock) jcForLoop.body).stats;
+        // Extract statement list from loop body.
+        List<AJCStatement> loopBody = forLoop.body.stats;
 
-        translateInvariants(jcForLoop, loopBody);
-        log.info("Modified loop context: \n{}", visitedStack.peek());
+        translateInvariants(forLoop, loopBody, forLoop.getEnclosingBlock());
+        //log.info("Modified loop context: \n{}", visitedStack.peek());
 
-        super.visitForLoop(jcForLoop);
+        super.visitForLoop(forLoop);
     }
 
     @Override
-    public void visitForeachLoop(JCEnhancedForLoop jcEnhancedForLoop) {
+    public void visitForeachLoop(AJCForEachLoop jcEnhancedForLoop) {
         super.visitForeachLoop(jcEnhancedForLoop);
         LogUtils.raiseCompilerError("Unexpected EnhancedForEachLoop encountered in LoopInvarTranslator. This should've been desugared by now!");
     }
@@ -84,9 +85,9 @@ public @Log4j2 class LoopInvarTranslator extends TODOTranslator {
     /**
      * Get the last set of PotentiallyAvailableExpressions associated with statements in the given list.
      */
-    private HashSet<PotentiallyAvailableExpression> getLastAvailableSet(List<JCStatement> statements) {
+    private Set<PotentiallyAvailableExpression> getLastAvailableSet(List<AJCStatement> statements) {
         int bodyIndex = statements.length();
-        HashSet<PotentiallyAvailableExpression> ret = null;
+        Set<PotentiallyAvailableExpression> ret = null;
         // The expressions available on exit will be the expression set attached to the node furthest through the loop
         // body. Not all statements are so tagged, so we iterate backwards through the list until we find one.
         while (ret == null) {
@@ -95,7 +96,7 @@ public @Log4j2 class LoopInvarTranslator extends TODOTranslator {
                 return null;
             }
 
-            ret = TreeInfoManager.getAvailable(statements.get(bodyIndex));
+            ret = statements.get(bodyIndex).avail;
         }
 
         return ret;
@@ -109,11 +110,11 @@ public @Log4j2 class LoopInvarTranslator extends TODOTranslator {
      * @param loopBody The list of statements constituting the body of the given loop.
      * @return A set of PotentiallyAvailableExpressions that are found to be invariant over this loop.
      */
-    private Set<PotentiallyAvailableExpression> findPotentialInvariants(JCTree loop, List<JCStatement> loopBody) {
-        HashSet<PotentiallyAvailableExpression> availableAtStart = TreeInfoManager.getAvailable(loop);
+    private Set<PotentiallyAvailableExpression> findPotentialInvariants(AJCEffectAnnotatedTree loop, List<AJCStatement> loopBody) {
+        Set<PotentiallyAvailableExpression> availableAtStart = loop.avail;
 
         // Find the expressions available at the last statement in the loop.
-        HashSet<PotentiallyAvailableExpression> loopInvariants = getLastAvailableSet(loopBody);
+        Set<PotentiallyAvailableExpression> loopInvariants = getLastAvailableSet(loopBody);
         if (loopInvariants == null) {
             loopInvariants = availableAtStart;
         }
@@ -137,9 +138,9 @@ public @Log4j2 class LoopInvarTranslator extends TODOTranslator {
         while (paeIterator.hasNext()) {
             PotentiallyAvailableExpression pae = paeIterator.next();
 
-            // We don't care about JCIdents. They exist just to make our representation match JCTree.
-            // We also don't care about JCLiterals.
-            if (pae.sourceNode instanceof JCIdent || pae.sourceNode instanceof JCLiteral) {
+            // Avoiding making a new temporary just for an ident or literal by itself...
+            // TODO: Find a better way of representing these leaf nodes...
+            if (pae.sourceNode instanceof AJCIdent || pae.sourceNode instanceof AJCLiteral) {
                 paeIterator.remove();
             }
         }
@@ -147,7 +148,7 @@ public @Log4j2 class LoopInvarTranslator extends TODOTranslator {
         return loopInvariants;
     }
 
-    private void translateInvariants(JCTree loopNode, List<JCStatement> loopBody) {
+    private void translateInvariants(AJCStatement loopNode, List<AJCStatement> loopBody, AJCBlock enclosingBlock) {
         Set<PotentiallyAvailableExpression> loopInvariants = findPotentialInvariants(loopNode, loopBody);
 
         log.debug("Found invariants for loop:\n{}\nAs:\n{}", loopNode, loopInvariants);
@@ -155,16 +156,15 @@ public @Log4j2 class LoopInvarTranslator extends TODOTranslator {
         // Now look at each remaining invariant and move it outside the loop. Use InvarPAEComparator to detect all
         // points where the new temporary should be shoved.
         // TODO: PAEs with sourceNode == null currently must be dropped. Maybe set sourceNode to the AssignOp and do something smart?
-        extractLoopInvariants(loopNode, loopInvariants);
+        extractLoopInvariants(loopNode, loopInvariants, enclosingBlock);
     }
 
     /**
      * Given a loop node and a set of loop invariants for that node, move the loop invariants into the enclosing
      * block and mark each element from the loop body which has been moved for replacement.
      */
-    private void extractLoopInvariants(JCTree loopNode, Set<PotentiallyAvailableExpression> loopInvariants) {
+    private void extractLoopInvariants(AJCStatement loopNode, Set<PotentiallyAvailableExpression> loopInvariants, AJCBlock enclosingBlock) {
         PotentiallyAvailableExpression[] invarArray = loopInvariants.toArray(new PotentiallyAvailableExpression[loopInvariants.size()]);
-
 
         for (int i = 0; i < invarArray.length; i++) {
             PotentiallyAvailableExpression pae = invarArray[i];
@@ -172,15 +172,15 @@ public @Log4j2 class LoopInvarTranslator extends TODOTranslator {
                 continue;
             }
 
-            List<JCStatement> newStatements = pae.concretify(enclosingMethod.sym);
+            List<AJCStatement> newStatements = pae.concretify(enclosingBlock.enclosingMethod.getTargetSymbol());
 
             log.debug("Introducing new statements: {}", newStatements);
 
             // Put the new statement into the body of the block containing this loop...
-            insertIntoEnclosingBlock(loopNode, newStatements);
+            enclosingBlock.insertBefore(loopNode, newStatements);
 
             // Now replace references to expressions like this one with references to the newly-created variable.
-            JCExpression tempRef = pae.expressionNode;
+            AJCExpression tempRef = pae.expressionNode;
 
             for (int b = 0; b < invarArray.length; b++) {
                 PotentiallyAvailableExpression candidate = invarArray[b];
@@ -191,8 +191,8 @@ public @Log4j2 class LoopInvarTranslator extends TODOTranslator {
                 log.debug("Considering:\n{}{}", candidate, pae);
                 if (pae.equals(candidate)) {
                     log.debug("Hit!");
-                    // If the expressions are equivalent to the thing we just made a temp for, mark them for replacement.
-                    substitutions.put(candidate.sourceNode, tempRef);
+                    // If the expressions are equivalent to the thing we just made a temp for, replace!
+                    candidate.sourceNode.swapFor(treeCopier.copy(tempRef));
 
                     invarArray[b] = null;
                 }
@@ -221,9 +221,21 @@ public @Log4j2 class LoopInvarTranslator extends TODOTranslator {
     /**
      * Get the set of PossibleSymbols invalidated by the given tree.
      */
-    private Set<PossibleSymbol> getKillSet(JCTree tree) {
-        KillSetVisitor killVisitor = new KillSetVisitor();
-        tree.accept(killVisitor);
-        return killVisitor.killSet;
+    private Set<PossibleSymbol> getKillSet(AJCEffectAnnotatedTree tree) {
+        EffectSet treeEffects = tree.effects.getEffectSet();
+
+        HashSet<PossibleSymbol> ret = new HashSet<>();
+
+        // We care only about local variables for this step...
+        if (!treeEffects.contains(EffectSet.EffectType.WRITE_INTERNAL)) {
+            return ret;
+        }
+        Set<Symbol.VarSymbol> affectedSymbols = treeEffects.writeInternal;
+
+        for (Symbol.VarSymbol sym : affectedSymbols) {
+            ret.add(PossibleSymbol.getConcrete(sym));
+        }
+
+        return ret;
     }
 }
