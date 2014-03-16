@@ -1,51 +1,96 @@
 package joust.utils;
 
 import com.sun.tools.javac.util.List;
+import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
+
+import java.util.Arrays;
+import java.util.NoSuchElementException;
 
 /**
  * Javac's List needs... Alteration... For my purposes.
- * Since their constructor is package-protected - I had to improvise.
+ * Since their constructor is package-protected - I had to improvise. This class is spliced onto Javac's list class
+ * using Lombok's ExtensionMethod facility.
  *
  * This flavour of the list *is* mutable. It implements some of the unsupported operations of Javac's list, and
  * is particularly useful for rewriting trees.
  */
-public @Log4j2 class JavacListUtils {
+@Log4j2
+public class JavacListUtils {
+    // Error strings. Handy for JUnit...
+    public static final String INSERT_NEGATIVE = "Attempt to add element at negative index in List!";
+    public static final String INSERT_OUT_OF_BOUNDS = "Attempt to add beyond end of list!";
+    public static final String SET_OUT_OF_BOUNDS = "Attempt to set value beyond end of List!";
+    public static final String REMOVE_NEGATIVE = "Attempt to remove negatively-indexed value from List!";
+    public static final String REMOVE_OUT_OF_BOUNDS = "Attempt to remove value beyond end of List!";
+    public static final String REMOVE_NONEXISTENT = "Attempt to remove nonexistent value from List!";
+    public static final String REPLACE_NONEXISTENT = "Attempt to replace a nonexistent value in a List!";
+
     /**
-     * Add a new element to the given list at the given index.
-     * @return The input list or, if the element was added at the front of the list, the new node that results.
+     * Get the last List node in the given list (As opposed to javac's List.last() which returns the last *element*).
      */
-    public static<T> List<T> addAtIndex(List<T> list, int i, T e) {
-        if (i < 0) {
-            throw new IllegalArgumentException("Attempt to add element at negative index in List!");
+    public static<T> List<T> lastNonNilNode(@NonNull List<T> list) {
+        while (list.tail != null && list.tail != List.nil()) {
+            list = list.tail;
         }
-
-        if (i == 0) {
-            List<T> ret = List.of(e);
-            ret.tail = list;
-            return ret;
-        }
-
-        List<T> currentTarget = list;
-
-        // Run down the list until you find the index of interest.
-        while (i > 0) {
-            if (currentTarget == List.nil()) {
-                throw new IndexOutOfBoundsException("Attempt to add value to unreachable index in List.");
-            }
-            i--;
-            currentTarget = currentTarget.tail;
-        }
-
-        // Add the new element.
-        List<T> newTail = List.of(e);
-        newTail.tail = currentTarget.tail;
-        currentTarget.tail = newTail;
 
         return list;
     }
 
-    public static<T> List<T> set(List<T> list, int i, T e) {
+    /**
+     * Insert the list e of elements into the list list at index i, returning the affected list, or the new list if the
+     * reference node has changed.
+     */
+    public static<T> List<T> addAtIndex(@NonNull List<T> list, int i, @NonNull List<T> e) {
+        if (i < 0) {
+            throw new IllegalArgumentException(INSERT_NEGATIVE);
+        }
+
+        if (i == 0) {
+            // Point the end of the given list to this list.
+            List<T> lastNode = lastNonNilNode(e);
+            lastNode.tail = list;
+            return e;
+        }
+
+        List<T> currentTarget = list;
+        List<T> previousTarget = null;
+
+        // Run down the list until you find the index of interest.
+        while (i > 0) {
+            i--;
+            previousTarget = currentTarget;
+            currentTarget = currentTarget.tail;
+
+            if (currentTarget == null) {
+                throw new IndexOutOfBoundsException(INSERT_OUT_OF_BOUNDS);
+            }
+        }
+
+        // If you're inserting at the end, drop the nil and point to the new list.
+        if (currentTarget == List.nil()) {
+            if (previousTarget != null) {
+                previousTarget.tail = e;
+            } else {
+                log.error("Encountered impossible situation in addAtIndex!");
+                return e;
+            }
+        } else {
+            List<T> oldTail = currentTarget.tail;
+            currentTarget.tail = e;
+            lastNonNilNode(e).tail = oldTail;
+        }
+
+        return list;
+    }
+    public static<T> List<T> addAtIndex(@NonNull List<T> list, int i, T e) {
+        return addAtIndex(list, i, List.of(e));
+    }
+
+    /**
+     * Set the element in list list at index i to e.
+     */
+    public static<T> List<T> set(@NonNull List<T> list, int i, T e) {
         if (i == 0) {
             List<T> ret = List.of(e);
             ret.tail = list;
@@ -57,8 +102,8 @@ public @Log4j2 class JavacListUtils {
             i--;
             currentTarget = currentTarget.tail;
 
-            if (currentTarget == List.nil()) {
-                throw new IndexOutOfBoundsException("Attempt to set value at an unreachable index in List.");
+            if (currentTarget == null || currentTarget == List.nil()) {
+                throw new IndexOutOfBoundsException(SET_OUT_OF_BOUNDS);
             }
         }
 
@@ -69,32 +114,47 @@ public @Log4j2 class JavacListUtils {
     /**
      * Remove the element at index i, returning the new list (This list if i > 0).
      */
-    public static<T> List<T> removeAtIndex(List<T> list, int i) {
+    public static<T> List<T> removeAtIndex(@NonNull List<T> list, int i) {
         if (i < 0) {
-            throw new IllegalArgumentException("Attempt to remove negatively-indexed value from List.");
+            throw new IllegalArgumentException(REMOVE_NEGATIVE);
+        }
+
+        if (list.isEmpty()) {
+            throw new IndexOutOfBoundsException(REMOVE_OUT_OF_BOUNDS);
         }
 
         if (i == 0) {
             return list.tail;
         }
 
-        List<T> currentTarget = list;
+        List<T> beforeVictim = list;
 
         while (i > 1) {
-            if (currentTarget == List.nil()) {
-                throw new IndexOutOfBoundsException("Attempt to remove value greater than index of final value in List from List.");
-            }
             i--;
-            currentTarget = currentTarget.tail;
+            beforeVictim = beforeVictim.tail;
+
+            if (beforeVictim == null) {
+                throw new IndexOutOfBoundsException(REMOVE_OUT_OF_BOUNDS);
+            }
         }
 
-        // currentTarget now the element before the element to be removed.
-        if (currentTarget == List.nil() || currentTarget.tail == List.nil()) {
-            throw new IndexOutOfBoundsException("Attempt to remove value greater than index of final value in List from List.");
+        // Now we want to remove the element ahead of us.
+
+        // Did we hit the end of the list?
+        if (beforeVictim == List.nil()) {
+            throw new IndexOutOfBoundsException(REMOVE_OUT_OF_BOUNDS);
         }
 
-        // Cut the unwanted element out of the list.
-        currentTarget.tail = currentTarget.tail.tail;
+        // The element to remove.
+        List<T> victim = beforeVictim.tail;
+        if (victim == List.nil()) {
+            throw new IndexOutOfBoundsException(REMOVE_OUT_OF_BOUNDS);
+        }
+
+        // The element beyond the target - where currentTarget's tail should point when we're finished.
+        List<T> elementBeyondTarget = victim.tail;
+
+        beforeVictim.tail = elementBeyondTarget;
 
         return list;
     }
@@ -102,11 +162,11 @@ public @Log4j2 class JavacListUtils {
     /**
      * Remove one instance of a particular element from the list, if any such element exists. Otherwise, print a warning.
      */
-    public static<T> List<T> removeElement(List<T> list, T e) {
+    public static<T> List<T> removeElement(@NonNull List<T> list, T e) {
         int index = list.indexOf(e);
         if (index == -1) {
-            JavacListUtils.log.warn("Attempt to remove nonexistent list element: {} from {}", e, list);
-            return list;
+            log.warn("\nRemoving {} from {} unsuccessful.", e, Arrays.toString(list.toArray()));
+            throw new NoSuchElementException(REMOVE_NONEXISTENT);
         }
 
         return removeAtIndex(list, index);
@@ -114,19 +174,15 @@ public @Log4j2 class JavacListUtils {
 
     /**
      * Replace one instance of target in the list with replacement, returning the new list.
-     * TODO: Silently fails if an instance not found... Problematic?
      */
-    public static<T> List<T> replace(List<T> list, T target, T replacement) {
+    public static<T> List<T> replace(@NonNull List<T> list, T target, T replacement) {
         // Handle the special case of it being at the front...
-        List<T> currentList = list;
-        while (list != null && currentList.head != target) {
-            currentList = list.tail;
+        int index = list.indexOf(target);
+        if (index == -1) {
+            log.warn("Replacing {} with {} in {} unsuccessful.", target, replacement, Arrays.toString(list.toArray()));
+            throw new NoSuchElementException(REPLACE_NONEXISTENT);
         }
 
-        if (currentList != null) {
-            currentList.head = replacement;
-        }
-
-        return list;
+        return set(list, index, replacement);
     }
 }
