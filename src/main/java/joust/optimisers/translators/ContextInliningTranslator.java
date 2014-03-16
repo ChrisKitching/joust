@@ -8,23 +8,25 @@ import lombok.extern.log4j.Log4j2;
 
 import java.util.HashMap;
 
-import static com.sun.tools.javac.tree.JCTree.*;
+import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.code.Symbol.*;
 
 /**
  * A translator that takes the mappings from an ExecutionContext and replaces identifiers in the tree of interest
  * with known literal replacements where possible (according to the context mappings provided).
  */
-public @AllArgsConstructor @Log4j2
+@Log4j2
+@AllArgsConstructor
+public
 class ContextInliningTranslator extends BaseTranslator {
     HashMap<VarSymbol, Value> currentAssignments;
 
     @Override
-    public void visitIdent(JCIdent tree) {
+    public void visitIdent(AJCIdent tree) {
         super.visitIdent(tree);
         log.info("Inliner visiting ident: {}", tree);
 
-        Symbol sym = tree.sym;
+        Symbol sym = tree.getTargetSymbol();
         log.info("Symbol: {}", sym);
         if (!(sym instanceof VarSymbol)) {
             log.info("Abort: nonvar symbol");
@@ -38,7 +40,8 @@ class ContextInliningTranslator extends BaseTranslator {
             return;
         }
 
-        result = knownValue.toLiteral();
+        AJCLiteral result = knownValue.toLiteral();
+        tree.swapFor(result);
         log.info("Replacing {} with {}", tree, result);
     }
 }
