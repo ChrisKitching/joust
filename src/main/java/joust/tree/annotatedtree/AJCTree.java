@@ -524,35 +524,45 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         /**
          * Add the given statement at the specified index in the block, reflecting the update in underlying decorated block.
          */
-        public void insert(int index, AJCStatement statement) {
+        public void insert(AJCStatement statement, int index) {
             stats = JavacListUtils.addAtIndex(stats, index, statement);
             decoratedTree.stats = JavacListUtils.addAtIndex(decoratedTree.stats, index, statement.decoratedTree);
         }
+        public void insert(List<AJCStatement> statements, int index) {
+            stats = JavacListUtils.addAtIndex(stats, index, statements);
+            decoratedTree.stats = JavacListUtils.addAtIndex(decoratedTree.stats, index, AJCTree.<JCStatement, AJCStatement>unwrap(statements));
+        }
 
+        private int indexOfOrFail(AJCStatement node) {
+            int index = stats.indexOf(node);
+            if (index == -1) {
+                LogUtils.raiseCompilerError("Unable to locate target statement: " + node + " in block:\n" + this);
+            }
+
+            return index;
+        }
         /**
          * Insert a statement before a given statement.
          */
-        public void insertBefore(AJCStatement insert, AJCStatement before) {
-            int index = stats.indexOf(before);
-            if (index == -1) {
-                LogUtils.raiseCompilerError("Unable to insert statement " + insert + " before non-existent statment " + before + " in block:\n" + this);
-                return;
-            }
-
-            insert(index, insert);
+        public void insertBefore(AJCStatement before, AJCStatement insert) {
+            int index = indexOfOrFail(before);
+            insert(insert, index);
+        }
+        public void insertBefore(AJCStatement before, List<AJCStatement> insert) {
+            int index = indexOfOrFail(before);
+            insert(insert, index);
         }
 
         /**
-         * Insert a statement before a given statement.
+         * Insert a statement after a given statement.
          */
-        public void insertAfter(AJCStatement insert, AJCStatement after) {
-            int index = stats.indexOf(after);
-            if (index == -1) {
-                LogUtils.raiseCompilerError("Unable to insert statement " + insert + " after non-existent statment " + after + " in block:\n" + this);
-                return;
-            }
-
-            insert(index + 1, insert);
+        public void insertAfter(AJCStatement after, AJCStatement insert) {
+            int index = indexOfOrFail(after);
+            insert(insert, index + 1);
+        }
+        public void insertAfter(AJCStatement after, List<AJCStatement> insert) {
+            int index = indexOfOrFail(after);
+            insert(insert, index + 1);
         }
 
         public int indexOf(AJCStatement statement) {
