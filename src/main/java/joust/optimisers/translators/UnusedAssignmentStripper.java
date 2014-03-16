@@ -9,9 +9,9 @@ import lombok.extern.log4j.Log4j2;
 
 import java.util.Set;
 
-import static com.sun.tools.javac.tree.JCTree.*;
+import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.code.Symbol.*;
-import static joust.Optimiser.treeMaker;
+import static joust.utils.StaticCompilerUtils.treeMaker;
 
 /**
  * Detects and deletes unused
@@ -24,17 +24,19 @@ import static joust.Optimiser.treeMaker;
  *
  * Use on one method at a time!
  */
-public @Log4j2
+@Log4j2
+public
 class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
     private Set<VarSymbol> everLive;
 
     @Override
-    public void visitMethodDef(JCMethodDecl tree) {
+    public void visitMethodDef(AJCMethodDecl tree) {
         // Run LVA over the method...
+        // Actually, use the narking side effects?
         Live live = new Live();
-        tree.accept(live);
+        live.visit(tree);
 
-        everLive = TreeInfoManager.getEverLive(tree.sym);
+        everLive = tree.everLive;
         super.visitMethodDef(tree);
 
         log.debug("Result of unused assignment stripping: \n{}", tree);
@@ -47,14 +49,14 @@ class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
      * @param live The live variable set applicable at this point.
      * @return true if the assignment under consideration lacks interesting side effects, false otherwise.
      */
-    private boolean shouldCull(EffectSet rhsEffects, Set<Symbol> live) {
+    private boolean shouldCull(EffectSet rhsEffects, Set<VarSymbol> live) {
         if (rhsEffects.containsAny(EffectSet.EffectType.IO, EffectSet.EffectType.WRITE_ESCAPING)) {
             return false;
         } else if (rhsEffects.contains(EffectSet.EffectType.WRITE_INTERNAL)) {
             // Determine if any of the symbols are interesting. A symbol is interesting if it is live at
             // this point (In which case write side effects to it matter) or if it is global.
             for (VarSymbol sym : rhsEffects.writeInternal) {
-                if (!TreeUtils.isLocalVariable(sym) || live.contains(sym)) {
+                if (live.contains(sym)) {
                     return false;
                 }
             }
@@ -68,81 +70,81 @@ class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
      * the tree. So, use this method to skip-ify an expressionstatement that has its contents skipified.
      */
     @Override
-    public void visitExec(JCExpressionStatement tree) {
-        super.visitExec(tree);
+    public void visitExpressionStatement(AJCExpressionStatement tree) {
+        super.visitExpressionStatement(tree);
 
-        if (tree.expr == null) {
+        if (tree.expr.isEmptyExpression()) {
             mHasMadeAChange = true;
-            result = treeMaker.Skip();
+            tree.getEnclosingBlock().remove(tree);
         }
     }
 
     @Override
-    public void visitAssign(JCAssign tree) {
+    public void visitAssign(AJCAssign tree) {
         super.visitAssign(tree);
 
-        Symbol target = TreeUtils.getTargetSymbolForAssignment(tree);
-        Set<Symbol> live = TreeInfoManager.getLiveVariables(tree);
+        VarSymbol target = tree.getTargetSymbol();
+        Set<VarSymbol> live = tree.liveVariables;
 
         if (!live.contains(target)) {
             // Determine if the assignment's RHS has meaningful side-effects...
-            EffectSet rhsEffects = TreeInfoManager.getEffects(tree.rhs);
+            EffectSet rhsEffects = tree.rhs.effects.getEffectSet();
 
             if (shouldCull(rhsEffects, live)) {
                 log.info("Killing redundant assignment: {}", tree);
                 mHasMadeAChange = true;
-                result = null;
+                tree.swapFor(treeMaker.EmptyExpression());
             }
         }
     }
 
     @Override
-    public void visitAssignop(JCAssignOp tree) {
+    public void visitAssignop(AJCAssignOp tree) {
         super.visitAssignop(tree);
 
-        Symbol target = TreeUtils.getTargetSymbolForAssignment(tree);
-        Set<Symbol> live = TreeInfoManager.getLiveVariables(tree);
+        VarSymbol target = tree.getTargetSymbol();
+        Set<VarSymbol> live = tree.liveVariables;
 
         if (!live.contains(target)) {
             // Determine if the assignment's RHS has meaningful side-effects...
-            EffectSet rhsEffects = TreeInfoManager.getEffects(tree.rhs);
+            EffectSet rhsEffects = tree.rhs.effects.getEffectSet();
 
             if (shouldCull(rhsEffects, live)) {
                 log.info("Killing redundant assignment: {}", tree);
                 mHasMadeAChange = true;
-                result = null;
+                tree.swapFor(treeMaker.EmptyExpression());
             }
         }
     }
 
     @Override
-    public void visitVarDef(JCVariableDecl tree) {
-        super.visitVarDef(tree);
+    public void visitVariableDecl(AJCVariableDecl tree) {
+        super.visitVariableDecl(tree);
 
-        VarSymbol target = tree.sym;
+        VarSymbol target = tree.getTargetSymbol();
 
         if (!everLive.contains(target)) {
             log.info("Culling assignment: {}", tree);
             mHasMadeAChange = true;
-            result = treeMaker.Skip();
+            tree.getEnclosingBlock().remove(tree);
             return;
         }
-        Set<Symbol> live = TreeInfoManager.getLiveVariables(tree);
+        Set<VarSymbol> live = tree.liveVariables;
 
         if (live != null && !live.contains(target)) {
-            if (tree.init != null) {
-                EffectSet rhsEffects = TreeInfoManager.getEffects(tree.init);
+            if (tree.getInit() != null) {
+                EffectSet rhsEffects = tree.getInit().effects.getEffectSet();
                 if (!shouldCull(rhsEffects, live)) {
                     return;
                 }
             }
 
-            if (tree.init != null) {
+            if (tree.getInit() != null) {
                 log.info("Killing redundant assignment: {}", tree);
                 mHasMadeAChange = true;
 
-                // So this *assignment* is redundant, but we need the decl. Just null out the init.
-                tree.init = null;
+                // So this *assignment* is redundant, but we need the decl.
+                tree.setInit(treeMaker.EmptyExpression());
             }
         }
     }

@@ -1,206 +1,110 @@
 package joust.optimisers.visitors;
 
-import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.List;
+import joust.tree.annotatedtree.AJCTree;
+import joust.tree.annotatedtree.AJCTreeVisitorImpl;
 import lombok.extern.log4j.Log4j2;
 
-import java.util.HashSet;
+import static joust.tree.annotatedtree.AJCTree.*;
 
-import static com.sun.tools.javac.tree.JCTree.*;
-
-public @Log4j2 class BackwardsFlowVisitor extends DepthFirstJavacTreeVisitor {
-    protected HashSet<JCTree> mMarked = new HashSet<>();
-
-    protected void visitBackwards(List<? extends JCTree> aTrees) {
-        List<? extends JCTree> trees = aTrees.reverse();
-        for (List<? extends JCTree> l = trees; l.nonEmpty(); l = l.tail) {
-            if (l.head != null && !mMarked.contains(l.head)) {
+@Log4j2
+public class BackwardsFlowVisitor extends AJCTreeVisitorImpl {
+    protected void visitBackwards(List<? extends AJCTree> aTrees) {
+        List<? extends AJCTree> trees = aTrees.reverse();
+        for (List<? extends AJCTree> l = trees; l.nonEmpty(); l = l.tail) {
+            if (l.head != null) {
                 log.trace("Visit statement: \n{}:{}", l.head, l.head.getClass().getName());
-                l.head.accept(this);
+                visit(l.head);
             }
-        }
-    }
-
-    protected void visit(JCTree tree) {
-        if (tree != null) {
-            if (mMarked.contains(tree)) {
-                return;
-            }
-
-            log.trace("Visit statement: \n{}:{}", tree, tree.getClass().getName());
-
-            tree.accept(this);
         }
     }
 
     @Override
-    public void visitBlock(JCBlock jcBlock) {
-        if (mMarked.contains(jcBlock)) {
-            return;
-        }
-
+    public void visitBlock(AJCBlock jcBlock) {
         visitBackwards(jcBlock.stats);
-
-        mMarked.add(jcBlock);
     }
 
     @Override
-    public void visitDoLoop(JCDoWhileLoop jcDoWhileLoop) {
-        if (mMarked.contains(jcDoWhileLoop)) {
-            return;
-        }
-
+    public void visitDoWhileLoop(AJCDoWhileLoop jcDoWhileLoop) {
         visit(jcDoWhileLoop.cond);
         visit(jcDoWhileLoop.body);
-
-        mMarked.add(jcDoWhileLoop);
     }
 
     @Override
-    public void visitWhileLoop(JCWhileLoop jcWhileLoop) {
-        if (mMarked.contains(jcWhileLoop)) {
-            return;
-        }
-
+    public void visitWhileLoop(AJCWhileLoop jcWhileLoop) {
         visit(jcWhileLoop.body);
         visit(jcWhileLoop.cond);
-
-        mMarked.add(jcWhileLoop);
     }
 
     @Override
-    public void visitForLoop(JCForLoop jcForLoop) {
-        if (mMarked.contains(jcForLoop)) {
-            return;
-        }
-
+    public void visitForLoop(AJCForLoop jcForLoop) {
         visit(jcForLoop.body);
         visitBackwards(jcForLoop.step);
         visit(jcForLoop.cond);
         visitBackwards(jcForLoop.init);
-
-        mMarked.add(jcForLoop);
     }
 
     @Override
-    public void visitForeachLoop(JCEnhancedForLoop jcEnhancedForLoop) {
-        if (mMarked.contains(jcEnhancedForLoop)) {
-            return;
-        }
-
+    public void visitForeachLoop(AJCForEachLoop jcEnhancedForLoop) {
         visit(jcEnhancedForLoop.body);
         visit(jcEnhancedForLoop.expr);
         visit(jcEnhancedForLoop.var);
-
-        mMarked.add(jcEnhancedForLoop);
     }
 
     @Override
-    public void visitSwitch(JCSwitch jcSwitch) {
-        if (mMarked.contains(jcSwitch)) {
-            return;
-        }
-
+    public void visitSwitch(AJCSwitch jcSwitch) {
         visitBackwards(jcSwitch.cases);
         visit(jcSwitch.selector);
-
-        mMarked.add(jcSwitch);
     }
 
     @Override
-    public void visitCase(JCCase jcCase) {
-        if (mMarked.contains(jcCase)) {
-            return;
-        }
-
+    public void visitCase(AJCCase jcCase) {
         visitBackwards(jcCase.stats);
         visit(jcCase.pat);
-
-        mMarked.add(jcCase);
     }
 
     @Override
-    public void visitSynchronized(JCSynchronized jcSynchronized) {
-        if (mMarked.contains(jcSynchronized)) {
-            return;
-        }
-
+    public void visitSynchronized(AJCSynchronized jcSynchronized) {
         visit(jcSynchronized.body);
         visit(jcSynchronized.lock);
-
-        mMarked.add(jcSynchronized);
     }
 
     @Override
-    public void visitTry(JCTry jcTry) {
-        if (mMarked.contains(jcTry)) {
-            return;
-        }
-
+    public void visitTry(AJCTry jcTry) {
         visit(jcTry.finalizer);
         visitBackwards(jcTry.catchers);
         visit(jcTry.body);
         visitBackwards(jcTry.resources);
-
-        mMarked.add(jcTry);
     }
 
     @Override
-    public void visitCatch(JCCatch jcCatch) {
-        if (mMarked.contains(jcCatch)) {
-            return;
-        }
-
+    public void visitCatch(AJCCatch jcCatch) {
         visit(jcCatch.body);
         visit(jcCatch.param);
-
-        mMarked.add(jcCatch);
     }
 
     @Override
-    public void visitConditional(JCConditional jcConditional) {
-        if (mMarked.contains(jcConditional)) {
-            return;
-        }
-
+    public void visitConditional(AJCConditional jcConditional) {
         visit(jcConditional.falsepart);
         visit(jcConditional.truepart);
         visit(jcConditional.cond);
-
-        mMarked.add(jcConditional);
     }
 
     @Override
-    public void visitIf(JCIf jcIf) {
-        if (mMarked.contains(jcIf)) {
-            return;
-        }
-
+    public void visitIf(AJCIf jcIf) {
         visit(jcIf.elsepart);
         visit(jcIf.thenpart);
         visit(jcIf.cond);
-
-        mMarked.add(jcIf);
     }
 
     @Override
-    public void visitAssert(JCAssert jcAssert) {
-        if (mMarked.contains(jcAssert)) {
-            return;
-        }
-
+    public void visitAssert(AJCAssert jcAssert) {
         visit(jcAssert.detail);
         visit(jcAssert.cond);
-
-        mMarked.add(jcAssert);
     }
 
     @Override
-    public void visitMethodDef(JCMethodDecl jcMethodDecl) {
-        if (mMarked.contains(jcMethodDecl)) {
-            return;
-        }
-
+    public void visitMethodDef(AJCMethodDecl jcMethodDecl) {
         visit(jcMethodDecl.body);
         visit(jcMethodDecl.thrown);
         visit(jcMethodDecl.params);
@@ -208,202 +112,80 @@ public @Log4j2 class BackwardsFlowVisitor extends DepthFirstJavacTreeVisitor {
         visit(jcMethodDecl.typarams);
         visit(jcMethodDecl.restype);
         visit(jcMethodDecl.mods);
-
-        mMarked.add(jcMethodDecl);
     }
 
     @Override
-    public void visitApply(JCMethodInvocation jcMethodInvocation) {
-        if (mMarked.contains(jcMethodInvocation)) {
-            return;
-        }
-
+    public void visitCall(AJCCall jcMethodInvocation) {
         visitBackwards(jcMethodInvocation.args);
         visit(jcMethodInvocation.meth);
-
-        mMarked.add(jcMethodInvocation);
     }
 
     @Override
-    public void visitNewClass(JCNewClass jcNewClass) {
-        if (mMarked.contains(jcNewClass)) {
-            return;
-        }
-
+    public void visitNewClass(AJCNewClass jcNewClass) {
         visit(jcNewClass.def);
         visitBackwards(jcNewClass.args);
         visit(jcNewClass.clazz);
         visit(jcNewClass.encl);
-
-        mMarked.add(jcNewClass);
     }
 
     @Override
-    public void visitNewArray(JCNewArray jcNewArray) {
-        if (mMarked.contains(jcNewArray)) {
-            return;
-        }
-
+    public void visitNewArray(AJCNewArray jcNewArray) {
         visitBackwards(jcNewArray.elems);
         visitBackwards(jcNewArray.dims);
         visit(jcNewArray.elemtype);
 
-        for (List<JCAnnotation> dimAnno : jcNewArray.dimAnnotations) {
+        for (List<AJCAnnotation> dimAnno : jcNewArray.dimAnnotations) {
             visitBackwards(dimAnno);
         }
 
         visitBackwards(jcNewArray.annotations);
-
-        mMarked.add(jcNewArray);
     }
 
     @Override
-    public void visitLambda(JCLambda jcLambda) {
-        if (mMarked.contains(jcLambda)) {
-            return;
-        }
-
+    public void visitLambda(AJCLambda jcLambda) {
         visit(jcLambda.body);
         visitBackwards(jcLambda.params);
-
-        mMarked.add(jcLambda);
     }
 
     @Override
-    public void visitAssign(JCAssign jcAssign) {
-        if (mMarked.contains(jcAssign)) {
-            return;
-        }
-
+    public void visitAssign(AJCAssign jcAssign) {
         visit(jcAssign.rhs);
         visit(jcAssign.lhs);
-
-        mMarked.add(jcAssign);
     }
 
     @Override
-    public void visitAssignop(JCAssignOp jcAssignOp) {
-        if (mMarked.contains(jcAssignOp)) {
-            return;
-        }
-
+    public void visitAssignop(AJCAssignOp jcAssignOp) {
         visit(jcAssignOp.rhs);
         visit(jcAssignOp.lhs);
-
-        mMarked.add(jcAssignOp);
     }
 
     @Override
-    public void visitBinary(JCBinary jcBinary) {
-        if (mMarked.contains(jcBinary)) {
-            return;
-        }
-
+    public void visitBinary(AJCBinary jcBinary) {
         visit(jcBinary.rhs);
         visit(jcBinary.lhs);
-
-        mMarked.add(jcBinary);
     }
 
     @Override
-    public void visitTypeCast(JCTypeCast jcTypeCast) {
-        if (mMarked.contains(jcTypeCast)) {
-            return;
-        }
-
+    public void visitTypeCast(AJCTypeCast jcTypeCast) {
         visit(jcTypeCast.expr);
         visit(jcTypeCast.clazz);
-
-        mMarked.add(jcTypeCast);
     }
 
     @Override
-    public void visitTypeTest(JCInstanceOf jcInstanceOf) {
-        if (mMarked.contains(jcInstanceOf)) {
-            return;
-        }
-
+    public void visitInstanceOf(AJCInstanceOf jcInstanceOf) {
         visit(jcInstanceOf.clazz);
         visit(jcInstanceOf.expr);
-
-        mMarked.add(jcInstanceOf);
     }
 
     @Override
-    public void visitIndexed(JCArrayAccess jcArrayAccess) {
-        if (mMarked.contains(jcArrayAccess)) {
-            return;
-        }
-
+    public void visitArrayAccess(AJCArrayAccess jcArrayAccess) {
         visit(jcArrayAccess.index);
         visit(jcArrayAccess.indexed);
-
-        mMarked.add(jcArrayAccess);
     }
 
     @Override
-    public void visitTypeApply(JCTypeApply jcTypeApply) {
-        if (mMarked.contains(jcTypeApply)) {
-            return;
-        }
-
-        visitBackwards(jcTypeApply.arguments);
-        visit(jcTypeApply.clazz);
-
-        mMarked.add(jcTypeApply);
-    }
-
-    @Override
-    public void visitTypeParameter(JCTypeParameter jcTypeParameter) {
-        if (mMarked.contains(jcTypeParameter)) {
-            return;
-        }
-
-        visitBackwards(jcTypeParameter.annotations);
-        visitBackwards(jcTypeParameter.bounds);
-
-        mMarked.add(jcTypeParameter);
-    }
-
-    @Override
-    public void visitAnnotation(JCAnnotation jcAnnotation) {
-        if (mMarked.contains(jcAnnotation)) {
-            return;
-        }
-
-        visitBackwards(jcAnnotation.args);
-        visit(jcAnnotation.annotationType);
-
-        mMarked.add(jcAnnotation);
-    }
-
-    @Override
-    public void visitAnnotatedType(JCAnnotatedType jcAnnotatedType) {
-        if (mMarked.contains(jcAnnotatedType)) {
-            return;
-        }
-
-        visit(jcAnnotatedType.underlyingType);
-        visitBackwards(jcAnnotatedType.annotations);
-
-        mMarked.add(jcAnnotatedType);
-    }
-
-    @Override
-    public void visitLetExpr(LetExpr letExpr) {
-        if (mMarked.contains(letExpr)) {
-            return;
-        }
-
+    public void visitLetExpr(AJCLetExpr letExpr) {
         visit(letExpr.expr);
         visitBackwards(letExpr.defs);
-
-        mMarked.add(letExpr);
-    }
-
-    @Override
-    public void visitTree(JCTree jcTree) {
-        log.error("JOUST visiting unknown tree node:\n{}\nThis is unlikely to end well. Continuing anyway.", jcTree);
-        mMarked.add(jcTree);
     }
 }
