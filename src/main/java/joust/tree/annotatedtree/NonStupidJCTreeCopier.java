@@ -1,4 +1,4 @@
-package joust.optimisers.utils;
+package joust.tree.annotatedtree;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
@@ -63,11 +63,11 @@ import static com.sun.tools.javac.tree.JCTree.*;
  * some of the time.
  * Notably, this copier preserves type and symbol annotations, which javac's one does not.
  */
-public class NonStupidTreeCopier<P> extends TreeCopier<P> {
+public class NonStupidJCTreeCopier<P> extends TreeCopier<P> {
     /**
      * Creates a new instance of TreeCopier
      */
-    public NonStupidTreeCopier(TreeMaker M) {
+    public NonStupidJCTreeCopier(TreeMaker M) {
         super(M);
     }
 

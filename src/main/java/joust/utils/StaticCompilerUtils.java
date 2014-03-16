@@ -6,7 +6,8 @@ import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
-import joust.optimisers.utils.NonStupidTreeCopier;
+import joust.tree.annotatedtree.AJCTreeCopier;
+import joust.tree.annotatedtree.NonStupidJCTreeCopier;
 import joust.tree.annotatedtree.AJCTreeFactory;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -31,8 +32,12 @@ public class StaticCompilerUtils {
     // The compiler's symbol table.
     public static Symtab symtab;
 
+    // Javac's file manager.
     public static JavaFileManager fileManager;
-    public static NonStupidTreeCopier treeCopier;
+
+    // Tree copiers.
+    public static AJCTreeCopier treeCopier;
+    public static NonStupidJCTreeCopier<Void> javacTreeCopier;
 
     public static void init(ProcessingEnvironment env) {
         trees = Trees.instance(env);
@@ -43,7 +48,8 @@ public class StaticCompilerUtils {
 
         javacTreeMaker = TreeMaker.instance(context);
         treeMaker = AJCTreeFactory.instance(context);
-        treeCopier = new NonStupidTreeCopier<Void>(javacTreeMaker);
+        treeCopier = AJCTreeCopier.instance(context);
+        javacTreeCopier = new NonStupidJCTreeCopier<Void>(javacTreeMaker);
         names = Names.instance(context);
         symtab = Symtab.instance(context);
         fileManager = context.get(JavaFileManager.class);

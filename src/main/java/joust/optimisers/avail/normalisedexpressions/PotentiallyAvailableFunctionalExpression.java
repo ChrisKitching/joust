@@ -5,7 +5,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 import joust.optimisers.avail.NameFactory;
-import joust.optimisers.utils.NonStupidTreeCopier;
+import joust.tree.annotatedtree.NonStupidJCTreeCopier;
 import joust.utils.TreeUtils;
 import lombok.extern.log4j.Log4j2;
 
@@ -59,7 +59,7 @@ class PotentiallyAvailableFunctionalExpression extends PotentiallyAvailableNulla
         log.debug("Concretifying {}", this);
 
         // Create a node representing this call
-        NonStupidTreeCopier<Void> copier = new NonStupidTreeCopier<>(treeMaker);
+        NonStupidJCTreeCopier<Void> copier = new NonStupidJCTreeCopier<>(treeMaker);
 
         // Copy the associated node.
         JCMethodInvocation thisExpr = (JCMethodInvocation) copier.visitMethodInvocation((JCMethodInvocation) expr, null);
