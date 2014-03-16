@@ -7,6 +7,7 @@ import lombok.extern.log4j.Log4j2;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,7 +48,7 @@ public class CommutativitySorterComparator implements Comparator<AJCExpression> 
     // Impose an arbitrary order over operator tags...
     private static final Map<Tag, Integer> tagOrderings;
     static {
-        final HashMap<Tag, Integer> orderings = new HashMap<Tag, Integer>() {
+        final Map<Tag, Integer> orderings = new EnumMap<Tag, Integer>(Tag.class) {
             {
                 // Binary tags...
                 put(Tag.AND, 1);
@@ -100,7 +101,7 @@ public class CommutativitySorterComparator implements Comparator<AJCExpression> 
 
     private static final Map<Kind, Integer> literalKindOrderings;
     static {
-        final HashMap<Kind, Integer> orderings = new HashMap<Kind, Integer>() {
+        final Map<Kind, Integer> orderings = new EnumMap<Kind, Integer>(Kind.class) {
             {
                 put(Kind.CHAR_LITERAL, 1);
                 put(Kind.INT_LITERAL, 2);
