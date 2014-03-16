@@ -1,7 +1,6 @@
 package joust.optimisers.translators;
 
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.tree.JCTree;
 import joust.optimisers.utils.CommutativitySorterComparator;
 import joust.tree.annotatedtree.AJCTreeVisitorImpl;
 import lombok.extern.log4j.Log4j2;
@@ -51,13 +50,13 @@ public class CommutativitySorter extends AJCTreeVisitorImpl {
         // Build the tree from the sorted elements.
         Iterator<AJCExpression> iterator = combinedElements.iterator();
         AJCBinary replacementTree = treeMaker.Binary(currentSubtreeTag, iterator.next(), iterator.next());
-        replacementTree.setType(targetTree.getType());
+        replacementTree.setType(targetTree.getNodeType());
         replacementTree.setOperator(targetTree.getOperator());
 
         while (iterator.hasNext()) {
             AJCExpression expr = iterator.next();
             replacementTree = treeMaker.Binary(currentSubtreeTag, replacementTree, expr);
-            replacementTree.setType(targetTree.getType());
+            replacementTree.setType(targetTree.getNodeType());
             replacementTree.setOperator(targetTree.getOperator());
         }
 
@@ -76,10 +75,10 @@ public class CommutativitySorter extends AJCTreeVisitorImpl {
         // Even if it is, check if this is secretly string concatenation...
         if (currentSubtreeTag == Tag.PLUS) {
             log.info("Node: {}", tree.lhs);
-            log.info("Node type: {}", tree.lhs.getType());
-            log.info("Node type: {}", tree.rhs.getType());
-            if ("java.lang.String".equals(tree.lhs.getType().toString())
-             || "java.lang.String".equals(tree.rhs.getType().toString())) {
+            log.info("Node type: {}", tree.lhs.getNodeType());
+            log.info("Node type: {}", tree.rhs.getNodeType());
+            if ("java.lang.String".equals(tree.lhs.getNodeType().toString())
+             || "java.lang.String".equals(tree.rhs.getNodeType().toString())) {
                 log.info("String concat!");
                 combinedElements.add(tree);
                 return;
@@ -89,8 +88,8 @@ public class CommutativitySorter extends AJCTreeVisitorImpl {
         // If floating point operations are involved, we don't want to reorder such operations.
         // Assuming type coercion works how I want it to, this should be okay...
         // TODO: Tests!
-        Type lType = tree.lhs.getType();
-        Type rType = tree.rhs.getType();
+        Type lType = tree.lhs.getNodeType();
+        Type rType = tree.rhs.getNodeType();
         if (lType.isPrimitive() && rType.isPrimitive()) {
             Type.JCPrimitiveType lPrim = (Type.JCPrimitiveType) lType;
             Type.JCPrimitiveType rPrim = (Type.JCPrimitiveType) rType;

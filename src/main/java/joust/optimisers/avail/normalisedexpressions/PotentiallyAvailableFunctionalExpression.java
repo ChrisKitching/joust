@@ -65,7 +65,7 @@ class PotentiallyAvailableFunctionalExpression extends PotentiallyAvailableExpre
 
         // Create a new temporary variable to hold this expression.
         Name tempName = NameFactory.getName();
-        VarSymbol newSym = new VarSymbol(Flags.FINAL, tempName, sourceNode.getType(), owningContext);
+        VarSymbol newSym = new VarSymbol(Flags.FINAL, tempName, sourceNode.getNodeType(), owningContext);
         concreteSym = PossibleSymbol.getConcrete(newSym);
         expressionNode = treeMaker.Ident(newSym);
 
