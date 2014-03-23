@@ -4,7 +4,7 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.util.List;
 import joust.joustcache.JOUSTCache;
-import joust.tree.annotatedtree.AJCTreeVisitorImpl;
+import joust.tree.annotatedtree.AJCTreeVisitor;
 import joust.treeinfo.EffectSet;
 import joust.treeinfo.TreeInfoManager;
 import joust.utils.SetHashMap;
@@ -22,7 +22,7 @@ import static joust.Optimiser.inputTrees;
 import static joust.utils.StaticCompilerUtils.types;
 
 @Log4j2
-public class SideEffectVisitor extends AJCTreeVisitorImpl {
+public class SideEffectVisitor extends AJCTreeVisitor {
     // Track the method calls which depend on incomplete methods so we can go back and fix them up when we complete
     // the method in question. Keyed by MethodSymbol of the incomplete method.
     private final SetHashMap<MethodSymbol, AJCEffectAnnotatedTree> incompleteCalls = new SetHashMap<>();

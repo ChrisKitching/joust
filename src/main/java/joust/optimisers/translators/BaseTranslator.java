@@ -1,12 +1,13 @@
 package joust.optimisers.translators;
 
-import joust.tree.annotatedtree.AJCTreeVisitorImpl;
+import joust.tree.annotatedtree.AJCTree;
+import joust.tree.annotatedtree.AJCTreeVisitor;
 
 
 /**
  * The superclass of all TreeTranslators in JOUST.
  */
-public abstract class BaseTranslator extends AJCTreeVisitorImpl {
+public abstract class BaseTranslator extends AJCTreeVisitor {
     // Boolean to track if this visitor has made any changes to the tree this iteration.
     protected boolean mHasMadeAChange;
 
@@ -16,5 +17,12 @@ public abstract class BaseTranslator extends AJCTreeVisitorImpl {
      */
     public boolean makingChanges() {
         return mHasMadeAChange;
+    }
+
+    @Override
+    public void visitTree(AJCTree tree) {
+        mHasMadeAChange = false;
+
+        super.visitTree(tree);
     }
 }

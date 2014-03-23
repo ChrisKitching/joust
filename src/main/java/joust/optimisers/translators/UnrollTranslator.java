@@ -34,7 +34,7 @@ public class UnrollTranslator extends BaseTranslator {
             UnusedAssignmentStripper stripper;
             do {
                 stripper = new UnusedAssignmentStripper();
-                stripper.visit(tree);
+                stripper.visitTree(tree);
             } while (stripper.mHasMadeAChange);
         }
     }
@@ -141,7 +141,7 @@ public class UnrollTranslator extends BaseTranslator {
         HashMap<VarSymbol, Value> assignments = context.getCurrentAssignments();
 
         ContextInliningTranslator inliner = new ContextInliningTranslator(assignments);
-        inliner.visit(ret);
+        inliner.visitTrees(ret);
         return ret;
     }
 

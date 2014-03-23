@@ -1,10 +1,9 @@
 package joust.optimisers.avail;
 
 import com.esotericsoftware.minlog.Log;
-import com.sun.tools.javac.tree.JCTree;
 import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableExpression;
 import joust.tree.annotatedtree.AJCTree;
-import joust.tree.annotatedtree.AJCTreeVisitorImpl;
+import joust.tree.annotatedtree.AJCTreeVisitor;
 import joust.treeinfo.EffectSet;
 import lombok.extern.log4j.Log4j2;
 
@@ -19,7 +18,7 @@ import static com.sun.tools.javac.code.Symbol.*;
  * Perform available expression analysis on methods.
  */
 @Log4j2
-public class Avail extends AJCTreeVisitorImpl {
+public class Avail extends AJCTreeVisitor {
     // The symbol of the method currently being processed.
     MethodSymbol enclosingMethod;
 

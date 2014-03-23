@@ -2,7 +2,7 @@ package tests.unittests;
 
 import com.sun.tools.javac.code.Symbol;
 import joust.tree.annotatedtree.AJCTree;
-import joust.tree.annotatedtree.AJCTreeVisitorImpl;
+import joust.tree.annotatedtree.AJCTreeVisitor;
 import lombok.extern.log4j.Log4j2;
 import tests.unittests.utils.VisitorResultPurger;
 
@@ -12,9 +12,9 @@ import java.lang.reflect.InvocationTargetException;
 import static org.junit.Assert.*;
 
 @Log4j2
-public abstract class BaseAnalyserTest<T extends AJCTreeVisitorImpl> extends TreeFabricatingTest {
+public abstract class BaseAnalyserTest<T extends AJCTreeVisitor> extends TreeFabricatingTest {
     // The class of the tree translator type of interest.
-    private AJCTreeVisitorImpl visitorInstance;
+    private AJCTreeVisitor visitorInstance;
 
     private final String resultField;
 
@@ -46,7 +46,7 @@ public abstract class BaseAnalyserTest<T extends AJCTreeVisitorImpl> extends Tre
      */
     protected void testVisitNode(AJCTree input, Object[] resultNodes, Object[] resultValue) {
         log.debug("LVA on {}", input);
-        visitorInstance.visit(input);
+        visitorInstance.visitTree(input);
 
         for (int i = 0; i < resultNodes.length; i++) {
             Object resultNode = resultNodes[i];

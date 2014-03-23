@@ -34,7 +34,7 @@ class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
         // Run LVA over the method...
         // Actually, use the narking side effects?
         Live live = new Live();
-        live.visit(tree);
+        live.visitTree(tree);
 
         everLive = tree.everLive;
         super.visitMethodDef(tree);

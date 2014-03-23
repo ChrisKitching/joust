@@ -34,7 +34,7 @@ public abstract class BaseTreeTranslatorTest<T extends BaseTranslator> extends T
      * @param expected The expected result of applying this translator function to the input tree.
      */
     protected void testVisitNode(AJCTree input, AJCTree expected) {
-        translatorInstance.visit(input);
+        translatorInstance.visitTree(input);
 
         log.info("Result: {}  Expected: {}", input, expected);
 

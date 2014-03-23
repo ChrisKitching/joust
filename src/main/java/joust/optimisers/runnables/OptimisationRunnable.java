@@ -50,7 +50,7 @@ public abstract class OptimisationRunnable implements Runnable {
         @Override
         public void processRootNode(AJCTree node) {
             // Apply the visitor once to each tree.
-            translatorInstance.visit(node);
+            translatorInstance.visitTree(node);
         }
     }
 
@@ -62,7 +62,7 @@ public abstract class OptimisationRunnable implements Runnable {
         @Override
         protected void processRootNode(AJCTree node) {
             do {
-                translatorInstance.visit(node);
+                translatorInstance.visitTree(node);
             } while(translatorInstance.makingChanges());
         }
     }

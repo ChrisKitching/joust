@@ -2,7 +2,7 @@ package joust.optimisers.translators;
 
 import com.sun.tools.javac.code.Type;
 import joust.optimisers.utils.CommutativitySorterComparator;
-import joust.tree.annotatedtree.AJCTreeVisitorImpl;
+import joust.tree.annotatedtree.AJCTreeVisitor;
 import lombok.extern.log4j.Log4j2;
 
 import javax.lang.model.type.TypeKind;
@@ -20,7 +20,7 @@ import static joust.utils.StaticCompilerUtils.treeMaker;
  * miss equivalent trees that are differently-structured via a distribution relationship, alas.).
  */
 @Log4j2
-public class CommutativitySorter extends AJCTreeVisitorImpl {
+public class CommutativitySorter extends AJCTreeVisitor {
     // The commutative operator which combines elements in the commutative subtree of interest.
     private final Tag currentSubtreeTag;
 

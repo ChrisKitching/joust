@@ -1,12 +1,9 @@
 package joust.optimisers.visitors;
 
 import com.sun.tools.javac.util.List;
-import joust.tree.annotatedtree.AJCTree;
-import joust.tree.annotatedtree.AJCTreeVisitorImpl;
 import joust.utils.SymbolSet;
 import lombok.extern.log4j.Log4j2;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;

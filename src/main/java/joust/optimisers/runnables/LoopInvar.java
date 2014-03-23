@@ -18,11 +18,11 @@ public class LoopInvar extends OptimisationRunnable.SingleTranslatorInstance {
     protected void processRootNode(AJCTree node) {
         do {
             // Loop invariant code motion...
-            translatorInstance.visit(node);
+            translatorInstance.visitTree(node);
 
             // Unused assignment stripping... (Bins some of the junk Invar produces).
             // (Note that a single pass of this is applied before we get to this point anyway.)
-            stripper.visit(node);
+            stripper.visitTree(node);
         } while (translatorInstance.makingChanges());
     }
 }
