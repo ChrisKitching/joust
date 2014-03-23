@@ -4,6 +4,7 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.List;
 import joust.Optimiser;
 import joust.joustcache.data.ClassInfo;
+import joust.optimisers.translators.ExpressionNormalisingTranslator;
 import joust.optimisers.visitors.sideeffects.SideEffectVisitor;
 import joust.tree.conversion.TreePreparationTranslator;
 import lombok.extern.log4j.Log4j2;
@@ -40,6 +41,7 @@ public class AJCForest {
 
         // Since it's stateless...
         final TreePreparationTranslator sanity = new TreePreparationTranslator();
+        final ExpressionNormalisingTranslator normaliser = new ExpressionNormalisingTranslator();
 
         HashMap<MethodSymbol, AJCMethodDecl> prospectiveMethodTable = new HashMap<>();
         HashMap<String, VarSymbol> prospectiveVarSymbolTable = new HashMap<>();
@@ -73,6 +75,9 @@ public class AJCForest {
                         prospectiveVarSymbolTable.put(ClassInfo.getHashForVariable(defN.getTargetSymbol()), defN.getTargetSymbol());
                         log.debug("Field: {}", defN.getTargetSymbol());
                     }
+
+                    // Normalise the tree.
+                    normaliser.visitTree(translatedTree);
 
                     prospectiveRootNodes = prospectiveRootNodes.prepend(translatedTree);
                 }

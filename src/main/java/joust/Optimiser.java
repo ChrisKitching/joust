@@ -7,7 +7,6 @@ import joust.joustcache.JOUSTCache;
 import joust.optimisers.avail.normalisedexpressions.PossibleSymbol;
 import joust.optimisers.runnables.AssertionStrip;
 import joust.optimisers.runnables.AssignmentStrip;
-import joust.optimisers.runnables.ExpressionNormalise;
 import joust.optimisers.runnables.LoopInvar;
 import joust.optimisers.runnables.TreeConverter;
 import joust.optimisers.utils.OptimisationPhaseManager;
@@ -76,7 +75,6 @@ public class Optimiser extends AbstractProcessor {
         // very much more convenient than working on the actual tree if you don't care about the desugared things.)
         OptimisationPhaseManager.register(new TreeConverter(), AFTER, DESUGAR);
 
-        OptimisationPhaseManager.register(new ExpressionNormalise(), AFTER, DESUGAR);
         OptimisationPhaseManager.register(new AssignmentStrip(), AFTER, DESUGAR);
         OptimisationPhaseManager.register(new LoopInvar(), AFTER, DESUGAR);
 
