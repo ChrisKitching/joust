@@ -66,7 +66,7 @@ class EvaluationContext {
         }
     }
     public void evaluateExpressionStatements(List<AJCExpressionStatement> statements) {
-        for (AJCStatement stat : statements) {
+        for (AJCExpressionStatement stat : statements) {
             evaluate(stat);
         }
     }

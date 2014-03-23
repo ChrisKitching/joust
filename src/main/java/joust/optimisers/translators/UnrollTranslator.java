@@ -26,17 +26,15 @@ public class UnrollTranslator extends BaseTranslator {
     // high and too much gets unrolled and the binary becomes huge and the JIT becomes hindered.
     public static final int UNROLL_LIMIT = 16;
 
+    private AJCMethodDecl def;
+
     @Override
     public void visitMethodDef(AJCMethodDecl tree) {
+        def = tree;
+
         super.visitMethodDef(tree);
-        if (mHasMadeAChange) {
-            // If we touched anything, it's sort of likely there's new dead assignments to strip...
-            UnusedAssignmentStripper stripper;
-            do {
-                stripper = new UnusedAssignmentStripper();
-                stripper.visitTree(tree);
-            } while (stripper.mHasMadeAChange);
-        }
+
+        log.debug("After unrolling method:\n{}", tree);
     }
 
     @Override
