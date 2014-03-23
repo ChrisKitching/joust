@@ -63,12 +63,23 @@ public class AJCTreeFactory implements AJCTree.Factory {
 
     @Override
     public AJCMethodDecl MethodDef(AJCModifiers mods, Name name, AJCTypeExpression restype, AJCVariableDecl recvparam, List<AJCVariableDecl> params, List<AJCExpressionTree> thrown, AJCBlock body, AJCExpressionTree defaultValue) {
-        AJCMethodDecl ret = new AJCMethodDecl(javacTreeMaker.MethodDef(mods.<JCModifiers, AJCModifiers>getDecoratedTree(), name, restype.getDecoratedTree(), List.<JCTypeParameter>nil(), recvparam.getDecoratedTree(), AJCTree.<JCVariableDecl, AJCVariableDecl>unwrap(params), AJCTree.<JCExpression, AJCExpressionTree>unwrap(thrown), body.getDecoratedTree(), defaultValue.getDecoratedTree()),
+        AJCMethodDecl ret = new AJCMethodDecl(
+                javacTreeMaker.MethodDef(mods.<JCModifiers, AJCModifiers>getDecoratedTree(),
+                        name,
+                        restype.getDecoratedTree(),
+                        List.<JCTypeParameter>nil(),
+                        recvparam == null ? null : recvparam.getDecoratedTree(),
+                        AJCTree.<JCVariableDecl, AJCVariableDecl>unwrap(params),
+                        AJCTree.<JCExpression, AJCExpressionTree>unwrap(thrown),
+                        body.getDecoratedTree(),
+                        defaultValue == null ? null : defaultValue.getDecoratedTree()),
                 mods, restype, recvparam, params, thrown, body, defaultValue);
 
         mods.mParentNode = ret;
         restype.mParentNode = ret;
-        recvparam.mParentNode = ret;
+        if (recvparam != null) {
+            recvparam.mParentNode = ret;
+        }
         for (AJCVariableDecl param : params) {
             param.mParentNode = ret;
         }
@@ -76,7 +87,9 @@ public class AJCTreeFactory implements AJCTree.Factory {
             thro.mParentNode = ret;
         }
         body.mParentNode = ret;
-        defaultValue.mParentNode = ret;
+        if (defaultValue != null) {
+            defaultValue.mParentNode = ret;
+        }
 
         return ret;
     }

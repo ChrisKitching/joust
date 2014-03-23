@@ -13,6 +13,7 @@ import joust.optimisers.visitors.sideeffects.Effects;
 import joust.treeinfo.EffectSet;
 import joust.utils.JavacListUtils;
 import joust.utils.LogUtils;
+import joust.utils.SymbolSet;
 import lombok.Delegate;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;

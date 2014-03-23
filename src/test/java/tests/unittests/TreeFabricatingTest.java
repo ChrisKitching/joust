@@ -1,6 +1,5 @@
 package tests.unittests;
 
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import joust.utils.StaticCompilerUtils;
 import lombok.extern.log4j.Log4j2;

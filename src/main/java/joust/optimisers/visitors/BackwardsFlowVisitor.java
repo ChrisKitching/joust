@@ -13,7 +13,6 @@ public class BackwardsFlowVisitor extends AJCTreeVisitorImpl {
         List<? extends AJCTree> trees = aTrees.reverse();
         for (List<? extends AJCTree> l = trees; l.nonEmpty(); l = l.tail) {
             if (l.head != null) {
-                log.trace("Visit statement: \n{}:{}", l.head, l.head.getClass().getName());
                 visit(l.head);
             }
         }

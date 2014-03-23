@@ -1,10 +1,11 @@
-package tests.unittests;
+package tests.unittests.utils;
 
 import com.sun.tools.javac.code.TypeTag;
 
 import static joust.utils.StaticCompilerUtils.treeMaker;
 import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.tree.JCTree.Tag;
+import static com.sun.tools.javac.code.Symbol.*;
 
 /**
  * Provides a collection of methods for conveniently creating literal trees for tests.
@@ -117,5 +118,22 @@ public final class ShorthandExpressionFactory {
 
     public static AJCUnary comp(AJCExpressionTree lValue) {
         return treeMaker.Unary(Tag.COMPL, lValue);
+    }
+
+
+    public static AJCUnaryAsg preInc(AJCSymbolRefTree<VarSymbol> lValue) {
+        return treeMaker.UnaryAsg(Tag.PREINC, lValue);
+    }
+
+    public static AJCUnaryAsg postInc(AJCSymbolRefTree<VarSymbol> lValue) {
+        return treeMaker.UnaryAsg(Tag.POSTINC, lValue);
+    }
+
+    public static AJCUnaryAsg preDec(AJCSymbolRefTree<VarSymbol> lValue) {
+        return treeMaker.UnaryAsg(Tag.PREDEC, lValue);
+    }
+
+    public static AJCUnaryAsg postDec(AJCSymbolRefTree<VarSymbol> lValue) {
+        return treeMaker.UnaryAsg(Tag.POSTDEC, lValue);
     }
 }

@@ -15,7 +15,7 @@ public class testRedundantAssignments extends BaseIntegrationTestCase {
         int b = 3;  // Redundant.
         int c = 12; // Not redundant.
         if (a > 5) {
-            b = 5;
+            b = 5;  // Redundant.
             c = 6;
             if (c == 6) {
                 b = 3;
@@ -28,7 +28,7 @@ public class testRedundantAssignments extends BaseIntegrationTestCase {
 
         print(b + ", " + c);
 
-        int d = 12;
+        int d = 12; // Redundant.
         int e = 5;
         switch (c) {
             case 10:

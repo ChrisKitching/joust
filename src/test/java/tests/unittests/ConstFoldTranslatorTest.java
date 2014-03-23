@@ -9,7 +9,7 @@ import org.junit.runner.RunWith;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 import static junitparams.JUnitParamsRunner.$;
-import static tests.unittests.ShorthandExpressionFactory.*;
+import static tests.unittests.utils.ShorthandExpressionFactory.*;
 import static joust.utils.StaticCompilerUtils.treeMaker;
 
 /**

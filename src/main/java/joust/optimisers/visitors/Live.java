@@ -3,8 +3,10 @@ package joust.optimisers.visitors;
 import com.sun.tools.javac.util.List;
 import joust.tree.annotatedtree.AJCTree;
 import joust.tree.annotatedtree.AJCTreeVisitorImpl;
+import joust.utils.SymbolSet;
 import lombok.extern.log4j.Log4j2;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -16,8 +18,8 @@ import static com.sun.tools.javac.code.Symbol.*;
  * Live variable analysis. Used on demand to determine the live variable set at each point.
  */
 @Log4j2
-public class Live extends AJCTreeVisitorImpl {
-    HashSet<VarSymbol> currentlyLive = new HashSet<>();
+public class Live extends BackwardsFlowVisitor {
+    Set<VarSymbol> currentlyLive = new SymbolSet();
 
     // Every symbol that has ever been live.
     HashSet<VarSymbol> everLive = new HashSet<>();
@@ -69,30 +71,22 @@ public class Live extends AJCTreeVisitorImpl {
 
     @Override
     public void visitIf(AJCIf jcIf) {
-        log.debug("Visiting if: {}", jcIf);
-        log.debug("On entry: {}", recentlyKilled);
-
         // New recently-killed set created...
         enterBlock();
-        log.debug("After entry: {}", recentlyKilled);
 
         // Populate it with the stuff killed by the elsepart.
         visit(jcIf.elsepart);
 
-        log.debug("Killed in else: {}", recentlyKilled);
         // Keep a reference to the stuff killed by else and strip it from the list.
         HashSet<VarSymbol> killedInElse = recentlyKilled;
         leaveBlock();
-        log.debug("After pop: {}", recentlyKilled);
 
         // New recently-killed set...
         enterBlock();
         visit(jcIf.thenpart);
-        log.debug("Killed in then: {}", recentlyKilled);
 
         HashSet<VarSymbol> killedInThen = recentlyKilled;
         leaveBlock();
-        log.debug("After pop: {}", recentlyKilled);
 
         // We now have the original recentlyKilled set (The one for the context containing this if) once again.
         // We now want to figure out what changes this if made to it - any symbols killed in both branches are really
@@ -100,13 +94,11 @@ public class Live extends AJCTreeVisitorImpl {
 
         // Take the intersection of the kill sets...
         killedInThen.retainAll(killedInElse);
-        log.debug("Intersection: {}", killedInThen);
 
         // And remove it from the in-progress killed set.
         recentlyKilled.removeAll(killedInThen);
         currentlyLive.removeAll(killedInThen);
         visit(jcIf.cond);
-        log.debug("Conclusion: {}", recentlyKilled);
     }
 
     @Override
@@ -114,11 +106,9 @@ public class Live extends AJCTreeVisitorImpl {
         // Tracks things killed in every branch. Such things, if there also exists a default branch, may be culled.
         HashSet<VarSymbol> killedEverywhere = null;
         boolean haveDefaultBranch = false;
-        for (List<? extends AJCTree> l = jcSwitch.cases; l.nonEmpty(); l = l.tail) {
+        for (List<AJCCase> l = jcSwitch.cases; l.nonEmpty(); l = l.tail) {
             if (l.head != null) {
-                log.trace("Visit statement: \n{}:{}", l.head, l.head.getClass().getName());
-                if (((AJCCase) l.head).pat == null) {
-                    log.debug("Found default case!");
+                if (l.head.pat.isEmptyExpression()) {
                     haveDefaultBranch = true;
                 }
 
@@ -135,8 +125,6 @@ public class Live extends AJCTreeVisitorImpl {
                     killedEverywhere.retainAll(recentlyKilled);
                 }
 
-                log.debug("After: {} have: {}", l.head, killedEverywhere);
-
                 // And then we restore the live set to the original state for the next case.
                 leaveBlock();
             }
@@ -151,6 +139,8 @@ public class Live extends AJCTreeVisitorImpl {
     // Stuff should start being live if it's live *anywhere* and stop being live if it stops *everywhere*.
     @Override
     public void visitMethodDef(AJCMethodDecl jcMethodDecl) {
+        everLive = new HashSet<>();
+
         super.visitMethodDef(jcMethodDecl);
 
         jcMethodDecl.everLive = everLive;
@@ -158,11 +148,11 @@ public class Live extends AJCTreeVisitorImpl {
 
     @Override
     public void visitVariableDecl(AJCVariableDecl jcVariableDecl) {
-        super.visitVariableDecl(jcVariableDecl);
-
         markLive(jcVariableDecl);
         if (!jcVariableDecl.getInit().isEmptyExpression()) {
-            // If there's an assignment, we care. Otherwise this isn't interesting.
+            visit(jcVariableDecl.getInit());
+
+            // If there's an assignment, we just killed this symbol (But may have added some, too!).
             VarSymbol referenced = jcVariableDecl.getTargetSymbol();
             currentlyLive.remove(referenced);
             recentlyKilled.add(referenced);
@@ -171,8 +161,6 @@ public class Live extends AJCTreeVisitorImpl {
 
     @Override
     public void visitAssign(AJCAssign jcAssign) {
-        log.debug("Assign has: {}, {}", jcAssign.lhs.getClass().getSimpleName(), jcAssign.rhs.getClass().getSimpleName());
-
         visit(jcAssign.rhs);
 
         markLive(jcAssign);
@@ -180,7 +168,6 @@ public class Live extends AJCTreeVisitorImpl {
         VarSymbol referenced = jcAssign.lhs.getTargetSymbol();
         currentlyLive.remove(referenced);
         recentlyKilled.add(referenced);
-        log.debug("Removing {} because {}", referenced, jcAssign);
     }
 
     @Override
@@ -191,7 +178,13 @@ public class Live extends AJCTreeVisitorImpl {
 
         VarSymbol referenced = jcAssignOp.lhs.getTargetSymbol();
         currentlyLive.add(referenced);
-        log.debug("Adding {} because {}", referenced, jcAssignOp);
+    }
+
+    @Override
+    public void visitUnaryAsg(AJCUnaryAsg that) {
+        log.debug("Arg is: {}", that.arg);
+        markLive(that);
+        visit(that.arg);
     }
 
     @Override
@@ -214,9 +207,7 @@ public class Live extends AJCTreeVisitorImpl {
         if (!(tree.getTargetSymbol() instanceof VarSymbol)) {
             return;
         }
-        log.debug("Visiting ref: {}", tree);
         VarSymbol referenced = (VarSymbol) tree.getTargetSymbol();
-        log.debug("Hits: {}", referenced);
         if (referenced == null) {
             return;
         }
@@ -227,8 +218,6 @@ public class Live extends AJCTreeVisitorImpl {
 
     private void markLive(AJCEffectAnnotatedTree tree) {
         // TODO: Datastructure-fu to enable portions of this map to be shared...
-        Set<VarSymbol> localCopy = new HashSet<>(currentlyLive);
-        log.info("Registering: {} with: {}", localCopy, tree);
-        tree.liveVariables = localCopy;
+        tree.liveVariables = new SymbolSet(currentlyLive);
     }
 }
