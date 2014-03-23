@@ -11,6 +11,7 @@ import com.sun.tools.javac.util.Name;
 import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableExpression;
 import joust.optimisers.visitors.sideeffects.Effects;
 import joust.treeinfo.EffectSet;
+import joust.utils.JCTreeStructurePrinter;
 import joust.utils.JavacListUtils;
 import joust.utils.LogUtils;
 import lombok.Delegate;
@@ -483,12 +484,28 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
          * Add the given statement at the specified index in the block, reflecting the update in underlying decorated block.
          */
         public void insert(AJCStatement statement, int index) {
+            statement.enclosingBlock = this;
+            if (statement instanceof AJCBlock) {
+                ((AJCBlock) statement).enclosingMethod = enclosingMethod;
+            }
+
             stats = JavacListUtils.addAtIndex(stats, index, statement);
             decoratedTree.stats = JavacListUtils.addAtIndex(decoratedTree.stats, index, statement.decoratedTree);
         }
         public void insert(List<AJCStatement> statements, int index) {
+            // Compute early since the splicing is destructive.
+            List<JCStatement> unwrapped = AJCTree.unwrap(statements);
+
             stats = JavacListUtils.addAtIndex(stats, index, statements);
-            decoratedTree.stats = JavacListUtils.addAtIndex(decoratedTree.stats, index, AJCTree.<JCStatement, AJCStatement>unwrap(statements));
+            for (AJCStatement st : stats) {
+                st.enclosingBlock = this;
+                if (st instanceof AJCBlock) {
+                    ((AJCBlock) st).enclosingMethod = enclosingMethod;
+                }
+            }
+
+            decoratedTree.stats = JavacListUtils.addAtIndex(decoratedTree.stats, index, unwrapped);
+
         }
 
         private int indexOfOrFail(AJCStatement node) {
