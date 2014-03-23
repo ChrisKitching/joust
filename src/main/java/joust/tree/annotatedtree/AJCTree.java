@@ -137,6 +137,11 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         protected AJCEffectAnnotatedTree(JCTree tree) {
             super(tree);
         }
+
+        @Override
+        public String toString() {
+            return super.toString() + ':' + effects.getEffectSet();
+        }
     }
 
     public abstract static class AJCStatement extends AJCEffectAnnotatedTree implements StatementTree {
