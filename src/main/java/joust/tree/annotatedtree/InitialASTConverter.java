@@ -8,7 +8,6 @@ import joust.utils.LogUtils;
 import lombok.extern.log4j.Log4j2;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Stack;
 
@@ -317,7 +316,7 @@ public class InitialASTConverter extends TreeScanner {
         }
 
         if (tree instanceof AJCSymbolRefTree) {
-            return new AJCObjectTypeTree((AJCSymbolRefTree<Symbol.ClassSymbol>) tree);
+            return new AJCObjectTypeTree((AJCSymbolRefTree<Symbol.TypeSymbol>) tree);
         }
 
         log.error("Unexpected type expression node type: {}:{}", tree, tree.getClass().getCanonicalName(), new Exception());

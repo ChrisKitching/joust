@@ -13,7 +13,6 @@ import joust.optimisers.visitors.sideeffects.Effects;
 import joust.treeinfo.EffectSet;
 import joust.utils.JavacListUtils;
 import joust.utils.LogUtils;
-import joust.utils.SymbolSet;
 import lombok.Delegate;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -994,14 +993,14 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         @Delegate @Getter private final JCFieldAccess decoratedTree;
 
         /** selected Tree hierarchy */
-        public AJCSymbolRefTree<T> selected;
+        public AJCSymbolRefTree<? extends Symbol> selected;
 
         protected AJCFieldAccess(JCFieldAccess tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCFieldAccess(JCFieldAccess tree, AJCSymbolRefTree<T> selected) {
+        protected AJCFieldAccess(JCFieldAccess tree, AJCSymbolRefTree<? extends Symbol> selected) {
             this(tree);
             this.selected = selected;
         }
@@ -1066,9 +1065,9 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
      * Non-primitive type tree...
      */
     public static class AJCObjectTypeTree extends AJCTypeExpression implements AJCSymbolRef<ClassSymbol>{
-        @Delegate @Getter private final AJCSymbolRefTree<ClassSymbol> underlyingSymbol;
+        @Delegate @Getter private final AJCSymbolRefTree<TypeSymbol> underlyingSymbol;
 
-        protected AJCObjectTypeTree(AJCSymbolRefTree<ClassSymbol> tree) {
+        protected AJCObjectTypeTree(AJCSymbolRefTree<TypeSymbol> tree) {
             super(tree.getDecoratedTree());
             underlyingSymbol = tree;
         }
@@ -1229,6 +1228,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
                               AJCTypeExpression vartype,
                               AJCExpressionTree init);
         AJCEmptyExpression EmptyExpression();
+        AJCVariableDecl VarDef(VarSymbol v, AJCExpressionTree init);
         AJCSkip Skip();
         AJCBlock Block(long flags, List<AJCStatement> stats);
         AJCDoWhileLoop DoLoop(AJCBlock body, AJCExpressionTree cond);
@@ -1263,10 +1263,10 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         AJCTypeCast TypeCast(AJCTypeExpression clazz, AJCExpressionTree expr);
         AJCInstanceOf InstanceOf(AJCSymbolRefTree<VarSymbol> expr, AJCSymbolRefTree<ClassSymbol> clazz);
         AJCArrayAccess ArrayAccess(AJCExpressionTree indexed, AJCExpressionTree index);
-        <T extends Symbol> AJCFieldAccess Select(AJCSymbolRefTree<T> selected, Name selector);
-        <T extends Symbol> AJCFieldAccess Select(AJCSymbolRefTree<T> base, Symbol sym);
-        AJCIdent Ident(Name idname);
-        AJCIdent Ident(Symbol sym);
+        AJCFieldAccess Select(AJCSymbolRefTree<? extends Symbol> selected, Name selector);
+        <T extends Symbol> AJCFieldAccess<T> Select(AJCSymbolRefTree<? extends Symbol> base, T sym);
+        <T extends Symbol> AJCIdent<T> Ident(Name idname);
+        <T extends Symbol> AJCIdent<T> Ident(T sym);
         AJCLiteral Literal(TypeTag tag, Object value);
         AJCLiteral Literal(Object value);
         AJCPrimitiveTypeTree TypeIdent(TypeTag typetag);

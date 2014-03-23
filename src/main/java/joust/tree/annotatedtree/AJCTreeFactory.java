@@ -1,14 +1,21 @@
 package joust.tree.annotatedtree;
 
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 import joust.utils.LogUtils;
+import lombok.extern.log4j.Log4j2;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+import static com.sun.tools.javac.code.TypeTag.*;
 import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.tree.JCTree.*;
 import static joust.utils.StaticCompilerUtils.javacTreeMaker;
@@ -18,10 +25,13 @@ import static com.sun.tools.javac.code.Symbol.*;
  * A factory for creating tree nodes.
  * Each node is created backed by a JCTree node.
  */
+@Log4j2
 public class AJCTreeFactory implements AJCTree.Factory {
     protected static final Context.Key<AJCTreeFactory> AJCTreeMakerKey = new Context.Key<>();
 
     Types types;
+
+    Method isUnqualifiable;
 
     public static AJCTreeFactory instance(Context context) {
         AJCTreeFactory instance = context.get(AJCTreeMakerKey);
@@ -34,6 +44,30 @@ public class AJCTreeFactory implements AJCTree.Factory {
 
     private AJCTreeFactory(Context context) {
         types = Types.instance(context);
+
+        // Get a reference to useful methods from the javacTreeMaker that aren't public...
+        Class<TreeMaker> treeMakerClass = TreeMaker.class;
+        try {
+            isUnqualifiable = treeMakerClass.getDeclaredMethod("isUnqualifiable");
+            isUnqualifiable.setAccessible(true);
+        } catch (NoSuchMethodException e) {
+            log.error("Unable to get isUnqualifiable method from javacTreeMaker.", e);
+            LogUtils.raiseCompilerError("Unable to get isUnqualifiable method from javacTreeMaker.");
+        }
+    }
+
+    private boolean isUnqualifiable(Symbol sym) {
+        Object ret;
+
+        try {
+            ret = isUnqualifiable.invoke(javacTreeMaker, sym);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            log.error("Unable to call isUnqualifiable method on javacTreeMaker.", e);
+            LogUtils.raiseCompilerError("Unable to call isUnqualifiable method on javacTreeMaker.");
+            return false;
+        }
+
+        return (Boolean) ret;
     }
 
     @Override
@@ -110,6 +144,64 @@ public class AJCTreeFactory implements AJCTree.Factory {
         init.mParentNode = ret;
 
         return ret;
+    }
+
+    @Override
+    public AJCVariableDecl VarDef(VarSymbol v, AJCExpressionTree init) {
+        AJCVariableDecl ret = new AJCVariableDecl(javacTreeMaker.VarDef(v, init.getDecoratedTree()),
+                                Modifiers(v.flags()),
+                                Type(v.type),
+                                init);
+
+        ret.setType(v.type);
+        return ret;
+    }
+
+    /**
+     * Create a tree representing given type. Borrowed heavily from Javac's TreeMaker.
+     */
+    public AJCTypeExpression Type(Type t) {
+        if (t == null) {
+            return null;
+        }
+
+        AJCTypeExpression tp;
+        switch (t.getTag()) {
+            case BYTE:
+            case CHAR:
+            case SHORT:
+            case INT:
+            case LONG:
+            case FLOAT:
+            case DOUBLE:
+            case BOOLEAN:
+            case VOID:
+                tp = TypeIdent(t.getTag());
+                break;
+            case CLASS:
+                tp = new AJCObjectTypeTree(QualIdent(t.tsym));
+                break;
+            case ARRAY:
+                tp = TypeArray(Type(types.elemtype(t)));
+                break;
+            case ERROR:
+                tp = TypeIdent(ERROR);
+                break;
+            default:
+                throw new AssertionError("unexpected type: " + t);
+        }
+
+        tp.setType(t);
+
+        return tp;
+    }
+    /** Create a qualified identifier from a symbol, adding enough qualifications
+     *  to make the reference unique.
+     */
+    public <T extends Symbol> AJCSymbolRefTree<T> QualIdent(T sym) {
+        return isUnqualifiable(sym)
+             ? Ident(sym)
+             : Select(QualIdent(sym.owner), sym);
     }
 
     @Override
@@ -435,7 +527,7 @@ public class AJCTreeFactory implements AJCTree.Factory {
     }
 
     @Override
-    public <T extends Symbol> AJCFieldAccess Select(AJCSymbolRefTree<T> selected, Name selector) {
+    public AJCFieldAccess Select(AJCSymbolRefTree<? extends Symbol> selected, Name selector) {
         AJCFieldAccess ret = new AJCFieldAccess<>(javacTreeMaker.Select(selected.getDecoratedTree(), selector), selected);
 
         selected.mParentNode = ret;
@@ -444,8 +536,8 @@ public class AJCTreeFactory implements AJCTree.Factory {
     }
 
     @Override
-    public <T extends Symbol> AJCFieldAccess Select(AJCSymbolRefTree<T> base, Symbol sym) {
-        AJCFieldAccess ret = new AJCFieldAccess<>((JCFieldAccess) javacTreeMaker.Select(base.getDecoratedTree(), sym), base);
+    public <T extends Symbol> AJCFieldAccess<T> Select(AJCSymbolRefTree<? extends Symbol> base, T sym) {
+        AJCFieldAccess<T> ret = new AJCFieldAccess<>((JCFieldAccess) javacTreeMaker.Select(base.getDecoratedTree(), sym), base);
 
         base.mParentNode = ret;
 
@@ -453,13 +545,13 @@ public class AJCTreeFactory implements AJCTree.Factory {
     }
 
     @Override
-    public AJCIdent Ident(Name idname) {
-        return new AJCIdent(javacTreeMaker.Ident(idname));
+    public <T extends Symbol> AJCIdent<T> Ident(Name idname) {
+        return new AJCIdent<>(javacTreeMaker.Ident(idname));
     }
 
     @Override
-    public AJCIdent Ident(Symbol sym) {
-        return new AJCIdent(javacTreeMaker.Ident(sym));
+    public <T extends Symbol> AJCIdent<T> Ident(T sym) {
+        return new AJCIdent<>(javacTreeMaker.Ident(sym));
     }
 
     @Override
