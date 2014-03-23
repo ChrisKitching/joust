@@ -66,4 +66,32 @@ public abstract class OptimisationRunnable implements Runnable {
             } while(translatorInstance.makingChanges());
         }
     }
+
+    /**
+     * Blunt-force apply the primary, then the secondaryTranslatorInstance, then the primary again...
+     */
+    abstract static class OneTwo extends SingleTranslatorInstance {
+        private BaseTranslator secondaryTranslatorInstance;
+
+        public OneTwo(Class<? extends BaseTranslator> primary, Class<? extends BaseTranslator> secondary) {
+            super(primary);
+
+            try {
+                secondaryTranslatorInstance = secondary.getConstructor().newInstance();
+            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                LogUtils.raiseCompilerError("Exception thrown from OneTwo while instantiating secondaryTranslatorInstance translator: " + e);
+            }
+        }
+
+        @Override
+        protected void processRootNode(AJCTree node) {
+            do {
+                translatorInstance.visitTree(node);
+
+                do {
+                    secondaryTranslatorInstance.visitTree(node);
+                } while (secondaryTranslatorInstance.makingChanges());
+            } while (translatorInstance.makingChanges());
+        }
+    }
 }
