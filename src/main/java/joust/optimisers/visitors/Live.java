@@ -210,9 +210,12 @@ public class Live extends AJCTreeVisitorImpl {
      * Consider an expression that may refer to a VarSymbol and add it to the currently live set.
      * @param tree The JCIdent or JCFieldAccess to consider.
      */
-    private void processReference(AJCSymbolRef<VarSymbol> tree) {
+    private void processReference(AJCSymbolRef tree) {
+        if (!(tree.getTargetSymbol() instanceof VarSymbol)) {
+            return;
+        }
         log.debug("Visiting ref: {}", tree);
-        VarSymbol referenced = tree.getTargetSymbol();
+        VarSymbol referenced = (VarSymbol) tree.getTargetSymbol();
         log.debug("Hits: {}", referenced);
         if (referenced == null) {
             return;

@@ -6,6 +6,9 @@ import joust.joustcache.ChecksumUtils;
 import joust.joustcache.JOUSTCache;
 import joust.optimisers.avail.normalisedexpressions.PossibleSymbol;
 import joust.optimisers.runnables.AssertionStrip;
+import joust.optimisers.runnables.AssignmentStrip;
+import joust.optimisers.runnables.ExpressionNormalise;
+import joust.optimisers.runnables.LoopInvar;
 import joust.optimisers.runnables.TreeConverter;
 import joust.optimisers.utils.OptimisationPhaseManager;
 import joust.tree.annotatedtree.AJCForest;
@@ -72,6 +75,10 @@ public class Optimiser extends AbstractProcessor {
         // As it happens, almost all our phases operate on the virtual AFTER DESUGAR phase (as this turns out to be
         // very much more convenient than working on the actual tree if you don't care about the desugared things.)
         OptimisationPhaseManager.register(new TreeConverter(), AFTER, DESUGAR);
+
+        OptimisationPhaseManager.register(new ExpressionNormalise(), AFTER, DESUGAR);
+        OptimisationPhaseManager.register(new AssignmentStrip(), AFTER, DESUGAR);
+        OptimisationPhaseManager.register(new LoopInvar(), AFTER, DESUGAR);
 
         // The post-compilation pass to populate the disk cache with the results of classes processed
         // during this job. Needs to happen here so we can compute a checksum over the bytecode and

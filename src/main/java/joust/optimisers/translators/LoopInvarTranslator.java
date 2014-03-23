@@ -25,7 +25,8 @@ public class LoopInvarTranslator extends BaseTranslator {
     public void visitMethodDef(AJCMethodDecl jcMethodDecl) {
         // Run on-demand available expression analysis...
         Avail a  = new Avail();
-        //jcMethodDecl.accept(a);
+        a.visit(jcMethodDecl);
+
         super.visitMethodDef(jcMethodDecl);
     }
 

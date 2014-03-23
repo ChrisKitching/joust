@@ -14,7 +14,7 @@ import static com.sun.tools.javac.code.Symbol.*;
 import static joust.utils.StaticCompilerUtils.treeMaker;
 
 /**
- * Detects and deletes unused
+ * Detects and deletes unused assignments.
  * Backward dataflow: LVA. Kill unused assignments (And, while we're at it, needless temporary variables)
  * Also - count usages of each local variable. If below some threshold, inline it.
  *
@@ -125,6 +125,7 @@ class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
 
         if (!everLive.contains(target)) {
             log.info("Culling assignment: {}", tree);
+            log.debug("Enclosing block: {}", tree.getEnclosingBlock());
             mHasMadeAChange = true;
             tree.getEnclosingBlock().remove(tree);
             return;

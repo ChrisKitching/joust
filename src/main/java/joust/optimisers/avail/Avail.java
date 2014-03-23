@@ -232,8 +232,10 @@ public class Avail extends AJCTreeVisitorImpl {
         if (currentScope == null) {
             return;
         }
-        markAvailableExpressions(jcIdent);
-        currentScope.enterExpression(jcIdent);
+        if (jcIdent.getTargetSymbol() instanceof VarSymbol) {
+            markAvailableExpressions(jcIdent);
+            currentScope.enterExpression(jcIdent);
+        }
     }
 
     @Override
