@@ -424,6 +424,11 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         public boolean isEmptyExpression() {
             return true;
         }
+
+        @Override
+        public String toString() {
+            return "/* */";
+        }
     }
 
     public static class AJCSkip extends AJCStatement implements EmptyStatementTree {

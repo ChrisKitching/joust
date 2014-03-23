@@ -301,6 +301,7 @@ public class InitialASTConverter extends TreeScanner {
         // The type will be on the top of the stack...
         variableDecl.vartype = convertToTypeExpression(results.pop());
 
+        variableDecl.enclosingBlock = enclosingBlock;
         setFields(variableDecl, tree);
 
         results.push(variableDecl);
