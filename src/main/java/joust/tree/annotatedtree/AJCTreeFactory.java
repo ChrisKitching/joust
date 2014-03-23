@@ -14,6 +14,7 @@ import lombok.extern.log4j.Log4j2;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import static com.sun.tools.javac.code.TypeTag.*;
 import static joust.tree.annotatedtree.AJCTree.*;
@@ -48,7 +49,7 @@ public class AJCTreeFactory implements AJCTree.Factory {
         // Get a reference to useful methods from the javacTreeMaker that aren't public...
         Class<TreeMaker> treeMakerClass = TreeMaker.class;
         try {
-            isUnqualifiable = treeMakerClass.getDeclaredMethod("isUnqualifiable");
+            isUnqualifiable = treeMakerClass.getDeclaredMethod("isUnqualifiable", Symbol.class);
             isUnqualifiable.setAccessible(true);
         } catch (NoSuchMethodException e) {
             log.error("Unable to get isUnqualifiable method from javacTreeMaker.", e);

@@ -8,7 +8,7 @@ import joust.tree.annotatedtree.AJCTree;
  * Loop invariant code motion.
  */
 public class LoopInvar extends OptimisationRunnable.SingleTranslatorInstance {
-    private UnusedAssignmentStripper stripper = new UnusedAssignmentStripper();
+    private final UnusedAssignmentStripper stripper = new UnusedAssignmentStripper();
 
     public LoopInvar() {
         super(LoopInvarTranslator.class);
@@ -22,7 +22,9 @@ public class LoopInvar extends OptimisationRunnable.SingleTranslatorInstance {
 
             // Unused assignment stripping... (Bins some of the junk Invar produces).
             // (Note that a single pass of this is applied before we get to this point anyway.)
-            stripper.visitTree(node);
+            do {
+                stripper.visitTree(node);
+            } while (stripper.makingChanges());
         } while (translatorInstance.makingChanges());
     }
 }

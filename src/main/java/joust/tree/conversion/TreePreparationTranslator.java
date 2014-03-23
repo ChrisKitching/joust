@@ -42,7 +42,6 @@ public class TreePreparationTranslator extends TreeTranslator {
 
     @Override
     public void visitMethodDef(JCMethodDecl jcMethodDecl) {
-        log.debug("Encountered method:\n{}", jcMethodDecl);
         super.visitMethodDef(jcMethodDecl);
     }
 
@@ -56,7 +55,6 @@ public class TreePreparationTranslator extends TreeTranslator {
     public void visitDoLoop(JCDoWhileLoop jcDoWhileLoop) {
         super.visitDoLoop(jcDoWhileLoop);
         jcDoWhileLoop.body = ensureBlock(jcDoWhileLoop.body);
-        ensureConcludingSkip(jcDoWhileLoop.body);
         result = jcDoWhileLoop;
     }
 
@@ -64,7 +62,6 @@ public class TreePreparationTranslator extends TreeTranslator {
     public void visitWhileLoop(JCWhileLoop jcWhileLoop) {
         super.visitWhileLoop(jcWhileLoop);
         jcWhileLoop.body = ensureBlock(jcWhileLoop.body);
-        ensureConcludingSkip(jcWhileLoop.body);
         result = jcWhileLoop;
     }
 
@@ -72,7 +69,6 @@ public class TreePreparationTranslator extends TreeTranslator {
     public void visitForLoop(JCForLoop jcForLoop) {
         super.visitForLoop(jcForLoop);
         jcForLoop.body = ensureBlock(jcForLoop.body);
-        ensureConcludingSkip(jcForLoop.body);
         result = jcForLoop;
     }
 
@@ -80,7 +76,6 @@ public class TreePreparationTranslator extends TreeTranslator {
     public void visitForeachLoop(JCEnhancedForLoop jcEnhancedForLoop) {
         super.visitForeachLoop(jcEnhancedForLoop);
         jcEnhancedForLoop.body = ensureBlock(jcEnhancedForLoop.body);
-        ensureConcludingSkip(jcEnhancedForLoop.body);
         result = jcEnhancedForLoop;
     }
 
@@ -111,19 +106,5 @@ public class TreePreparationTranslator extends TreeTranslator {
     }
     private static JCStatement ensureBlock(JCStatement tree) {
         return ensureBlock(tree, 0);
-    }
-
-    /**
-     * Ensure that the given JCBlock ends with a Skip. If it doesn't, add one.
-     * @param body The JCBlock to consider.
-     */
-    private static void ensureConcludingSkip(JCBlock body) {
-        List<JCStatement> statements = body.getStatements();
-        if(!(statements.last() instanceof JCSkip)) {
-            body.stats = statements.append(javacTreeMaker.Skip());
-        }
-    }
-    private static void ensureConcludingSkip(JCStatement body) {
-        ensureConcludingSkip((JCBlock) body);
     }
 }

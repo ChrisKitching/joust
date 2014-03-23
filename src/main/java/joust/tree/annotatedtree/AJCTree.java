@@ -40,7 +40,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
     }
 
     // The parent node, if any is meaningfully defined.
-    protected AJCTree mParentNode;
+    public AJCTree mParentNode;
 
     protected AJCTree(JCTree tree) {
         decoratedTree = tree;
@@ -1069,7 +1069,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
     /**
      * Non-primitive type tree...
      */
-    public static class AJCObjectTypeTree extends AJCTypeExpression implements AJCSymbolRef<ClassSymbol>{
+    public static class AJCObjectTypeTree extends AJCTypeExpression implements AJCSymbolRef<TypeSymbol> {
         @Delegate @Getter private final AJCSymbolRefTree<TypeSymbol> underlyingSymbol;
 
         protected AJCObjectTypeTree(AJCSymbolRefTree<TypeSymbol> tree) {
@@ -1210,10 +1210,12 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
     public interface AJCSymbolRef<T extends Symbol> {
         T getTargetSymbol();
     }
+
     // Resolving generics for Lombokification...
     private interface AJCVarSymbolRef extends AJCSymbolRef<VarSymbol> {}
     private interface AJCMethodSymbolRef extends AJCSymbolRef<MethodSymbol> {}
     private interface AJCClassSymbolRef extends AJCSymbolRef<ClassSymbol> {}
+    private interface AJCTypeSymbolRef extends AJCSymbolRef<TypeSymbol> {}
 
     /** An interface for tree factories */
     public interface Factory {
