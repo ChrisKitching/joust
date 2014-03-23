@@ -353,6 +353,7 @@ public class InitialASTConverter extends TreeScanner {
 
         setFields(block, jcBlock);
         results.push(block);
+        enclosingBlock = block.enclosingBlock;
     }
 
     @Override
