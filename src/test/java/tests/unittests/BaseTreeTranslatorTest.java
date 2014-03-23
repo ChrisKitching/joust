@@ -34,12 +34,27 @@ public abstract class BaseTreeTranslatorTest<T extends BaseTranslator> extends T
      * @param expected The expected result of applying this translator function to the input tree.
      */
     protected void testVisitNode(AJCTree input, AJCTree expected) {
-        translatorInstance.visitTree(input);
+        doVisit(input, false);
 
         log.info("Result: {}  Expected: {}", input, expected);
 
         // Ensure that the actual output matches the expected output.
         // TODO: It may become necessary to implement a proper comparator for JCTree objects.
         assertEquals(expected.toString(), input.toString());
+    }
+
+    protected void testVisitNodeBluntForce(AJCTree input, AJCTree expected) {
+        doVisit(input, true);
+        log.info("Result: {}  Expected: {}", input, expected);
+
+        // Ensure that the actual output matches the expected output.
+        // TODO: It may become necessary to implement a proper comparator for JCTree objects.
+        assertEquals(expected.toString(), input.toString());
+    }
+
+    private void doVisit(AJCTree input, boolean bluntForce) {
+        do {
+            translatorInstance.visitTree(input);
+        } while (bluntForce && translatorInstance.makingChanges());
     }
 }

@@ -8,17 +8,18 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 import joust.optimisers.avail.NameFactory;
 import joust.tree.annotatedtree.AJCTree;
-import joust.tree.annotatedtree.AJCTreeFactory;
-import joust.utils.StaticCompilerUtils;
-import lombok.Delegate;
 
 import javax.lang.model.type.TypeKind;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 import static joust.utils.StaticCompilerUtils.symtab;
 import static joust.utils.StaticCompilerUtils.treeMaker;
+import static com.sun.tools.javac.code.Symbol.*;
 
-public class UnitTestTreeFactory {
+public final class UnitTestTreeFactory {
+    // TODO: Might need more than just nulls here...
+    private static final ClassSymbol testClass = new ClassSymbol(0, NameFactory.getName(), symtab.voidType, null);
+
     public static AJCVariableDecl VarDef(AJCModifiers mods, Name name, AJCTypeExpression vartype, AJCExpressionTree init) {
         if (!(vartype instanceof AJCPrimitiveTypeTree)) {
             throw new UnsupportedOperationException("Only primitive types are supported in the mocked-type environment.");
@@ -294,6 +295,19 @@ public class UnitTestTreeFactory {
     }
 
     public static AJCMethodDecl MethodFromBlock(AJCBlock block) {
-        return treeMaker.MethodDef(Modifiers(0), NameFactory.getName(), TypeIdent(TypeTag.VOID), null, List.<AJCVariableDecl>nil(), List.<AJCExpressionTree>nil(), block, null);
+        AJCMethodDecl decl = treeMaker.MethodDef(Modifiers(0), NameFactory.getName(), TypeIdent(TypeTag.VOID), null, List.<AJCVariableDecl>nil(), List.<AJCExpressionTree>nil(), block, null);
+        decl.getDecoratedTree().sym = new MethodSymbol(0, NameFactory.getName(), symtab.voidType, testClass);
+
+        return decl;
+    }
+
+    /**
+     * Get a method call to a nonexistent method that uses the given symbol.
+     */
+    @SuppressWarnings("unchecked")
+    public static AJCCall callFor(VarSymbol sym) {
+        MethodSymbol LIES = new MethodSymbol(0, NameFactory.getName(), symtab.voidType, testClass);
+
+        return Call(Ident(LIES), List.<AJCExpressionTree>of(Ident(sym)));
     }
 }

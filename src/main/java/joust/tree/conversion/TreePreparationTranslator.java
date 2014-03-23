@@ -3,6 +3,7 @@ package joust.tree.conversion;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeTranslator;
 import com.sun.tools.javac.util.List;
+import joust.utils.JCTreeStructurePrinter;
 import joust.utils.JavacListUtils;
 import lombok.extern.log4j.Log4j2;
 
@@ -25,6 +26,8 @@ import static joust.utils.StaticCompilerUtils.*;
 public class TreePreparationTranslator extends TreeTranslator {
     @Override
     public void visitClassDef(JCClassDecl jcClassDecl) {
+        jcClassDecl.accept(new JCTreeStructurePrinter());
+
         int i = 0;
 
         for (JCTree t : jcClassDecl.defs) {
