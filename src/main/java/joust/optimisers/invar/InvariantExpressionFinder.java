@@ -30,7 +30,8 @@ public class InvariantExpressionFinder extends AJCTreeVisitor {
         // Write effects cause something to be omitted from moving out of the loop.
         if (exprEffects.contains(EffectSet.EffectType.READ_ESCAPING)
          || exprEffects.contains(EffectSet.EffectType.WRITE_INTERNAL)
-         || exprEffects.contains(EffectSet.EffectType.WRITE_ESCAPING)) {
+         || exprEffects.contains(EffectSet.EffectType.WRITE_ESCAPING)
+         || exprEffects.contains(EffectSet.EffectType.IO)) {
             log.debug("No good - contains unacceptable writes of escaping reads.");
             return;
         }
