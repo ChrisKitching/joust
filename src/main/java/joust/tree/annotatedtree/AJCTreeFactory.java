@@ -520,7 +520,7 @@ public class AJCTreeFactory implements AJCTree.Factory {
 
     @Override
     public AJCArrayAccess ArrayAccess(AJCExpressionTree indexed, AJCExpressionTree index) {
-        AJCArrayAccess ret = new AJCArrayAccess(javacTreeMaker.Indexed(indexed.getDecoratedTree(), index.getDecoratedTree()));
+        AJCArrayAccess ret = new AJCArrayAccess(javacTreeMaker.Indexed(indexed.getDecoratedTree(), index.getDecoratedTree()), indexed, index);
 
         indexed.mParentNode = ret;
         index.mParentNode = ret;

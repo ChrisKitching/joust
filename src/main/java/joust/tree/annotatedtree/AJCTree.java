@@ -1007,7 +1007,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             decoratedTree = tree;
         }
 
-        protected AJCArrayAccess(JCArrayAccess tree, AJCSymbolRefTree<VarSymbol> indexed, AJCExpressionTree index) {
+        protected AJCArrayAccess(JCArrayAccess tree, AJCExpressionTree indexed, AJCExpressionTree index) {
             this(tree);
             this.indexed = indexed;
             this.index = index;

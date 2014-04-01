@@ -22,13 +22,16 @@ public final class UnitTestTreeFactory {
     private static final ClassSymbol testClass = new ClassSymbol(0, NameFactory.getName(), symtab.voidType, null);
     private static MethodSymbol testMethod = newMethod();
 
-    public static AJCVariableDecl VarDef(AJCModifiers mods, Name name, AJCTypeExpression vartype, AJCExpressionTree init) {
-        if (!(vartype instanceof AJCPrimitiveTypeTree)) {
-            throw new UnsupportedOperationException("Only primitive types are supported in the mocked-type environment.");
-        }
-
+    public static AJCVariableDecl VarDef(AJCModifiers mods, Name name, AJCPrimitiveTypeTree vartype, AJCExpressionTree init) {
         AJCVariableDecl tree = treeMaker.VarDef(mods, name, vartype, init);
-        tree.getDecoratedTree().sym = getFreshVarSymbol(name, (AJCPrimitiveTypeTree) vartype);
+        tree.getDecoratedTree().sym = getFreshVarSymbol(name, vartype);
+
+        return tree;
+    }
+
+    public static AJCVariableDecl VarDef(AJCModifiers mods, Name name, AJCArrayTypeTree vartype, AJCExpressionTree init) {
+        AJCVariableDecl tree = treeMaker.VarDef(mods, name, vartype, init);
+        tree.getDecoratedTree().sym = getFreshVarSymbol(name, vartype);
 
         return tree;
     }
@@ -214,6 +217,9 @@ public final class UnitTestTreeFactory {
     private static VarSymbol getFreshVarSymbol(Name name, AJCPrimitiveTypeTree type) {
         return new VarSymbol(0, name, TreeUtils.typeTreeToType(type), testMethod);
     }
+    private static VarSymbol getFreshVarSymbol(Name name, AJCArrayTypeTree type) {
+        return new VarSymbol(0, name, TreeUtils.typeTreeToType(type), testMethod);
+    }
 
     // Shorthand functions for primitive types...
     public static AJCPrimitiveTypeTree Int() {
@@ -244,11 +250,23 @@ public final class UnitTestTreeFactory {
         return TypeIdent(TypeTag.LONG);
     }
 
-    public static AJCVariableDecl local(Name name, AJCTypeExpression vartype, AJCExpressionTree init) {
+    public static AJCArrayTypeTree Array(AJCTypeExpression elemType) {
+        return treeMaker.TypeArray(elemType);
+    }
+
+    public static AJCVariableDecl local(Name name, AJCPrimitiveTypeTree vartype, AJCExpressionTree init) {
         return VarDef(Modifiers(0), name, vartype, init);
     }
 
-    public static AJCVariableDecl local(Name name, AJCTypeExpression vartype) {
+    public static AJCVariableDecl local(Name name, AJCPrimitiveTypeTree vartype) {
+        return VarDef(Modifiers(0), name, vartype, EmptyExpression());
+    }
+
+    public static AJCVariableDecl local(Name name, AJCArrayTypeTree vartype, AJCExpressionTree init) {
+        return VarDef(Modifiers(0), name, vartype, init);
+    }
+
+    public static AJCVariableDecl local(Name name, AJCArrayTypeTree vartype) {
         return VarDef(Modifiers(0), name, vartype, EmptyExpression());
     }
 

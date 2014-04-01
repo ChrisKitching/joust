@@ -8,6 +8,7 @@ import joust.optimisers.invar.InvariantExpressionFinder;
 import joust.tree.annotatedtree.AJCForest;
 import joust.treeinfo.EffectSet;
 import joust.utils.LogUtils;
+import joust.utils.SymbolSet;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
@@ -35,8 +36,8 @@ public class LoopInvarTranslator extends BaseTranslator {
         EffectSet loopEffects = loop.effects.getEffectSet();
 
         // The local variables written by the loop. Expressions that depend on these aren't loop invariants. (Usually)
-        Set<VarSymbol> writtenInLoop = loopEffects.writeInternal;
-        Set<VarSymbol> readInLoop = loopEffects.readInternal;
+        SymbolSet writtenInLoop = loopEffects.writeInternal;
+        SymbolSet readInLoop = loopEffects.readInternal;
 
         InvariantExpressionFinder invariantFinder = new InvariantExpressionFinder(writtenInLoop, readInLoop);
         invariantFinder.visitTree(loop);

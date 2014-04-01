@@ -1,15 +1,14 @@
 package tests.unittests;
 
-import com.sun.tools.javac.code.Symbol;
 import joust.tree.annotatedtree.AJCTree;
 import joust.tree.annotatedtree.AJCTreeVisitor;
 import joust.utils.LogUtils;
+import joust.utils.ReflectionUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 import tests.unittests.utils.VisitorResultPurger;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,12 +16,10 @@ import static org.junit.Assert.*;
 
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
-public abstract class BaseAnalyserTest<T extends AJCTreeVisitor> extends TreeFabricatingTest {
-    // The class of the tree translator type of interest.
-    private AJCTreeVisitor visitorInstance;
-
+public abstract class BaseAnalyserTest<T extends AJCTreeVisitor> extends BaseTreeVisitorTest<T> {
     private final String resultField;
 
+    // Purges results from the tree.
     private final VisitorResultPurger purger = new VisitorResultPurger();
 
     /**
@@ -30,14 +27,9 @@ public abstract class BaseAnalyserTest<T extends AJCTreeVisitor> extends TreeFab
      * The result field is the name of the field on the translated trees that holds the result of this analysis
      * step.
      */
-    public BaseAnalyserTest(Class<T> translatorClass, String rField) {
+    public BaseAnalyserTest(Class<T> translatorClass, String rField, Object... constructorArgs) {
+        super(translatorClass, constructorArgs);
         resultField = rField;
-
-        try {
-            visitorInstance = translatorClass.getConstructor().newInstance();
-        } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            log.error("Error instantiating visitor.", e);
-        }
     }
 
     /**
@@ -67,7 +59,7 @@ public abstract class BaseAnalyserTest<T extends AJCTreeVisitor> extends TreeFab
                 assertTrue(false);
             }
 
-            log.debug("Checking live at {}", resultNode);
+            log.debug("Checking {} at {}", resultField, resultNode);
             Level logLevel = Level.INFO;
             if (!resultValue[i].equals(resultObject)) {
                 logLevel = Level.SEVERE;
@@ -83,10 +75,36 @@ public abstract class BaseAnalyserTest<T extends AJCTreeVisitor> extends TreeFab
     }
 
     /**
-     * Shorthand function for creating sets of symbols for test parameters.
+     * Test function for stateful visitors - ones for which the analysis results are a property of the visitor itself,
+     * instead of being stored on the tree nodes.
      */
-    protected static Symbol.VarSymbol[] $v(Symbol.VarSymbol... vSyms) {
-        return vSyms;
+    protected void testVisitNodeStatefully(AJCTree input, Object resultValue, Object... constructorArgs) {
+        // Get a fresh visitor instance for the next test.
+        createVisitorInstance(constructorArgs);
+
+        visitorInstance.visitTree(input);
+
+        Object actualResult;
+        try {
+            Field rField = ReflectionUtils.findField(visitorClass, resultField);
+            rField.setAccessible(true);
+            actualResult = rField.get(visitorInstance);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            log.error("Error during test!", e);
+            fail();
+            return;
+        }
+
+        boolean testResult = actualResult.equals(resultValue);
+        if (testResult) {
+            log.debug("Expected: {}", resultValue);
+            log.debug("Actual:   {}", resultValue);
+        } else {
+            log.error("Expected: {}", resultValue);
+            log.error("Actual:   {}", resultValue);
+        }
+
+        assertTrue(testResult);
     }
 }
 

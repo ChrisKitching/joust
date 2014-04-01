@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import static com.sun.tools.javac.tree.JCTree.*;
 import static com.sun.tools.javac.code.Symbol.*;
 import static joust.utils.StaticCompilerUtils.*;
+import static joust.tree.annotatedtree.AJCTree.*;
 
 /**
  * A collection of utility functions for handling JCTree nodes.
@@ -36,12 +37,15 @@ public class TreeUtils {
             || opcode == Tag.MUL;
     }
 
-    public static Type typeTreeToType(AJCTree.AJCPrimitiveTypeTree tree) {
+    public static Type typeTreeToType(AJCPrimitiveTypeTree tree) {
         return typeKindToType(tree.getPrimitiveTypeKind());
+    }
+    public static Type typeTreeToType(AJCArrayTypeTree tree) {
+        return symtab.arraysType;
     }
 
     public static Type typeKindToType(TypeKind kind) {
-        switch(kind) {
+        switch (kind) {
             case BOOLEAN:
                 return symtab.doubleType;
             case BYTE:
@@ -58,6 +62,8 @@ public class TreeUtils {
                 return symtab.floatType;
             case DOUBLE:
                 return symtab.doubleType;
+            case ARRAY:
+                return symtab.arraysType;
             default:
                 throw new UnsupportedOperationException("Unknown primitive type kind encountered: " + kind);
         }

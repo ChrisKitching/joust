@@ -1,6 +1,7 @@
 package tests.unittests;
 
 import com.sun.tools.javac.util.Context;
+import joust.tree.annotatedtree.AJCTree;
 import joust.utils.LogUtils;
 import joust.utils.StaticCompilerUtils;
 import lombok.experimental.ExtensionMethod;
@@ -9,6 +10,7 @@ import org.junit.BeforeClass;
 
 import java.util.logging.Logger;
 
+import static joust.utils.StaticCompilerUtils.treeCopier;
 
 /**
  * Base class for unit tests that require the ability to fabricate AST fragments as test inputs.
@@ -26,6 +28,13 @@ public abstract class TreeFabricatingTest {
         Context context = new Context();
         StaticCompilerUtils.initWithContext(context);
         LogUtils.init(null);
+    }
+
+    /**
+     * Shorthand tree copying utility.
+     */
+    public static <T extends AJCTree> T $t(T tree) {
+        return treeCopier.copy(tree);
     }
 
     public TreeFabricatingTest() {

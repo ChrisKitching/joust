@@ -23,8 +23,8 @@ public class InvariantExpressionFinder extends AJCTreeVisitor {
     public final Set<AJCExpressionTree> invariantExpressions = new HashSet<>();
 
     // Symbols invalidated in the loop of interest - passed by the caller.
-    @NonNull private final Set<VarSymbol> writtenInLoop;
-    @NonNull private final Set<VarSymbol> readInLoop;
+    @NonNull private final SymbolSet writtenInLoop;
+    @NonNull private final SymbolSet readInLoop;
 
     private void addIfInvariant(AJCExpressionTree that) {
         ArrayAccessDetector detector = new ArrayAccessDetector();
