@@ -11,6 +11,7 @@ import joust.utils.TreeUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -98,7 +99,7 @@ public class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
         if (tree.expr.isEmptyExpression()) {
             mHasMadeAChange = true;
             tree.getEnclosingBlock().remove(tree);
-            AJCForest.getInstance().initialAnalysis();
+            log.info("Removing empty expression.");
         }
     }
 
@@ -120,6 +121,9 @@ public class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
 
             if (shouldCull(rhsEffects, live)) {
                 log.info("Killing redundant assignment: {}", tree);
+                log.info("Live: {}", Arrays.toString(live.toArray()));
+                log.info("Target: {}", target);
+                log.info("rhsEffects: {}", rhsEffects);
                 mHasMadeAChange = true;
                 tree.swapFor(treeMaker.EmptyExpression());
                 AJCForest.getInstance().initialAnalysis();
@@ -145,6 +149,9 @@ public class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
 
             if (shouldCull(rhsEffects, live)) {
                 log.info("Killing redundant assignment: {}", tree);
+                log.info("Live: {}", Arrays.toString(live.toArray()));
+                log.info("Target: {}", target);
+                log.info("rhsEffects: {}", rhsEffects);
                 mHasMadeAChange = true;
                 tree.swapFor(treeMaker.EmptyExpression());
                 AJCForest.getInstance().initialAnalysis();
@@ -171,7 +178,9 @@ public class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
                 // There's no assignment to remove.
                 if (!everLive.contains(target)) {
                     // But even the declaration is pointless.
-                    log.debug("Binning declaration: {}", tree);
+                    log.info("Binning declaration: {}", tree);
+                    log.info("Live: {}", Arrays.toString(live.toArray()));
+                    log.info("Target: {}", target);
                     tree.getEnclosingBlock().remove(tree);
                     AJCForest.getInstance().initialAnalysis();
                     mHasMadeAChange = true;
@@ -188,7 +197,10 @@ public class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
                 // We need the variable declaration.
                 if (cull) {
                     // But we can kill the assignment.
-                    log.debug("Dropping assignment: {}", tree);
+                    log.info("Dropping assignment: {}", tree);
+                    log.info("Live: {}", Arrays.toString(live.toArray()));
+                    log.info("Target: {}", target);
+                    log.info("rhsEffects: {}", rhsEffects);
                     tree.setInit(treeMaker.EmptyExpression());
                     AJCForest.getInstance().initialAnalysis();
                     mHasMadeAChange = true;
@@ -200,7 +212,10 @@ public class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
             // We don't need the declaration - but do we need the assignment?
             if (cull) {
                 // Nope. Bin everything.
-                log.debug("Binning everything: {}", tree);
+                log.info("Binning everything: {}", tree);
+                log.info("Live: {}", Arrays.toString(live.toArray()));
+                log.info("Target: {}", target);
+                log.info("rhsEffects: {}", rhsEffects);
                 tree.getEnclosingBlock().remove(tree);
                 AJCForest.getInstance().initialAnalysis();
                 mHasMadeAChange = true;
@@ -208,7 +223,10 @@ public class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
             }
 
             // We do - so shunt it.
-            log.debug("Shunting: {}", tree);
+            log.info("Shunting: {}", tree);
+            log.info("Live: {}", Arrays.toString(live.toArray()));
+            log.info("Target: {}", target);
+            log.info("rhsEffects: {}", rhsEffects);
             tree.swapFor(treeMaker.Exec(tree.getInit()));
             AJCForest.getInstance().initialAnalysis();
             mHasMadeAChange = true;

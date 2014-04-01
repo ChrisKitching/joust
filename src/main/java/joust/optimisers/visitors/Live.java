@@ -139,17 +139,17 @@ public class Live extends BackwardsFlowVisitor {
 
         // Add to the live set every variable read somewhere in the loop that isn't declared within the loop.
         // TODO: This makes us miss some redundant assignments... :(
-        EffectSet effects = loop.effects.getEffectSet();
-        Set<VarSymbol> syms = effects.readInternal;
-        if (syms != SymbolSet.UNIVERSAL_SET) {
-            if (syms != null) {
-                Set<VarSymbol> symCopy = new HashSet<>(syms);
-                symCopy.removeAll(symbolWhitelist);
 
-                currentlyLive.addAll(symCopy);
-            }
-        } else {
-            symbolWhitelist = new HashSet<>();
+        // Do evil stupidity to locate the set of locally-touched symbols... TODO: Different EffectSet representation?
+        TouchedSymbolLocator touch = new TouchedSymbolLocator();
+        touch.visitTree(loop);
+        Set<VarSymbol> syms = touch.touched;
+
+        if (syms != null) {
+            Set<VarSymbol> symCopy = new HashSet<>(syms);
+            symCopy.removeAll(symbolWhitelist);
+
+            currentlyLive.addAll(symCopy);
         }
 
         return wasInLoop;
@@ -222,8 +222,6 @@ public class Live extends BackwardsFlowVisitor {
         visit(jcSwitch.selector);
     }
 
-
-
     @Override
     public void visitTry(AJCTry jcTry) {
         // If there's a finaliser, the analysis of everything else takes place in series with it.
@@ -281,6 +279,11 @@ public class Live extends BackwardsFlowVisitor {
         super.visitMethodDef(jcMethodDecl);
 
         jcMethodDecl.everLive = everLive;
+    }
+
+    @Override
+    public void visitArrayAccess(AJCArrayAccess jcArrayAccess) {
+        super.visitArrayAccess(jcArrayAccess);
     }
 
     @Override

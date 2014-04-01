@@ -89,7 +89,7 @@ public class SideEffectVisitor extends AJCTreeVisitor {
      * Check all possible overrides for this method and add dependenies as needed.
      */
     private void ensureInheritorLinks() {
-        log.info("Resolving polymorphic effect dependencies...");
+        log.debug("Resolving polymorphic effect dependencies...");
         Set<String> inheritorKeys = possibleInheitors.keySet();
         for (String symName : inheritorKeys) {
             Set<MethodSymbol> inheritorSet = possibleInheitors.get(symName);
@@ -136,7 +136,7 @@ public class SideEffectVisitor extends AJCTreeVisitor {
         // Create the missing dependencies, due to polymorphism, between methods...
         ensureInheritorLinks();
 
-        log.info("Commencing effect dependency resolution.");
+        log.debug("Commencing effect dependency resolution.");
         // Ask the cache for information on all called methods that aren't in the method table. These
         // can be resolved right away.
         Set<MethodSymbol> knownSymbols = AJCForest.getInstance().methodTable.keySet();
@@ -147,7 +147,7 @@ public class SideEffectVisitor extends AJCTreeVisitor {
         log.debug("calledCopy: {}", Arrays.toString(calledMethodsWithoutSource.toArray()));
 
         for (MethodSymbol mSym : calledMethodsWithoutSource) {
-            log.info("Loading effects for {} from cache... (Owner is {})", mSym, mSym.enclClass());
+            log.debug("Loading effects for {} from cache... (Owner is {})", mSym, mSym.enclClass());
             JOUSTCache.loadCachedInfoForClass(mSym.enclClass());
         }
 
@@ -174,7 +174,7 @@ public class SideEffectVisitor extends AJCTreeVisitor {
             return;
         }
 
-        log.info("After simple resolution have these symbols outstanding: {}", Arrays.toString(methodDeps.keySet().toArray()));
+        log.debug("After simple resolution have these symbols outstanding: {}", Arrays.toString(methodDeps.keySet().toArray()));
 
         // Set up unresolved call deps..
         for (MethodSymbol sym : incompleteCalls.keySet()) {
@@ -517,7 +517,6 @@ public class SideEffectVisitor extends AJCTreeVisitor {
     public void visitArrayAccess(AJCArrayAccess that) {
         super.visitArrayAccess(that);
 
-        log.info("Visit array access: {}", that);
         VarSymbol tSym = that.getTargetSymbol();
         if (tSym != null) {
             that.effects = Effects.unionWithDirect(read(tSym), that.index.effects);

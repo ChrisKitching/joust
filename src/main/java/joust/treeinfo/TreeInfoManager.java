@@ -56,7 +56,7 @@ public final class TreeInfoManager {
             return effects;
         }
 
-        log.warn("Unable to source side effects for method: {}. This will harm optimisation - such calls are taken to have all possible side effects!", sym);
+        log.debug("Unable to source side effects for method: {}. This will harm optimisation - such calls are taken to have all possible side effects!", sym);
         return new Effects(EffectSet.ALL_EFFECTS, EffectSet.ALL_EFFECTS);
     }
 

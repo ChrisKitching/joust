@@ -163,7 +163,7 @@ public class JOUSTCache {
 
         byte[] payload = databaseMap.get(sym.fullname.toString());
         if (payload == null) {
-            log.warn("No cached info for class {} seems to exist.", sym.fullname.toString());
+            log.debug("No cached info for class {} seems to exist.", sym.fullname.toString());
             return;
         }
 
@@ -177,7 +177,7 @@ public class JOUSTCache {
         @Cleanup UnsafeInput deserialiserInput = new UnsafeInput(payload);
         ClassInfo cInfo = serialiser.readObject(deserialiserInput, ClassInfo.class);
 
-        log.warn("Loaded info:\n{}", cInfo);
+        log.debug("Loaded info:\n{}", cInfo);
 
         if (cInfo == null) {
             log.warn("Unable to load cached info - got null - for class {}", sym.fullname.toString());

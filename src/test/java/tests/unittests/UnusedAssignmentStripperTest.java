@@ -153,6 +153,21 @@ public class UnusedAssignmentStripperTest extends BaseTreeTranslatorTest<UnusedA
         switchExpected2.getDecoratedTree().name = switchTest2.getName();
         switchExpected2.getDecoratedTree().sym = switchTest2.getTargetSymbol();
 
+
+
+        /*
+        int x = 3;  <--- Redundant
+        int y = 3;
+        switch(y) {
+            case 3:
+                x = 3;
+                break;
+            default:
+                x = 8;
+                break;
+        }
+         */
+
         return
         $(
             $(loneAssignments, expected),
