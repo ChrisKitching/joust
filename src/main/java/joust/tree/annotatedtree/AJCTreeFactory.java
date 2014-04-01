@@ -569,6 +569,10 @@ public class AJCTreeFactory implements AJCTree.Factory {
 
     @Override
     public AJCLiteral Literal(TypeTag tag, Object value) {
+        // Sanitise the input value according to javac's insanity.
+
+        value = AJCLiteral.sanitiseLiteralValue(tag, value);
+
         return new AJCLiteral(javacTreeMaker.Literal(tag, value));
     }
 

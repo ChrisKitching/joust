@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import static com.sun.tools.javac.code.Symbol.*;
+import static com.sun.tools.javac.code.TypeTag.*;
 import static com.sun.tools.javac.tree.JCTree.*;
 
 /**
@@ -1090,12 +1091,141 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
     }
 
     public static class AJCLiteral extends AJCExpressionTree implements LiteralTree {
-        @Delegate @Getter private final JCLiteral decoratedTree;
+        private static final String INVALID_ARGUMENT_TYPE = "Invalid literal type! Expected {} got {}";
+        private static final String INVALID_ARGUMENT_TYPE_SIMPLE = "Invalid literal type!";
+
+        /**
+         * Sanitise a literal value, returning the value to be passed to the underlying tree node after applying whatever
+         * stupid transformations are called for by the tree representation Javac is using this week.
+         * Throws an IllegalArgumentException if the input TypeTag is inconsistent with the input value.
+         *
+         * @param tag TypeTag of the literal being considered.
+         * @param value Value of the literal being considered.
+         * @return The value that is necessary for creating a JCLiteral to hold this information.
+         */
+        public static Object sanitiseLiteralValue(TypeTag tag, Object value) {
+
+            if (tag == BOOLEAN) {
+                // Booleans are represented as integer 1/0 in the obvious way.
+                if (value instanceof Boolean) {
+                    if ((Boolean) value) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                }
+            } else if (tag == CHAR) {
+                // Chars are represented as integers for... some reason...
+                if (value instanceof Character) {
+                    // Yes. This *is* how javac does it.
+                    return (int) value.toString().charAt(0);
+                }
+            }
+
+            // A quick check to verify that the type of the input object matches the TypeTag.
+            // Apparently the javac authors have never heard of static polymorphism...
+            switch (tag) {
+                case CLASS:
+                    // A String literal. Yes. Apparently they thought that was a good name for the tag, too.
+                    if (!(value instanceof String)) {
+                        log.fatal(INVALID_ARGUMENT_TYPE, tag, value.getClass().getSimpleName());
+                        throw new IllegalArgumentException(INVALID_ARGUMENT_TYPE_SIMPLE);
+                    }
+                    break;
+                case INT:
+                    if (!(value instanceof String)) {
+                        log.fatal(INVALID_ARGUMENT_TYPE, tag, value.getClass().getSimpleName());
+                        throw new IllegalArgumentException(INVALID_ARGUMENT_TYPE_SIMPLE);
+                    }
+                    break;
+                case LONG:
+                    if (!(value instanceof Long)) {
+                        log.fatal(INVALID_ARGUMENT_TYPE, tag, value.getClass().getSimpleName());
+                        throw new IllegalArgumentException(INVALID_ARGUMENT_TYPE_SIMPLE);
+                    }
+                    break;
+                case BYTE:
+                    if (!(value instanceof Byte)) {
+                        log.fatal(INVALID_ARGUMENT_TYPE, tag, value.getClass().getSimpleName());
+                        throw new IllegalArgumentException(INVALID_ARGUMENT_TYPE_SIMPLE);
+                    }
+                    break;
+                case CHAR:
+                    if (!(value instanceof Character)) {
+                        log.fatal(INVALID_ARGUMENT_TYPE, tag, value.getClass().getSimpleName());
+                        throw new IllegalArgumentException(INVALID_ARGUMENT_TYPE_SIMPLE);
+                    }
+                    break;
+                case DOUBLE:
+                    if (!(value instanceof Double)) {
+                        log.fatal(INVALID_ARGUMENT_TYPE, tag, value.getClass().getSimpleName());
+                        throw new IllegalArgumentException(INVALID_ARGUMENT_TYPE_SIMPLE);
+                    }
+                    break;
+                case FLOAT:
+                    if (!(value instanceof Float)) {
+                        log.fatal(INVALID_ARGUMENT_TYPE, tag, value.getClass().getSimpleName());
+                        throw new IllegalArgumentException(INVALID_ARGUMENT_TYPE_SIMPLE);
+                    }
+                    break;
+                case SHORT:
+                    if (!(value instanceof Short)) {
+                        log.fatal(INVALID_ARGUMENT_TYPE, tag, value.getClass().getSimpleName());
+                        throw new IllegalArgumentException(INVALID_ARGUMENT_TYPE_SIMPLE);
+                    }
+                    break;
+                case BOOLEAN:
+                    if (!(value instanceof Boolean)) {
+                        log.fatal(INVALID_ARGUMENT_TYPE, tag, value.getClass().getSimpleName());
+                        throw new IllegalArgumentException(INVALID_ARGUMENT_TYPE_SIMPLE);
+                    }
+                    break;
+                default:
+                    log.fatal(INVALID_ARGUMENT_TYPE, tag, value.getClass().getSimpleName());
+                    throw new IllegalArgumentException(INVALID_ARGUMENT_TYPE_SIMPLE);
+            }
+
+            return value;
+        }
+
+        @Delegate(excludes = NoGetVal.class) @Getter private final JCLiteral decoratedTree;
+
+        // Interface to have Lombok exclude the getValue function (So we can "override" it).
+        private interface NoGetVal { Object getValue(); }
 
         protected AJCLiteral(JCLiteral tree) {
             super(tree);
             decoratedTree = tree;
             effects = new Effects(EffectSet.NO_EFFECTS);
+        }
+
+        /**
+         * Override the underlying getValue with one that hides Javac's stupidity of representation.
+         * @return A Java value representing the value of the underlying literal - undoing Javac's quirky transformations.
+         */
+        public Object getValue() {
+            Object val = decoratedTree.getValue();
+            if (decoratedTree.typetag == BOOLEAN) {
+                return (Integer) val > 0;
+            }
+
+            if (decoratedTree.typetag == CHAR) {
+                Integer cast = (Integer) val;
+                return (char) cast.intValue();
+            }
+
+            return val;
+        }
+
+        /**
+         * Update the value to the given value.
+         */
+        public void setValue(Object value) {
+            TypeTag tag = decoratedTree.typetag;
+
+            value = sanitiseLiteralValue(tag, value);
+
+            decoratedTree.value = value;
         }
     }
 
