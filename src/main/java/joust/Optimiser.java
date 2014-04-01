@@ -15,7 +15,8 @@ import joust.tree.annotatedtree.AJCForest;
 import joust.treeinfo.TreeInfoManager;
 import joust.utils.LogUtils;
 import joust.utils.StaticCompilerUtils;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -27,16 +28,31 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static joust.optimisers.utils.OptimisationPhaseManager.PhaseModifier.*;
 import static joust.optimisers.utils.OptimisationPhaseManager.VirtualPhase.*;
 import static com.sun.source.util.TaskEvent.Kind.*;
 import static joust.utils.StaticCompilerUtils.javaElements;
 
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedAnnotationTypes("*")
 public class Optimiser extends AbstractProcessor {
+    static {
+        System.setProperty("java.util.logging.SimpleFormatter.format", "[%4$s] %5$s\n");
+        System.setProperty("java.util.logging.ConsoleHandler.level", "FINEST");
+        Logger rootLogger = Logger.getLogger("");
+        rootLogger.setLevel(Level.ALL);
+        Handler[] handlers = rootLogger.getHandlers();
+        for(Handler h: handlers){
+            h.setLevel(Level.ALL);
+        }
+    }
+
     public static AJCForest inputTrees;
 
     // The untranslated input JCTrees. The route to the AST prior to the desugaring step.
@@ -56,7 +72,7 @@ public class Optimiser extends AbstractProcessor {
 
         // Parse command line options.
         if (!OptimiserOptions.configureFromProcessingEnvironment(env)) {
-            LogUtils.raiseCompilerError("Optimiser aborted by command line argument processor.");
+            log.fatal("Optimiser aborted by command line argument processor.");
             return;
         }
 

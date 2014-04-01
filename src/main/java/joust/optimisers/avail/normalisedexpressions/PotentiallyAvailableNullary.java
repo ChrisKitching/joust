@@ -2,8 +2,12 @@ package joust.optimisers.avail.normalisedexpressions;
 
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.util.List;
+import joust.utils.LogUtils;
 import joust.utils.TreeUtils;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
+
+import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.tree.JCTree.Tag;
@@ -14,7 +18,8 @@ import static joust.utils.StaticCompilerUtils.treeMaker;
  * An ident, field access, or constant. Or something. Representative in some way of a thing which
  * refers to another thing. And stuff.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class PotentiallyAvailableNullary extends PotentiallyAvailableExpression {
     AJCSymbolRefTree<VarSymbol> expr;
 

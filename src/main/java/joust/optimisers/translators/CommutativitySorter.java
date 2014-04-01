@@ -3,12 +3,15 @@ package joust.optimisers.translators;
 import com.sun.tools.javac.code.Type;
 import joust.optimisers.utils.CommutativitySorterComparator;
 import joust.tree.annotatedtree.AJCTreeVisitor;
-import lombok.extern.log4j.Log4j2;
+import joust.utils.LogUtils;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import javax.lang.model.type.TypeKind;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.logging.Logger;
 
 import static com.sun.tools.javac.tree.JCTree.Tag;
 import static joust.tree.annotatedtree.AJCTree.*;
@@ -19,7 +22,8 @@ import static joust.utils.StaticCompilerUtils.treeMaker;
  * differ in structure via commutativity are all transformed into identical trees. (Although we'll still
  * miss equivalent trees that are differently-structured via a distribution relationship, alas.).
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class CommutativitySorter extends AJCTreeVisitor {
     // The commutative operator which combines elements in the commutative subtree of interest.
     private final Tag currentSubtreeTag;

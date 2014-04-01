@@ -5,16 +5,20 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 import joust.optimisers.avail.NameFactory;
-import lombok.extern.log4j.Log4j2;
+import joust.utils.LogUtils;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
+
+import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.code.Symbol.*;
 import static joust.utils.StaticCompilerUtils.*;
 
 //TODO: Really? Do we need this any more?
-@Log4j2
-public
-class PotentiallyAvailableFunctionalExpression extends PotentiallyAvailableExpression {
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
+public class PotentiallyAvailableFunctionalExpression extends PotentiallyAvailableExpression {
     public List<PotentiallyAvailableExpression> args = List.nil();
     public MethodSymbol callTarget;
 

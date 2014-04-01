@@ -3,11 +3,15 @@ package tests.unittests;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 import joust.optimisers.avail.NameFactory;
+import joust.utils.LogUtils;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 import static junitparams.JUnitParamsRunner.$;
@@ -19,7 +23,8 @@ import static org.junit.Assert.*;
 /**
  * Unit tests for AJCBlock's block splicing utilities.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 @RunWith(JUnitParamsRunner.class)
 public class BlockSplicingTest extends TreeFabricatingTest {
     @Test

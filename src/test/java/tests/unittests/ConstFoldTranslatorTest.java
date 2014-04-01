@@ -1,11 +1,15 @@
 package tests.unittests;
 
 import joust.optimisers.translators.ConstFoldTranslator;
+import joust.utils.LogUtils;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 import static junitparams.JUnitParamsRunner.$;
@@ -18,7 +22,8 @@ import static joust.utils.StaticCompilerUtils.treeMaker;
  * as expected.
  * Due to the JUnitParamsRunner, test X gets its param set from a method called parametersForX.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 @RunWith(JUnitParamsRunner.class)
 public
 class ConstFoldTranslatorTest extends BaseTreeTranslatorTest<ConstFoldTranslator> {

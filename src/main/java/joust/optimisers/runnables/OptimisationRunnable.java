@@ -3,14 +3,19 @@ package joust.optimisers.runnables;
 import joust.optimisers.translators.BaseTranslator;
 import joust.tree.annotatedtree.AJCTree;
 import joust.utils.LogUtils;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Logger;
 
 import static joust.Optimiser.inputTrees;
 
 /**
  * Base class for optimisation runnables. Each one represents a single optimisation task.
  */
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public abstract class OptimisationRunnable implements Runnable {
     @Override
     public abstract void run();
@@ -37,7 +42,7 @@ public abstract class OptimisationRunnable implements Runnable {
             try {
                 translatorInstance = clazz.getConstructor().newInstance();
             } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-                LogUtils.raiseCompilerError("Exception thrown from OneShot while instantiating translator: " + e);
+                log.fatal("Exception thrown from OneShot while instantiating translator: ", e);
             }
         }
     }
@@ -79,7 +84,7 @@ public abstract class OptimisationRunnable implements Runnable {
             try {
                 secondaryTranslatorInstance = secondary.getConstructor().newInstance();
             } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-                LogUtils.raiseCompilerError("Exception thrown from OneTwo while instantiating secondaryTranslatorInstance translator: " + e);
+                log.fatal("Exception thrown from OneTwo while instantiating secondaryTranslatorInstance translator: ", e);
             }
         }
 

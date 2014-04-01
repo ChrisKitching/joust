@@ -16,9 +16,11 @@ import joust.utils.JavacListUtils;
 import joust.utils.LogUtils;
 import lombok.Delegate;
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 import java.lang.reflect.Field;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import static com.sun.tools.javac.code.Symbol.*;
 import static com.sun.tools.javac.tree.JCTree.*;
@@ -27,7 +29,8 @@ import static com.sun.tools.javac.tree.JCTree.*;
  * A representation of the Java AST. Decorates the nodes in javac's existing AST representation with the extra
  * information required, and slightly tweaks the API to make it suck less (No more fields of type JCTree!)
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.DiagnosticPosition {
     // The decorated tree node. Since runtime generics are not available, this field gets shadowed in each concrete
     // subclass of AJCTree, but is required for the delegates to work correctly, and to allow reference to the
@@ -52,7 +55,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
      */
     public void swapFor(AJCTree replacement) {
         if (mParentNode == null) {
-            LogUtils.raiseCompilerError("Unable to swap " + this + " for " + replacement + " - parent was null.");
+            log.fatal("Unable to swap " + this + " for " + replacement + " - parent was null.");
             return;
         }
 
@@ -94,11 +97,9 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
                 }
             } catch (IllegalAccessException e) {
                 // Ostensibly can never happen, because setAccessible is called...
-                AJCTree.log.error("IllegalAccessException accessing field {} on {}", fields[i], pClass.getCanonicalName(), e);
-                LogUtils.raiseCompilerError("IllegalAccessException accessing field " + fields[i] + " on " + pClass.getCanonicalName());
+                log.fatal("IllegalAccessException accessing field " + fields[i] + " on " + pClass.getCanonicalName(), e);
             } catch (NoSuchFieldException e) {
-                AJCTree.log.error("NoSuchFieldException accessing field {} on {}", fields[i], pClass.getCanonicalName(), e);
-                LogUtils.raiseCompilerError("NoSuchFieldException accessing field " + fields[i] + " on " + pClass.getCanonicalName());
+                log.fatal("NoSuchFieldException accessing field " + fields[i] + " on " + pClass.getCanonicalName(), e);
             }
         }
 
@@ -162,14 +163,14 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
                 return ((AJCExpressionTree) mParentNode).getEnclosingBlock();
             }
 
-            LogUtils.raiseCompilerError("Failed to find enclosing block for statement: " + this);
+            log.fatal("Failed to find enclosing block for statement: " + this);
             return null;
         }
 
         // Since a statement is always in a block, we can provide a specialised swap function and avoid the evilness.
         @Override
         public void swapFor(AJCTree replacement) {
-            LogUtils.raiseCompilerError("Attempt to swap an AJCStatement for a non-statement!");
+            log.fatal("Attempt to swap an AJCStatement for a non-statement!");
             throw new UnsupportedOperationException("Attempt to swap an AJCStatement for a non-statement!");
         }
 
@@ -206,7 +207,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             }
 
             if (!(parent instanceof AJCStatement)) {
-                LogUtils.raiseCompilerError("Unable to find enclosing statement for: " + this);
+                log.fatal("Unable to find enclosing statement for: " + this);
                 return null;
             }
 
@@ -511,7 +512,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         private int indexOfOrFail(AJCStatement node) {
             int index = stats.indexOf(node);
             if (index == -1) {
-                LogUtils.raiseCompilerError("Unable to locate target statement: " + node + " in block:\n" + this);
+                log.fatal("Unable to locate target statement: " + node + " in block:\n" + this);
             }
 
             return index;
@@ -874,7 +875,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             } else if (tree instanceof JCUnary) {
                 ((JCUnary) tree).operator = op;
             } else {
-                LogUtils.raiseCompilerError("Unknown operator expression type: " + tree.getClass().getCanonicalName());
+                log.fatal("Unknown operator expression type: " + tree.getClass().getCanonicalName());
                 return;
             }
         }

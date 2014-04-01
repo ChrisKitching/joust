@@ -2,7 +2,10 @@ package joust.optimisers.evaluation;
 
 import com.sun.tools.javac.code.TypeTag;
 import joust.utils.LogUtils;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
+
+import java.util.logging.Logger;
 
 import static com.sun.tools.javac.tree.JCTree.Tag;
 import static joust.tree.annotatedtree.AJCTree.*;
@@ -11,9 +14,9 @@ import static joust.utils.StaticCompilerUtils.treeMaker;
 /**
  * Represents the current value of a variable in an EvaluationContext.
  */
-@Log4j2
-public
-class Value {
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
+public class Value {
     // The "I have no fucking idea" value.
     public static final Value UNKNOWN = new Value();
 
@@ -81,16 +84,16 @@ class Value {
                 log.debug("~{} -> {}", operand, result);
                 break;
             case PREINC:
-                LogUtils.raiseCompilerError("Attempt to pre-inc a literal!");
+                log.fatal("Attempt to pre-inc a literal!");
                 break;
             case PREDEC:
-                LogUtils.raiseCompilerError("Attempt to pre-dec a literal!");
+                log.fatal("Attempt to pre-dec a literal!");
                 break;
             case POSTINC:
-                LogUtils.raiseCompilerError("Attempt to post-inc a literal!");
+                log.fatal("Attempt to post-inc a literal!");
                 break;
             case POSTDEC:
-                LogUtils.raiseCompilerError("Attempt to post-dec a literal!");
+                log.fatal("Attempt to post-dec a literal!");
                 break;
         }
 
@@ -197,7 +200,7 @@ class Value {
     private static Value bitwiseOr(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
-            LogUtils.raiseCompilerError("Attempt to binary-bitwise-or non-numeric types: " + leftKind + ", " + rightKind);
+            log.fatal("Attempt to binary-bitwise-or non-numeric types: " + leftKind + ", " + rightKind);
             return null;
         }
 
@@ -256,7 +259,7 @@ class Value {
     private static Value bitwiseXor(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
-            LogUtils.raiseCompilerError("Attempt to binary-bitwise-xor non-numeric types: " + leftKind + ", " + rightKind);
+            log.fatal("Attempt to binary-bitwise-xor non-numeric types: " + leftKind + ", " + rightKind);
             return null;
         }
 
@@ -315,7 +318,7 @@ class Value {
     private static Value bitwiseAnd(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
-            LogUtils.raiseCompilerError("Attempt to binary-bitwise-and non-numeric types: " + leftKind + ", " + rightKind);
+            log.fatal("Attempt to binary-bitwise-and non-numeric types: " + leftKind + ", " + rightKind);
             return null;
         }
 
@@ -374,7 +377,7 @@ class Value {
     private static Value bitwiseLeftShift(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
-            LogUtils.raiseCompilerError("Attempt to binary-bitwise-left-shift non-numeric types: " + leftKind + ", " + rightKind);
+            log.fatal("Attempt to binary-bitwise-left-shift non-numeric types: " + leftKind + ", " + rightKind);
             return null;
         }
 
@@ -433,7 +436,7 @@ class Value {
     private static Value bitwiseRightShift(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
-            LogUtils.raiseCompilerError("Attempt to binary-bitwise-right-shift non-numeric types: " + leftKind + ", " + rightKind);
+            log.fatal("Attempt to binary-bitwise-right-shift non-numeric types: " + leftKind + ", " + rightKind);
             return null;
         }
 
@@ -492,7 +495,7 @@ class Value {
     private static Value bitwiseUnsignedRightShift(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
-            LogUtils.raiseCompilerError("Attempt to binary-bitwise-unsigned-right-shift non-numeric types: " + leftKind + ", " + rightKind);
+            log.fatal("Attempt to binary-bitwise-unsigned-right-shift non-numeric types: " + leftKind + ", " + rightKind);
             return null;
         }
 
@@ -551,7 +554,7 @@ class Value {
     private static Value logicalOr(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are boolean literals.
         if (!(leftKind == Kind.BOOLEAN_LITERAL && rightKind == Kind.BOOLEAN_LITERAL)) {
-            LogUtils.raiseCompilerError("Attempt to binary-logical-or non-boolean types: " + leftKind + ", " + rightKind);
+            log.fatal("Attempt to binary-logical-or non-boolean types: " + leftKind + ", " + rightKind);
             return null;
         }
 
@@ -564,7 +567,7 @@ class Value {
     private static Value logicalAnd(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are boolean literals.
         if (!(leftKind == Kind.BOOLEAN_LITERAL && rightKind == Kind.BOOLEAN_LITERAL)) {
-            LogUtils.raiseCompilerError("Attempt to binary-logical-or non-boolean types: " + leftKind + ", " + rightKind);
+            log.fatal("Attempt to binary-logical-or non-boolean types: " + leftKind + ", " + rightKind);
             return null;
         }
 
@@ -615,7 +618,7 @@ class Value {
                 // Since null == null...
                 return of(true);
             default:
-                LogUtils.raiseCompilerError("[BUG] Attempt to logical-eq non-literal types " + leftKind + ", " + rightKind + " in ConstFolder.");
+                log.fatal("[BUG] Attempt to logical-eq non-literal types " + leftKind + ", " + rightKind + " in ConstFolder.");
                 return null;
         }
     }
@@ -661,7 +664,7 @@ class Value {
                 // Since null != null is false...
                 return of(false);
             default:
-                LogUtils.raiseCompilerError("[BUG] Attempt to logical-neq non-literal types " + leftKind + ", " + rightKind + " in ConstFolder.");
+                log.fatal("[BUG] Attempt to logical-neq non-literal types " + leftKind + ", " + rightKind + " in ConstFolder.");
                 return null;
         }
     }
@@ -669,7 +672,7 @@ class Value {
     private static Value logicalLt(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
-            LogUtils.raiseCompilerError("Attempt to lt non-numeric types: " + leftKind + ", " + rightKind);
+            log.fatal("Attempt to lt non-numeric types: " + leftKind + ", " + rightKind);
             return null;
         }
 
@@ -788,7 +791,7 @@ class Value {
     private static Value logicalGt(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
-            LogUtils.raiseCompilerError("Attempt to gt non-numeric types: " + leftKind + ", " + rightKind);
+            log.fatal("Attempt to gt non-numeric types: " + leftKind + ", " + rightKind);
             return null;
         }
 
@@ -907,7 +910,7 @@ class Value {
     private static Value logicalLe(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
-            LogUtils.raiseCompilerError("Attempt to le non-numeric types: " + leftKind + ", " + rightKind);
+            log.fatal("Attempt to le non-numeric types: " + leftKind + ", " + rightKind);
             return null;
         }
 
@@ -1026,7 +1029,7 @@ class Value {
     private static Value logicalGe(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
-            LogUtils.raiseCompilerError("Attempt to ge non-numeric types: " + leftKind + ", " + rightKind);
+            log.fatal("Attempt to ge non-numeric types: " + leftKind + ", " + rightKind);
             return null;
         }
 
@@ -1297,7 +1300,7 @@ class Value {
     private static Value arithmeticMinus(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
-            LogUtils.raiseCompilerError("Attempt to subtract non-numeric types: " + leftKind + ", " + rightKind);
+            log.fatal("Attempt to subtract non-numeric types: " + leftKind + ", " + rightKind);
             return null;
         }
 
@@ -1416,7 +1419,7 @@ class Value {
     private static Value arithmeticMultiply(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
-            LogUtils.raiseCompilerError("Attempt to multiply non-numeric types: " + leftKind + ", " + rightKind);
+            log.fatal("Attempt to multiply non-numeric types: " + leftKind + ", " + rightKind);
             return null;
         }
 
@@ -1535,7 +1538,7 @@ class Value {
     private static Value arithmeticDivide(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
-            LogUtils.raiseCompilerError("Attempt to divide non-numeric types: " + leftKind + ", " + rightKind);
+            log.fatal("Attempt to divide non-numeric types: " + leftKind + ", " + rightKind);
             return null;
         }
 
@@ -1654,7 +1657,7 @@ class Value {
     private static Value arithmeticModulo(Object leftPayload, Kind leftKind, Object rightPayload, Kind rightKind) {
         // Verify the types of the operands are numeric literals.
         if (!kindIsNumeric(leftKind) || !kindIsNumeric(rightKind)) {
-            LogUtils.raiseCompilerError("Attempt to modulo non-numeric types: " + leftKind + ", " + rightKind);
+            log.fatal("Attempt to modulo non-numeric types: " + leftKind + ", " + rightKind);
             return null;
         }
 
@@ -1773,7 +1776,7 @@ class Value {
 
     private static Value logicalNegate(Object payload, Kind kind) {
         if (kind != Kind.BOOLEAN_LITERAL) {
-            LogUtils.raiseCompilerError("Attempt to unary-boolean-negate non-boolean type: " + kind);
+            log.fatal("Attempt to unary-boolean-negate non-boolean type: " + kind);
             return null;
         }
 
@@ -1797,10 +1800,10 @@ class Value {
             case BOOLEAN_LITERAL:
             case STRING_LITERAL:
             case NULL_LITERAL:
-                LogUtils.raiseCompilerError("Attempt to unary-bitwise-negate invalid type: " + kind);
+                log.fatal("Attempt to unary-bitwise-negate invalid type: " + kind);
                 break;
             default:
-                LogUtils.raiseCompilerError("[BUG] Attempt to unary-bitwise-negate non-literal type " + kind + " in ConstFolder.");
+                log.fatal("[BUG] Attempt to unary-bitwise-negate non-literal type " + kind + " in ConstFolder.");
                 break;
         }
 
@@ -1827,10 +1830,10 @@ class Value {
             case BOOLEAN_LITERAL:
             case STRING_LITERAL:
             case NULL_LITERAL:
-                LogUtils.raiseCompilerError("Attempt to unary-negate invalid type: " + kind);
+                log.fatal("Attempt to unary-negate invalid type: " + kind);
                 break;
             default:
-                LogUtils.raiseCompilerError("[BUG] Attempt to unary-negate non-literal type " + kind + " in ConstFolder.");
+                log.fatal("[BUG] Attempt to unary-negate non-literal type " + kind + " in ConstFolder.");
                 break;
         }
 
@@ -1929,7 +1932,7 @@ class Value {
 
     public AJCLiteral toLiteral() {
         if (this == UNKNOWN) {
-            LogUtils.raiseCompilerError("Attempt to literalify UNKNOWN value!");
+            log.fatal("Attempt to literalify UNKNOWN value!");
             return null;
         }
 

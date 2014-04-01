@@ -2,12 +2,17 @@ package tests.unittests;
 
 import static org.junit.Assert.*;
 
-import lombok.extern.log4j.Log4j2;
+import joust.utils.LogUtils;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-@Log4j2
+import java.util.logging.Logger;
+
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 @RunWith(JUnit4.class)
 public class TestTest {
     @Test

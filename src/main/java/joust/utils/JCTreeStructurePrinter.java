@@ -1,13 +1,17 @@
 package joust.utils;
 
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
+
+import java.util.logging.Logger;
 
 import static com.sun.tools.javac.tree.JCTree.*;
 
 /**
  * Utility class for depth-first traversing a Javac AST and printing the nodes encountered in the order so met.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class JCTreeStructurePrinter extends DepthFirstJCTreeVisitor {
     @Override
     public void visitTopLevel(JCCompilationUnit jcCompilationUnit) {

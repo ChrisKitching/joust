@@ -2,17 +2,20 @@ package joust.treeinfo;
 
 import static com.sun.tools.javac.code.Symbol.*;
 
+import joust.utils.LogUtils;
 import joust.utils.SymbolSet;
 import joust.utils.TreeUtils;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 /**
  * A class for representing the side effects of a particular tree node.
  */
-public @Log4j2
-class EffectSet {
+@Log
+public class EffectSet {
     public static final EffectSet NO_EFFECTS = new EffectSet(EffectType.NONE);
     public static final EffectSet ALL_EFFECTS = new EffectSet(EffectType.getAllEffects()) {
         {
@@ -38,7 +41,7 @@ class EffectSet {
     public SymbolSet readEscaping = new SymbolSet();
     public SymbolSet writeEscaping = new SymbolSet();
 
-    public static enum EffectType {
+    public enum EffectType {
         NONE(0),
         READ_INTERNAL(1),
         WRITE_INTERNAL(2),
@@ -94,7 +97,7 @@ class EffectSet {
      */
     public EffectSet unionEscaping(EffectSet unionee) {
         if (unionee == null) {
-            log.warn("Unionee was null.");
+            log.warning("Unionee was null.");
             return this;
         }
 

@@ -6,10 +6,13 @@ import joust.optimisers.avail.NameFactory;
 import joust.optimisers.invar.ExpressionComplexityClassifier;
 import joust.optimisers.invar.InvariantExpressionFinder;
 import joust.treeinfo.EffectSet;
-import lombok.extern.log4j.Log4j2;
+import joust.utils.LogUtils;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import java.util.Arrays;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 import static joust.utils.StaticCompilerUtils.treeCopier;
@@ -19,7 +22,8 @@ import static joust.utils.StaticCompilerUtils.treeMaker;
 /**
  * Tree translator implementing loop-invariant code motion.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class LoopInvarTranslator extends BaseTranslator {
     // The minimum complexity value for an invariant expression to be moved outside of the loop.
     private static final int INVAR_COMPLEXITY_THRESHOLD = 0;

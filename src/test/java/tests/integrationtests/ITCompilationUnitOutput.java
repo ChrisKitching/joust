@@ -1,6 +1,8 @@
 package tests.integrationtests;
 
-import lombok.extern.log4j.Log4j2;
+import joust.utils.LogUtils;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -22,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
 
@@ -32,9 +35,10 @@ import static org.junit.Assert.*;
  * JUnit to produce an instance of the test for each such file, tidily giving us one test per
  * compilation unit without the need for lots of boring boilerplate.
  */
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 @RunWith(Parameterized.class)
-public @Log4j2
-class ITCompilationUnitOutput {
+public class ITCompilationUnitOutput {
     public static final String TEST_INPUTS_DIR = "/testinputs/";
     public static final String TEST_SHARED_CLASSES_DIR = "/testutils/";
     public static final String OPT_DIR = "/compilationResults/opt/";
@@ -107,11 +111,9 @@ class ITCompilationUnitOutput {
      */
     @Test
     public void runTest() {
-        if (log.isDebugEnabled()) {
-            log.info("-------------------------------------------------------------------------");
-            log.info("- Running compilation output comparism test for {}. -", mTargetSource.getName());
-            log.info("-------------------------------------------------------------------------");
-        }
+        log.info("-------------------------------------------------------------------------");
+        log.info("- Running compilation output comparism test for {}. -", mTargetSource.getName());
+        log.info("-------------------------------------------------------------------------");
 
         // Create the compiled programs..
         assertTrue(compileTarget(false));
@@ -142,19 +144,15 @@ class ITCompilationUnitOutput {
         // Not using an assertion directly so we can print extra debug information.
         if (!optOutput.equals(noOptOutput)) {
             // Print a bytecode diff for debugging...
-            if (log.isDebugEnabled()) {
-                printBytecodeOfTest();
-            }
+            printBytecodeOfTest();
 
             // ...And fail the test.
             assertTrue(false);
         }
 
-        if (log.isDebugEnabled()) {
-            log.info("---------------------------------------------");
-            log.info("- End of compilation output comparism test. -");
-            log.info("---------------------------------------------");
-        }
+        log.info("---------------------------------------------");
+        log.info("- End of compilation output comparism test. -");
+        log.info("---------------------------------------------");
     }
 
     /**

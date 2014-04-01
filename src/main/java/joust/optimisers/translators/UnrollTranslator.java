@@ -4,11 +4,14 @@ import com.sun.tools.javac.util.List;
 import joust.optimisers.evaluation.EvaluationContext;
 import joust.optimisers.evaluation.Value;
 import joust.treeinfo.EffectSet;
+import joust.utils.LogUtils;
 import joust.utils.SymbolSet;
 import joust.utils.TreeUtils;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.code.Symbol.*;
@@ -20,7 +23,8 @@ import static joust.utils.StaticCompilerUtils.treeCopier;
  * The visitMethodDef method deploys the UnrollableLoopVisitor to determine which loops should be considered for
  * unrolling.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class UnrollTranslator extends BaseTranslator {
     // The number of iterations to attempt to unroll before giving up. Set too low and nothing gets unrolled, too
     // high and too much gets unrolled and the binary becomes huge and the JIT becomes hindered.

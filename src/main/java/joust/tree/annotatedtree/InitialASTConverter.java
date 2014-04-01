@@ -5,11 +5,13 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.List;
 import joust.utils.LogUtils;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Stack;
+import java.util.logging.Logger;
 
 import static com.sun.tools.javac.tree.JCTree.*;
 import static joust.tree.annotatedtree.AJCTree.*;
@@ -17,7 +19,8 @@ import static joust.tree.annotatedtree.AJCTree.*;
 /**
  * Scan a Java AST and convert it to the annotated format. Relies on the iteration order of TreeScanner.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class InitialASTConverter extends TreeScanner {
     // The 0-length String[]...
     public static final String[] NONE = {};
@@ -100,7 +103,7 @@ public class InitialASTConverter extends TreeScanner {
     public AJCTree getResult() {
         AJCTree result =  results.pop();
         if (!results.isEmpty()) {
-            LogUtils.raiseCompilerError("Failed to convert input tree. Result remaining: " + results.pop() + " and " + results.size() + " more.");
+            log.fatal("Failed to convert input tree. Result remaining: " + results.pop() + " and " + results.size() + " more.");
         }
 
         return result;
@@ -131,7 +134,7 @@ public class InitialASTConverter extends TreeScanner {
 
         String[] fieldNames = FIELD_MAPPINGS.get(destClass);
         if (fieldNames == null) {
-            LogUtils.raiseCompilerError("Unable to find field mappings for class: " + destClass.getCanonicalName());
+            log.fatal("Unable to find field mappings for class: " + destClass.getCanonicalName());
             return;
         }
 
@@ -204,11 +207,9 @@ public class InitialASTConverter extends TreeScanner {
                 // Finally, assign the list to the field, and weep for my sanity.
                 destField.set(destinationTree, reconstitutedList);
             } catch (NoSuchFieldException e) {
-                log.error("Unable to find field {} on {}!" , fieldName, destClass.getSimpleName(), e);
-                LogUtils.raiseCompilerError("Unable to find field " + fieldName + " on " + destClass.getSimpleName());
+                log.fatal("Unable to find field " + fieldName + " on " + destClass.getSimpleName(), e);
             } catch (IllegalAccessException e) {
-                log.error("IllegalAccessException during tree conversion.", e);
-                LogUtils.raiseCompilerError("IllegalAccessException during tree conversion.");
+                log.fatal("IllegalAccessException during tree conversion.", e);
             }
         }
     }
@@ -247,7 +248,7 @@ public class InitialASTConverter extends TreeScanner {
             } else if (decl instanceof AJCClassDecl) {
                 classDefs = classDefs.prepend((AJCClassDecl) decl);
             } else {
-                LogUtils.raiseCompilerError("Unknown definition type: " + decl.getClass().getCanonicalName());
+                log.fatal("Unknown definition type: " + decl.getClass().getCanonicalName());
                 return;
             }
 
@@ -323,8 +324,7 @@ public class InitialASTConverter extends TreeScanner {
             return new AJCObjectTypeTree((AJCSymbolRefTree<Symbol.TypeSymbol>) tree);
         }
 
-        log.error("Unexpected type expression node type: {}:{}", tree, tree.getClass().getCanonicalName(), new Exception());
-        LogUtils.raiseCompilerError("Unexpected type expression node type!");
+        log.fatal("Unexpected type expression node type: " + tree + ':' + tree.getClass().getCanonicalName());
 
         return null;
     }

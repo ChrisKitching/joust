@@ -3,11 +3,16 @@ package joust.optimisers.visitors;
 import com.sun.tools.javac.util.List;
 import joust.tree.annotatedtree.AJCTree;
 import joust.tree.annotatedtree.AJCTreeVisitor;
-import lombok.extern.log4j.Log4j2;
+import joust.utils.LogUtils;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
+
+import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class BackwardsFlowVisitor extends AJCTreeVisitor {
     protected void visitBackwards(List<? extends AJCTree> aTrees) {
         List<? extends AJCTree> trees = aTrees.reverse();

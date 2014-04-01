@@ -1,15 +1,20 @@
 package joust.optimisers.utils;
 
 import joust.utils.LogUtils;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 import static com.sun.source.util.TaskEvent.Kind;
 
 /**
  * Class representing a phase in the compiler pipeline.
  */
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class CompilerPhase {
     private static final PhaseKindComparator comparator = new PhaseKindComparator();
 
@@ -99,7 +104,7 @@ public class CompilerPhase {
             }
 
             // We can never get here...
-            LogUtils.raiseCompilerError("Impossible state encountered in PhaseKindComparator for: " + o1 + ", " + o2);
+            log.fatal("Impossible state encountered in PhaseKindComparator for: " + o1 + ", " + o2);
             return 0;
         }
     }

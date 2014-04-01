@@ -5,11 +5,15 @@ import com.sun.tools.javac.util.Name;
 import joust.optimisers.avail.NameFactory;
 import joust.optimisers.translators.UnusedAssignmentStripper;
 import joust.optimisers.visitors.sideeffects.SideEffectVisitor;
+import joust.utils.LogUtils;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 import static junitparams.JUnitParamsRunner.$;
@@ -21,7 +25,8 @@ import static tests.unittests.utils.UnitTestTreeFactory.*;
 /**
  * Some unit tests for the unused assignment stripper.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 @RunWith(JUnitParamsRunner.class)
 public class UnusedAssignmentStripperTest extends BaseTreeTranslatorTest<UnusedAssignmentStripper> {
     public UnusedAssignmentStripperTest() {

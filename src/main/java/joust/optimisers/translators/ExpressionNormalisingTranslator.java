@@ -1,12 +1,17 @@
 package joust.optimisers.translators;
 
 import joust.tree.annotatedtree.AJCTree;
+import joust.utils.LogUtils;
 import joust.utils.TreeUtils;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
+
+import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class ExpressionNormalisingTranslator extends BaseTranslator {
     @Override
     public void visitBinary(AJCBinary binary) {

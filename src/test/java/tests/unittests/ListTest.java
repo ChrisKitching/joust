@@ -2,7 +2,9 @@ package tests.unittests;
 
 import com.sun.tools.javac.util.List;
 import joust.utils.JavacListUtils;
-import lombok.extern.log4j.Log4j2;
+import joust.utils.LogUtils;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -11,13 +13,15 @@ import org.junit.rules.TestName;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
 
 /**
  * Unit tests for the JavacListUtils class.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class ListTest {
     @Rule public TestName name = new TestName();
 

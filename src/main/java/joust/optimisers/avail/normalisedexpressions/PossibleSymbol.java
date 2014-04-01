@@ -2,11 +2,14 @@ package joust.optimisers.avail.normalisedexpressions;
 
 import com.sun.source.tree.Scope;
 import com.sun.tools.javac.code.Symbol;
+import joust.utils.LogUtils;
 import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.logging.Logger;
 
 import static com.sun.tools.javac.code.Symbol.*;
 
@@ -15,7 +18,8 @@ import static com.sun.tools.javac.code.Symbol.*;
  * If it's not a VarSymbol, it's a placeholder for one. It can be induced to create the VarSymbol.
  * Uses a hashmap to prevent multiple symbols pointing to the same symbol from existing.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class PossibleSymbol {
     static HashMap<VarSymbol, PossibleSymbol> concreteSymbols;
     static int symbolId;

@@ -19,7 +19,8 @@ import joust.treeinfo.TreeInfoManager;
 import joust.utils.LogUtils;
 import joust.utils.SymbolSet;
 import lombok.Cleanup;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import javax.tools.JavaFileObject;
 import java.io.File;
@@ -28,12 +29,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.logging.Logger;
 
 /**
  * The on-disk cache of analysis results.
  */
-public @Log4j2
-class JOUSTCache {
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
+@Log
+public class JOUSTCache {
     private static final String DATABASE_FILE_NAME = "joustCache";
     private static final int INITIAL_BUFFER_SIZE = 100000;
 
@@ -59,7 +62,7 @@ class JOUSTCache {
         try {
             databaseRecordManager = getOrCreateRecordManager();
         } catch (IOException e) {
-            LogUtils.raiseCompilerError("Unable to create or open local data cache.\n" + e);
+            log.fatal("Unable to create or open local data cache.\n" + e);
             return;
         }
 
@@ -130,7 +133,7 @@ class JOUSTCache {
 
         if (!joustDir.exists()) {
             if (!joustDir.mkdir()) {
-                LogUtils.raiseCompilerError("Unable to create directory: " + joustDir + " for local data cache.");
+                log.fatal("Unable to create directory: " + joustDir + " for local data cache.");
                 return null;
             }
             log.info("Created directory {}", joustDir);
@@ -186,8 +189,8 @@ class JOUSTCache {
 
         if (classHash != cInfo.hash) {
             log.warn("Hash mismatch for: {}\n" +
-                     "Classfile hash: {}\n" +
-                     "Classinfo hash: {}\n", sym.fullname.toString(), classHash, cInfo.hash);
+                    "Classfile hash: {}\n" +
+                    "Classinfo hash: {}\n", sym.fullname.toString(), classHash, cInfo.hash);
             return;
         }
 
@@ -220,7 +223,7 @@ class JOUSTCache {
         try {
             databaseRecordManager.commit();
         } catch (IOException e) {
-            LogUtils.raiseCompilerError("IOException flushing to disk cache:" + e);
+            log.fatal("IOException flushing to disk cache:", e);
         }
     }
 

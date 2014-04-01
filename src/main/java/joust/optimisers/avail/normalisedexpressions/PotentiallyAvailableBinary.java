@@ -6,10 +6,13 @@ import com.sun.tools.javac.tree.Pretty;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 import joust.optimisers.avail.NameFactory;
+import joust.utils.LogUtils;
 import joust.utils.TreeUtils;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import java.io.StringWriter;
+import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.tree.JCTree.Tag;
@@ -19,9 +22,9 @@ import static com.sun.tools.javac.code.Symbol.*;
 /**
  * A representation of a JCBinary allowing for the use of hypothetical symbols.
  */
-@Log4j2
-public
-class PotentiallyAvailableBinary extends PotentiallyAvailableExpression {
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
+public class PotentiallyAvailableBinary extends PotentiallyAvailableExpression {
     public PotentiallyAvailableExpression lhs;
     public PotentiallyAvailableExpression rhs;
     public Tag opcode;

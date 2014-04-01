@@ -9,13 +9,16 @@ import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableFunction
 import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableNullary;
 import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableUnary;
 import joust.tree.annotatedtree.AJCTree;
-import lombok.extern.log4j.Log4j2;
+import joust.utils.LogUtils;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.code.Symbol.*;
@@ -25,7 +28,8 @@ import static com.sun.tools.javac.code.Symbol.*;
  * expression analysis.
  * TODO: Use efficient hashing similar to openjdk's Scope, instead of a brutal hack.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class AvailScope extends Scope {
     // Maps VarSymbols to the expressions that depend on them. The outermost scope owns the object,
     // subsequent scopes point back to the same map. Each PAE has an associated virtual symbol.
@@ -194,7 +198,7 @@ public class AvailScope extends Scope {
 
 
     public PotentiallyAvailableExpression enterExpression(AJCBinary expr) {
-        log.debug("entering JCBinary:" +expr);
+        log.debug("entering JCBinary:" + expr);
         PotentiallyAvailableExpression lhs = treeMapping.get(expr.lhs);
         PotentiallyAvailableExpression rhs = treeMapping.get(expr.rhs);
 
@@ -207,12 +211,12 @@ public class AvailScope extends Scope {
     }
 
     public PotentiallyAvailableExpression enterExpression(AJCIdent<VarSymbol> expr) {
-        log.debug("entering JCIdent:" +expr);
+        log.debug("entering JCIdent:" + expr);
 
-        log.debug("JCIDent symbol:" +expr.getTargetSymbol());
+        log.debug("JCIDent symbol:" + expr.getTargetSymbol());
         PotentiallyAvailableNullary nullary = new PotentiallyAvailableNullary(expr);
         nullary.sourceNode = expr;
-        log.debug("JCIDent pae:" +nullary);
+        log.debug("JCIDent pae:" + nullary);
 
         registerPotentialExpression(nullary, expr);
 
@@ -220,7 +224,7 @@ public class AvailScope extends Scope {
     }
 
     public PotentiallyAvailableExpression enterExpression(AJCFieldAccess<VarSymbol> expr) {
-        log.debug("entering JCFieldAccess:" +expr);
+        log.debug("entering JCFieldAccess:" + expr);
 
         PotentiallyAvailableNullary nullary = new PotentiallyAvailableNullary(expr);
         nullary.sourceNode = expr;
@@ -232,7 +236,7 @@ public class AvailScope extends Scope {
     }
 
     public PotentiallyAvailableExpression enterExpression(AJCLiteral expr) {
-        log.debug("entering JCLiteral:" +expr);
+        log.debug("entering JCLiteral:" + expr);
         PotentiallyAvailableNullary nullary = new PotentiallyAvailableNullary(expr);
         nullary.sourceNode = expr;
 
@@ -242,28 +246,28 @@ public class AvailScope extends Scope {
     }
 
     public PotentiallyAvailableExpression enterExpression(AJCTypeCast expr) {
-        log.debug("entering expression:" +expr);
+        log.debug("entering expression:" + expr);
         // TODO: Handle these...
         log.info("JCTypeCast not implemented in AvailScope.");
         return null;
     }
 
     public PotentiallyAvailableExpression enterExpression(AJCInstanceOf expr) {
-        log.debug("entering expression:" +expr);
+        log.debug("entering expression:" + expr);
         // TODO: Handle these... These can probably be considered as PotentiallyAvailableBinaries.
         log.info("JCInstanceOf not implemented in AvailScope.");
         return null;
     }
 
     public PotentiallyAvailableExpression enterExpression(AJCArrayAccess expr) {
-        log.debug("entering expression:" +expr);
+        log.debug("entering expression:" + expr);
         // TODO: Handle these... Fucking complicated.
         log.info("JCArrayAccess not implemented in AvailScope.");
         return null;
     }
 
     public PotentiallyAvailableExpression enterExpression(AJCCall expr) {
-        log.debug("entering call:" +expr);
+        log.debug("entering call:" + expr);
         PotentiallyAvailableFunctionalExpression nullary = new PotentiallyAvailableFunctionalExpression(expr);
         nullary.sourceNode = expr;
 

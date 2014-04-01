@@ -2,10 +2,12 @@ package joust.utils;
 
 import com.sun.tools.javac.util.List;
 import lombok.NonNull;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import java.util.Arrays;
 import java.util.NoSuchElementException;
+import java.util.logging.Logger;
 
 /**
  * Javac's List needs... Alteration... For my purposes.
@@ -15,7 +17,8 @@ import java.util.NoSuchElementException;
  * This flavour of the list *is* mutable. It implements some of the unsupported operations of Javac's list, and
  * is particularly useful for rewriting trees.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class JavacListUtils {
     // Error strings. Handy for JUnit...
     public static final String INSERT_NEGATIVE = "Attempt to add element at negative index in List!";

@@ -3,15 +3,19 @@ package tests.unittests;
 import com.sun.tools.javac.code.Symbol;
 import joust.tree.annotatedtree.AJCTree;
 import joust.tree.annotatedtree.AJCTreeVisitor;
-import lombok.extern.log4j.Log4j2;
+import joust.utils.LogUtils;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 import tests.unittests.utils.VisitorResultPurger;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
 
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public abstract class BaseAnalyserTest<T extends AJCTreeVisitor> extends TreeFabricatingTest {
     // The class of the tree translator type of interest.
     private AJCTreeVisitor visitorInstance;

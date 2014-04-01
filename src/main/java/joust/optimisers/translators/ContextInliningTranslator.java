@@ -2,11 +2,14 @@ package joust.optimisers.translators;
 
 import com.sun.tools.javac.code.Symbol;
 import joust.optimisers.evaluation.Value;
+import joust.utils.LogUtils;
 import joust.utils.TreeUtils;
 import lombok.AllArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.code.Symbol.*;
@@ -15,7 +18,8 @@ import static com.sun.tools.javac.code.Symbol.*;
  * A translator that takes the mappings from an ExecutionContext and replaces identifiers in the tree of interest
  * with known literal replacements where possible (according to the context mappings provided).
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 @AllArgsConstructor
 public
 class ContextInliningTranslator extends BaseTranslator {

@@ -4,15 +4,16 @@ import com.sun.source.util.JavacTask;
 import com.sun.source.util.TaskEvent;
 import com.sun.source.util.TaskListener;
 import joust.optimisers.runnables.OptimisationRunnable;
-import lombok.extern.log4j.Log4j2;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import joust.utils.LogUtils;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 import static com.sun.source.util.TaskEvent.Kind;
 
@@ -20,7 +21,8 @@ import static com.sun.source.util.TaskEvent.Kind;
  * A runnable that will be executed by the compiler during the specified phase.
  * When to run is specified by both a Phase and PhaseModifier.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public abstract class OptimisationPhaseManager implements Runnable {
     private static final Map<Kind, LinkedList<OptimisationRunnable>> tasksBefore = new EnumMap<>(Kind.class);
     private static final Map<Kind, LinkedList<OptimisationRunnable>> tasksAfter = new EnumMap<>(Kind.class);
@@ -76,19 +78,17 @@ public abstract class OptimisationPhaseManager implements Runnable {
 
 
         TaskListener listener = new TaskListener() {
-            Logger l = LogManager.getLogger();
-
             @Override
             public void finished(TaskEvent taskEvent) {
                 LinkedList<OptimisationRunnable> toRun = tasksAfter.get(taskEvent.getKind());
-                l.debug("finished event: {}", taskEvent);
+                log.debug("finished event: {}", taskEvent);
                 runTasks(toRun);
             }
 
             @Override
             public void started(TaskEvent taskEvent) {
                 LinkedList<OptimisationRunnable> toRun = tasksBefore.get(taskEvent.getKind());
-                l.debug("started event: {}", taskEvent);
+                log.debug("started event: {}", taskEvent);
                 runTasks(tasksBefore.get(taskEvent.getKind()));
 
                 currentPhase = CompilerPhase.fromKind(taskEvent.getKind());

@@ -10,12 +10,15 @@ import joust.optimisers.runnables.OptimisationRunnable;
 import joust.optimisers.utils.OptimisationPhaseManager;
 import joust.utils.LogUtils;
 import joust.utils.StaticCompilerUtils;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Queue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static joust.utils.StaticCompilerUtils.javaCompiler;
 import static joust.optimisers.utils.OptimisationPhaseManager.VirtualPhase.*;
@@ -23,7 +26,8 @@ import static joust.optimisers.utils.OptimisationPhaseManager.VirtualPhase.*;
 /**
  * The class we don't like to talk about. Nothing to see here.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public final class JavacBrutaliser extends OptimisationRunnable {
     private static final String FAILED_TO_SET_COMPILE_POLICY = "Unable to hack compiler and set compile policy to simple. Please recompile with undocumented option 'compilePolicy' set to 'simple'. Assuming it still exists, that is.";
     private static final String FAILED_TO_BRUTALISE_COMPILER = "Unable to convince compiler to run some phases earlier than scheduled. Please recompile with a compiler that meets the undocumented binary compatability requirements for JOUST.";
@@ -45,7 +49,7 @@ public final class JavacBrutaliser extends OptimisationRunnable {
         log.info("Beating javac with a big stick...");
 
         if (!hijackCompilePolicy()) {
-            LogUtils.raiseCompilerError(FAILED_TO_SET_COMPILE_POLICY);
+            log.fatal(FAILED_TO_SET_COMPILE_POLICY);
             return;
         }
 
@@ -68,8 +72,7 @@ public final class JavacBrutaliser extends OptimisationRunnable {
             generateMethod = jCompilerClass.getDeclaredMethod("generate", Queue.class);
             generateMethod.setAccessible(true);
         } catch (NoSuchMethodException e) {
-            log.error("Unable to find phase method on JavaCompiler.", e);
-            LogUtils.raiseCompilerError(FAILED_TO_BRUTALISE_COMPILER);
+            log.fatal(FAILED_TO_BRUTALISE_COMPILER, e);
             return;
         }
 
@@ -101,8 +104,7 @@ public final class JavacBrutaliser extends OptimisationRunnable {
             log.info("todo: {}", todoValue);
             log.info("Resources released.");
         } catch (IllegalAccessException | InvocationTargetException e) {
-            log.error("Exception thrown while calling extra compiler phases (Now *there's* a surprise).", e);
-            LogUtils.raiseCompilerError(FAILED_TO_BRUTALISE_COMPILER);
+            log.fatal(FAILED_TO_BRUTALISE_COMPILER, e);
             return;
         }
         log.info("Success.");
@@ -132,7 +134,7 @@ public final class JavacBrutaliser extends OptimisationRunnable {
         }
 
         if (compilePolicyClass == null) {
-            log.error("Unable to find JavaCompiler.CompilePolicy class.");
+            log.fatal("Unable to find JavaCompiler.CompilePolicy class.");
             return false;
         }
 
@@ -148,7 +150,7 @@ public final class JavacBrutaliser extends OptimisationRunnable {
             policyField.set(javaCompiler, compilePolicy);
 
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | NoSuchFieldException e) {
-            log.error("Failed to hack javac's compile policy:\n {}", e);
+            log.fatal("Failed to hack javac's compile policy:\n {}", e);
             return false;
         }
 
@@ -180,7 +182,5 @@ public final class JavacBrutaliser extends OptimisationRunnable {
          * So, we take this opportunity to bludgeon the appropriate undocumented option into javac.
          */
         javaCompiler.shouldStopPolicyIfNoError = CompileStates.CompileState.INIT;
-
-        log.error(javaCompiler.todo);
     }
 }

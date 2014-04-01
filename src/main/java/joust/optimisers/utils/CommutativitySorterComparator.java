@@ -2,13 +2,15 @@ package joust.optimisers.utils;
 
 import com.sun.tools.javac.code.Symbol;
 import joust.utils.LogUtils;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.tree.JCTree.Tag;
@@ -17,7 +19,8 @@ import static com.sun.tools.javac.code.Symbol.*;
 /**
  * Provide an ordering over expression nodes.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class CommutativitySorterComparator implements Comparator<AJCExpressionTree> {
     // Define a sort-of-mostly-arbitrary ordering on types of expressions.
     // Some vague attempt is made to make expensive operations tend to be on the right of an expression so
@@ -151,7 +154,7 @@ public class CommutativitySorterComparator implements Comparator<AJCExpressionTr
         } else if (l instanceof AJCCall) {
             return compareCalls((AJCCall) l, (AJCCall) r);
         } else {
-            LogUtils.raiseCompilerError("Unexpected expression type: " + l.getClass().getCanonicalName());
+            log.fatal("Unexpected expression type: " + l.getClass().getCanonicalName());
             return 0;
         }
     }

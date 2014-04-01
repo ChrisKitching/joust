@@ -4,9 +4,12 @@ import static javax.tools.StandardLocation.CLASS_OUTPUT;
 
 import joust.joustcache.data.TransientClassInfo;
 import joust.optimisers.runnables.OptimisationRunnable;
-import lombok.extern.log4j.Log4j2;
+import joust.utils.LogUtils;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import static joust.utils.StaticCompilerUtils.fileManager;
 
@@ -14,7 +17,8 @@ import static joust.utils.StaticCompilerUtils.fileManager;
  * A phase to be run after writing the classfiles which computes the checksums of the produced files
  * and writes them and the relavent analysis results to the disk cache.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class ChecksumRunner extends OptimisationRunnable {
     @Override
     public void run() {

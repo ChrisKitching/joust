@@ -2,9 +2,12 @@ package tests.unittests;
 
 import joust.optimisers.translators.BaseTranslator;
 import joust.tree.annotatedtree.AJCTree;
-import lombok.extern.log4j.Log4j2;
+import joust.utils.LogUtils;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Logger;
 
 import static org.junit.Assert.assertEquals;
 
@@ -13,7 +16,8 @@ import static org.junit.Assert.assertEquals;
  *
  * @param <T> The type of TreeTranslator under test.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public abstract class BaseTreeTranslatorTest<T extends BaseTranslator> extends TreeFabricatingTest {
     // The class of the tree translator type of interest.
     private BaseTranslator translatorInstance;

@@ -2,18 +2,22 @@ package joust.optimisers.invar;
 
 import joust.tree.annotatedtree.AJCTreeVisitor;
 import joust.treeinfo.EffectSet;
+import joust.utils.LogUtils;
 import joust.utils.SymbolSet;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.code.Symbol.*;
 
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 @RequiredArgsConstructor
 public class InvariantExpressionFinder extends AJCTreeVisitor {
     public final Set<AJCExpressionTree> invariantExpressions = new HashSet<>();

@@ -1,15 +1,17 @@
 package joust.optimisers.avail;
 
-import com.esotericsoftware.minlog.Log;
 import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableExpression;
 import joust.tree.annotatedtree.AJCTree;
 import joust.tree.annotatedtree.AJCTreeVisitor;
 import joust.treeinfo.EffectSet;
-import lombok.extern.log4j.Log4j2;
+import joust.utils.LogUtils;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.code.Symbol.*;
@@ -17,7 +19,8 @@ import static com.sun.tools.javac.code.Symbol.*;
 /**
  * Perform available expression analysis on methods.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class Avail extends AJCTreeVisitor {
     // The symbol of the method currently being processed.
     MethodSymbol enclosingMethod;
@@ -142,7 +145,7 @@ public class Avail extends AJCTreeVisitor {
 
     @Override
     public void visitAssign(AJCAssign jcAssign) {
-        Log.debug("Visit assign!");
+        log.debug("Visit assign!");
         markAvailableExpressions(jcAssign);
         visit(jcAssign.rhs);
         currentScope.enterExpression(jcAssign);

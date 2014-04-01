@@ -7,13 +7,16 @@ import joust.joustcache.JOUSTCache;
 import joust.tree.annotatedtree.AJCTreeVisitor;
 import joust.treeinfo.EffectSet;
 import joust.treeinfo.TreeInfoManager;
+import joust.utils.LogUtils;
 import joust.utils.SetHashMap;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.code.Symbol.*;
@@ -21,7 +24,8 @@ import static joust.treeinfo.EffectSet.*;
 import static joust.Optimiser.inputTrees;
 import static joust.utils.StaticCompilerUtils.types;
 
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class SideEffectVisitor extends AJCTreeVisitor {
     // Track the method calls which depend on incomplete methods so we can go back and fix them up when we complete
     // the method in question. Keyed by MethodSymbol of the incomplete method.

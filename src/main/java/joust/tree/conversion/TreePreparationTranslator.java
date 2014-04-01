@@ -5,7 +5,11 @@ import com.sun.tools.javac.tree.TreeTranslator;
 import com.sun.tools.javac.util.List;
 import joust.utils.JCTreeStructurePrinter;
 import joust.utils.JavacListUtils;
-import lombok.extern.log4j.Log4j2;
+import joust.utils.LogUtils;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
+
+import java.util.logging.Logger;
 
 import static com.sun.tools.javac.tree.JCTree.*;
 import static joust.utils.StaticCompilerUtils.*;
@@ -22,7 +26,8 @@ import static joust.utils.StaticCompilerUtils.*;
  * If enabled, stripping of assertions. No point converting them just to throw them away...
  * Elimination of the empty blocks that javac puts in instead of inner classes..... (WAT).
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class TreePreparationTranslator extends TreeTranslator {
     @Override
     public void visitClassDef(JCClassDecl jcClassDecl) {

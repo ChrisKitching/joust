@@ -7,9 +7,12 @@ import joust.joustcache.data.ClassInfo;
 import joust.optimisers.translators.ExpressionNormalisingTranslator;
 import joust.optimisers.visitors.sideeffects.SideEffectVisitor;
 import joust.tree.conversion.TreePreparationTranslator;
-import lombok.extern.log4j.Log4j2;
+import joust.utils.LogUtils;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 import static com.sun.tools.javac.tree.JCTree.*;
 import static com.sun.tools.javac.code.Symbol.*;
@@ -20,7 +23,8 @@ import static joust.tree.annotatedtree.AJCTree.*;
  * forest.
  * Serves as a handy place for structures shared among all input trees to reside.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class AJCForest {
     // The input root nodes, after conversion.
     public final List<AJCClassDecl> rootNodes;

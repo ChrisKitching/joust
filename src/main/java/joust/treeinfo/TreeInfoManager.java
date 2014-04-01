@@ -6,18 +6,22 @@ import joust.joustcache.JOUSTCache;
 import joust.joustcache.data.ClassInfo;
 import joust.joustcache.data.MethodInfo;
 import joust.optimisers.visitors.sideeffects.Effects;
-import lombok.extern.log4j.Log4j2;
+import joust.utils.LogUtils;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import static com.sun.tools.javac.code.Symbol.*;
 
 /**
  * Provides access to TreeInfo objects related to tree nodes.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public final class TreeInfoManager {
     // Maps method symbol hashes to the effect sets of their corresponding JCMethodDecl nodes, which
     // may or may not actually *exist* in the parsed code.

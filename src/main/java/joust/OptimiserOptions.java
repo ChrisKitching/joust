@@ -2,16 +2,21 @@ package joust;
 
 import com.lexicalscope.jewel.cli.ArgumentValidationException;
 import com.lexicalscope.jewel.cli.CliFactory;
-import lombok.extern.log4j.Log4j2;
+import joust.utils.LogUtils;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Class to contain the options passed to the optimiser on the command line.
  */
-public @Log4j2 class OptimiserOptions {
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
+public class OptimiserOptions {
     // If true, assertions found in the input program are deleted.
     public static boolean stripAssertions;
 
@@ -49,7 +54,7 @@ public @Log4j2 class OptimiserOptions {
         try {
             result = CliFactory.parseArguments(CLITarget.class, argsArray);
         } catch (ArgumentValidationException e) {
-            log.fatal("Argument validation exception:\n{}", e.getMessage());
+            log.fatal("Argument validation exception:\n{}", e);
             return false;
         }
 

@@ -4,15 +4,18 @@ import static com.sun.tools.javac.tree.JCTree.*;
 
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.List;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import java.util.HashSet;
+import java.util.logging.Logger;
 
 /**
  * A Visitor that visits all children of each node before processing the current node. Useful for
  * creating tree analysers.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class DepthFirstJCTreeVisitor extends Visitor {
     protected HashSet<JCTree> mMarked = new HashSet<>();
 

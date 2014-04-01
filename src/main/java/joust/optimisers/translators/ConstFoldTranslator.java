@@ -1,7 +1,11 @@
 package joust.optimisers.translators;
 
 import joust.optimisers.evaluation.Value;
-import lombok.extern.log4j.Log4j2;
+import joust.utils.LogUtils;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
+
+import java.util.logging.Logger;
 
 import static com.sun.tools.javac.tree.JCTree.Tag;
 import static joust.tree.annotatedtree.AJCTree.*;
@@ -14,7 +18,8 @@ import static joust.tree.annotatedtree.AJCTree.*;
  * Unfortunately, doing things at this level means we have to deal with issues like brackets.
  * TODO: Lambdas might be able to make this less soul-destroyingly awful to look at.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public
 class ConstFoldTranslator extends BaseTranslator {
     @Override

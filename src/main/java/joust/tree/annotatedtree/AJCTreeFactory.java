@@ -10,11 +10,13 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 import joust.utils.LogUtils;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 import static com.sun.tools.javac.code.TypeTag.*;
 import static joust.tree.annotatedtree.AJCTree.*;
@@ -26,7 +28,8 @@ import static com.sun.tools.javac.code.Symbol.*;
  * A factory for creating tree nodes.
  * Each node is created backed by a JCTree node.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class AJCTreeFactory implements AJCTree.Factory {
     protected static final Context.Key<AJCTreeFactory> AJCTreeMakerKey = new Context.Key<>();
 
@@ -52,8 +55,7 @@ public class AJCTreeFactory implements AJCTree.Factory {
             isUnqualifiable = treeMakerClass.getDeclaredMethod("isUnqualifiable", Symbol.class);
             isUnqualifiable.setAccessible(true);
         } catch (NoSuchMethodException e) {
-            log.error("Unable to get isUnqualifiable method from javacTreeMaker.", e);
-            LogUtils.raiseCompilerError("Unable to get isUnqualifiable method from javacTreeMaker.");
+            log.fatal("Unable to get isUnqualifiable method from javacTreeMaker.", e);
         }
     }
 
@@ -63,8 +65,7 @@ public class AJCTreeFactory implements AJCTree.Factory {
         try {
             ret = isUnqualifiable.invoke(javacTreeMaker, sym);
         } catch (IllegalAccessException | InvocationTargetException e) {
-            log.error("Unable to call isUnqualifiable method on javacTreeMaker.", e);
-            LogUtils.raiseCompilerError("Unable to call isUnqualifiable method on javacTreeMaker.");
+            log.fatal("Unable to call isUnqualifiable method on javacTreeMaker.", e);
             return false;
         }
 
@@ -482,7 +483,7 @@ public class AJCTreeFactory implements AJCTree.Factory {
 
             return ret;
         }
-        LogUtils.raiseCompilerError("Attempt to make UnaryAsg with invalid opcode!");
+        log.fatal("Attempt to make UnaryAsg with invalid opcode!");
         return null;
     }
 

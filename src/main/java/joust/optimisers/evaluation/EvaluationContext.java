@@ -4,11 +4,13 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.util.List;
 import joust.utils.LogUtils;
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import static com.sun.tools.javac.tree.JCTree.Tag;
 import static joust.tree.annotatedtree.AJCTree.*;
@@ -17,7 +19,8 @@ import static com.sun.tools.javac.code.Symbol.*;
  * A context for evaluating expressions at compile-time.
  * Or rather, trying to.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public
 class EvaluationContext {
     @Getter HashMap<VarSymbol, Value> currentAssignments = new HashMap<>();
@@ -126,7 +129,7 @@ class EvaluationContext {
                 break;
             default:
                 //Panic
-                LogUtils.raiseCompilerError("Unexpected opcode in AJCUnaryAsg evaluation: "+opcode);
+                log.fatal("Unexpected opcode in AJCUnaryAsg evaluation: "+opcode);
                 return null;
         }
 

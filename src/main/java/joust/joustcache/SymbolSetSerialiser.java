@@ -5,8 +5,12 @@ import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import joust.joustcache.data.ClassInfo;
+import joust.utils.LogUtils;
 import joust.utils.SymbolSet;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
+
+import java.util.logging.Logger;
 
 import static com.sun.tools.javac.code.Symbol.*;
 import static joust.Optimiser.inputTrees;
@@ -18,7 +22,8 @@ import static joust.Optimiser.inputTrees;
  * the object you get back may be radicially different from the one you put in, but it is certain to only contain
  * that subset of the symbols originally stored that you actually care about.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class SymbolSetSerialiser extends Serializer<SymbolSet> {
     @Override
     public void write(Kryo kryo, Output output, SymbolSet object) {

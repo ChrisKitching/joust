@@ -4,17 +4,21 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.util.List;
 import joust.tree.annotatedtree.AJCTree;
 import joust.treeinfo.EffectSet;
+import joust.utils.LogUtils;
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * Class to hold an EffectSet and the dependency information for it to support incremental updating.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class Effects {
     EffectSet directPart;
 

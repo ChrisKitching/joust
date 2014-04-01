@@ -1,12 +1,15 @@
 package joust.optimisers.visitors;
 
 import com.sun.tools.javac.util.List;
+import joust.utils.LogUtils;
 import joust.utils.SymbolSet;
-import lombok.extern.log4j.Log4j2;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.code.Symbol.*;
@@ -14,7 +17,8 @@ import static com.sun.tools.javac.code.Symbol.*;
 /**
  * Live variable analysis. Used on demand to determine the live variable set at each point.
  */
-@Log4j2
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class Live extends BackwardsFlowVisitor {
     Set<VarSymbol> currentlyLive = new SymbolSet();
 
