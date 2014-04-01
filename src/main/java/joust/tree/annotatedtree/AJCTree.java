@@ -74,13 +74,18 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             fields[i].setAccessible(true);
             try {
                 log.debug("Class: {}",fields[i].getType().getCanonicalName());
-                // For non-list fields, just swap in parent.
 
+                // Reparent the new node.
+                replacement.mParentNode = mParentNode;
+                if (this instanceof AJCStatement) {
+                    ((AJCStatement) replacement).enclosingBlock = ((AJCStatement) this).enclosingBlock;
+                }
+
+                // For non-list fields, just swap in parent.
                 if(!"com.sun.tools.javac.util.List".equals(fields[i].getType().getCanonicalName())) {
                     if (fields[i].get(mParentNode) == this) {
                         // Target found!
                         fields[i].set(mParentNode, replacement);
-                        replacement.mParentNode = mParentNode;
 
                         // Push this change onto the JCTree, as well...
                         Class<? extends JCTree> underlyingClass = mParentNode.decoratedTree.getClass();
@@ -98,7 +103,6 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
                 List<AJCTree> theList = (List<AJCTree>) fields[i].get(mParentNode);
                 if (theList.contains(this)) {
                     theList = JavacListUtils.replace(theList, this, replacement);
-                    replacement.mParentNode = mParentNode;
                     fields[i].set(mParentNode, theList);
 
                     // Push this change onto the JCTree, as well...

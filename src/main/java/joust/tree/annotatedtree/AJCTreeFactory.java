@@ -150,10 +150,16 @@ public class AJCTreeFactory implements AJCTree.Factory {
 
     @Override
     public AJCVariableDecl VarDef(VarSymbol v, AJCExpressionTree init) {
+        AJCModifiers mods = Modifiers(v.flags());
+        AJCTypeExpression varType = Type(v.type);
         AJCVariableDecl ret = new AJCVariableDecl(javacTreeMaker.VarDef(v, init.getDecoratedTree()),
-                                Modifiers(v.flags()),
-                                Type(v.type),
+                                mods,
+                                varType,
                                 init);
+
+        mods.mParentNode = ret;
+        varType.mParentNode = ret;
+        init.mParentNode = ret;
 
         ret.setType(v.type);
         return ret;
