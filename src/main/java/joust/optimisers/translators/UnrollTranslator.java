@@ -3,6 +3,7 @@ package joust.optimisers.translators;
 import com.sun.tools.javac.util.List;
 import joust.optimisers.evaluation.EvaluationContext;
 import joust.optimisers.evaluation.Value;
+import joust.tree.annotatedtree.AJCForest;
 import joust.treeinfo.EffectSet;
 import joust.utils.LogUtils;
 import joust.utils.SymbolSet;
@@ -131,6 +132,7 @@ public class UnrollTranslator extends BaseTranslator {
 
         tree.getEnclosingBlock().insertBefore(tree, statements);
         tree.getEnclosingBlock().remove(tree);
+        AJCForest.getInstance().initialAnalysis();
     }
 
     /**
