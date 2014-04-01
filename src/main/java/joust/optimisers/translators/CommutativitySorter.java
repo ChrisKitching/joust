@@ -2,6 +2,7 @@ package joust.optimisers.translators;
 
 import com.sun.tools.javac.code.Type;
 import joust.optimisers.utils.CommutativitySorterComparator;
+import joust.tree.annotatedtree.AJCTree;
 import joust.tree.annotatedtree.AJCTreeVisitor;
 import joust.utils.LogUtils;
 import lombok.experimental.ExtensionMethod;
@@ -106,57 +107,14 @@ public class CommutativitySorter extends AJCTreeVisitor {
     }
 
     @Override
-    public void visitUnary(AJCUnary tree) {
-        combinedElements.add(tree);
-    }
+    protected void visit(AJCTree that) {
+        if (that instanceof AJCBinary) {
+            visitBinary((AJCBinary) that);
+            return;
+        }
 
-    @Override
-    public void visitUnaryAsg(AJCUnaryAsg tree) {
-        combinedElements.add(tree);
-    }
-
-    @Override
-    public void visitCall(AJCCall jcMethodInvocation) {
-        combinedElements.add(jcMethodInvocation);
-    }
-
-    @Override
-    public void visitIdent(AJCIdent jcIdent) {
-        combinedElements.add(jcIdent);
-    }
-
-    @Override
-    public void visitFieldAccess(AJCFieldAccess jcFieldAccess) {
-        combinedElements.add(jcFieldAccess);
-    }
-
-    @Override
-    public void visitInstanceOf(AJCInstanceOf jcInstanceOf) {
-        combinedElements.add(jcInstanceOf);
-    }
-
-    @Override
-    public void visitLiteral(AJCLiteral jcLiteral) {
-        combinedElements.add(jcLiteral);
-    }
-
-    @Override
-    public void visitTypeCast(AJCTypeCast jcTypeCast) {
-        combinedElements.add(jcTypeCast);
-    }
-
-    @Override
-    public void visitAssignop(AJCAssignOp jcAssignOp) {
-        combinedElements.add(jcAssignOp);
-    }
-
-    @Override
-    public void visitAssign(AJCAssign jcAssign) {
-        combinedElements.add(jcAssign);
-    }
-
-    @Override
-    public void visitConditional(AJCConditional jcConditional) {
-        combinedElements.add(jcConditional);
+        if (that instanceof AJCExpressionTree) {
+            combinedElements.add((AJCExpressionTree) that);
+        }
     }
 }
