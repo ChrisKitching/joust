@@ -7,8 +7,8 @@ import joust.tree.annotatedtree.AJCTree;
 /**
  * Loop invariant code motion.
  */
-public class LoopInvar extends OptimisationRunnable.OneTwo {
+public class LoopInvar extends OptimisationRunnable.BluntForce {
     public LoopInvar() {
-        super(LoopInvarTranslator.class, UnusedAssignmentStripper.class);
+        super(LoopInvarTranslator.class);
     }
 }

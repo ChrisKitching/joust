@@ -90,7 +90,8 @@ public class Optimiser extends AbstractProcessor {
         // very much more convenient than working on the actual tree if you don't care about the desugared things.)
         OptimisationPhaseManager.register(new TreeConverter(), AFTER, DESUGAR);
 
-        OptimisationPhaseManager.register(new AssignmentStrip(), AFTER, DESUGAR);
+        // TODO: Repair and re-enable this.
+        // OptimisationPhaseManager.register(new AssignmentStrip(), AFTER, DESUGAR);
         OptimisationPhaseManager.register(new LoopInvar(), AFTER, DESUGAR);
         OptimisationPhaseManager.register(new Unroll(), AFTER, DESUGAR);
 
