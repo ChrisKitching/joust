@@ -315,6 +315,10 @@ public class InitialASTConverter extends TreeScanner {
             return (AJCPrimitiveTypeTree) tree;
         }
 
+        if (tree instanceof AJCArrayTypeTree) {
+            return (AJCArrayTypeTree) tree;
+        }
+
         if (tree instanceof AJCSymbolRefTree) {
             return new AJCObjectTypeTree((AJCSymbolRefTree<Symbol.TypeSymbol>) tree);
         }
