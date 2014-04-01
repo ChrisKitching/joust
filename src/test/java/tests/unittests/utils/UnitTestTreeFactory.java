@@ -302,4 +302,11 @@ public final class UnitTestTreeFactory {
 
         return Call(Ident(LIES), List.<AJCExpressionTree>of(Ident(sym)));
     }
+
+    public static MethodSymbol virtualMethod(Type returnType) {
+        return new MethodSymbol(0, NameFactory.getName(), returnType, testClass);
+    }
+    public static MethodSymbol virtualMethod() {
+        return virtualMethod(symtab.voidType);
+    }
 }

@@ -14,12 +14,15 @@ import joust.optimisers.visitors.sideeffects.Effects;
 import joust.treeinfo.EffectSet;
 import joust.utils.JavacListUtils;
 import joust.utils.LogUtils;
+import joust.utils.ReflectionUtils;
 import joust.utils.TreeUtils;
 import lombok.Delegate;
 import lombok.Getter;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -65,13 +68,15 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         // Determine which of the fields on the parent are occupied by this node and make the appropriate swap.
         // It is required that no object is inserted more than once into a particular parent.
         Class<?> pClass = mParentNode.getClass();
-        Field[] fields = pClass.getFields();
+        Field[] fields = ReflectionUtils.getAllFields(pClass);
 
         for (int i = 0; i < fields.length; i++) {
             fields[i].setAccessible(true);
             try {
+                log.debug("Class: {}",fields[i].getType().getCanonicalName());
                 // For non-list fields, just swap in parent.
-                if(!"com.sun.tools.javac.util.List".equals(pClass.getCanonicalName())) {
+
+                if(!"com.sun.tools.javac.util.List".equals(fields[i].getType().getCanonicalName())) {
                     if (fields[i].get(mParentNode) == this) {
                         // Target found!
                         fields[i].set(mParentNode, replacement);
@@ -79,9 +84,9 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
 
                         // Push this change onto the JCTree, as well...
                         Class<? extends JCTree> underlyingClass = mParentNode.decoratedTree.getClass();
-                        Field targetField = underlyingClass.getDeclaredField(fields[i].getName());
+                        Field targetField = ReflectionUtils.findField(underlyingClass, fields[i].getName());
                         targetField.set(mParentNode.decoratedTree, replacement.decoratedTree);
-                        AJCTree.log.debug("Swapping {} for {} in field {}", this, replacement, fields[i].getName());
+                        log.debug("Swapping {} for {} in field {}", this, replacement, fields[i].getName());
                         return;
                     }
 
@@ -95,6 +100,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
                     theList = JavacListUtils.replace(theList, this, replacement);
                     replacement.mParentNode = mParentNode;
                     fields[i].set(mParentNode, theList);
+                    return;
                 }
             } catch (IllegalAccessException e) {
                 // Ostensibly can never happen, because setAccessible is called...
@@ -103,6 +109,8 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
                 log.fatal("NoSuchFieldException accessing field " + fields[i] + " on " + pClass.getCanonicalName(), e);
             }
         }
+
+        log.fatal("Unable to perform swap of {} for {} in {}", this, replacement, mParentNode);
     }
 
     /**
@@ -170,13 +178,13 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         // Since a statement is always in a block, we can provide a specialised swap function and avoid the evilness.
         @Override
         public void swapFor(AJCTree replacement) {
-            log.fatal("Attempt to swap an AJCStatement for a non-statement!");
-            throw new UnsupportedOperationException("Attempt to swap an AJCStatement for a non-statement!");
-        }
-
-        public void swapFor(AJCStatement replacement) {
-            // Swap in the enclosing block. Simplez!
-            enclosingBlock.swap(this, replacement);
+            if (replacement instanceof AJCStatement) {
+                // Swap in the enclosing block. Simplez!
+                enclosingBlock.swap(this, (AJCStatement) replacement);
+            } else {
+                log.fatal("Attempt to swap an AJCStatement for a non-statement: {}:{}", replacement, replacement.getClass().getCanonicalName());
+                throw new UnsupportedOperationException("Attempt to swap an AJCStatement for a non-statement!");
+            }
         }
 
         protected AJCStatement(JCStatement tree) {

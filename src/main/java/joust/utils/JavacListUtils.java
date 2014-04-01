@@ -187,4 +187,24 @@ public class JavacListUtils {
 
         return set(list, index, replacement);
     }
+
+    /**
+     * Find the index of element target in list `list` using pointer comparism instead of the equals method.
+     * @param list
+     * @param target
+     * @return The index of the found element, of -1 if it is not present.
+     */
+    public static<T> int dumbIndexOf(@NonNull List<T> list, T target) {
+        int i = 0;
+        while (list != null) {
+            if (list.head == target) {
+                return i;
+            }
+
+            i++;
+            list = list.tail;
+        }
+
+        return -1;
+    }
 }
