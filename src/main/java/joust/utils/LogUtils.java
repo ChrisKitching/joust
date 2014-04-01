@@ -110,6 +110,7 @@ public class LogUtils {
         }
 
         public static void error(Logger logger, String msg, Throwable thrown) {
+            msg = msg + msgFromThrowable(thrown);
             logger.log(Level.SEVERE, msg, thrown);
         }
 
@@ -124,6 +125,7 @@ public class LogUtils {
         }
 
         public static void fatal(Logger logger, String msg, Throwable thrown) {
+            msg = msg + msgFromThrowable(thrown);
             logger.log(Level.SEVERE, msg, thrown);
             raiseCompilerError(msg);
         }
@@ -132,6 +134,25 @@ public class LogUtils {
             String oString = nullSafeToString(o);
             logger.severe(oString);
             raiseCompilerError(oString);
+        }
+
+        /**
+         * Get a message representing the given throwable, suitable for printing.
+         * @return A String that summarises the given throwable.
+         */
+        private static String msgFromThrowable(Throwable t) {
+            if (t == null) {
+                return "";
+            }
+
+            final StackTraceElement[] stackTrace = t.getStackTrace();
+            String msg = "\n\n" + t.getClass().getSimpleName() + ':' + t.getMessage() + '\n' + Arrays.toString(stackTrace).replace(',', '\n').replace('[', ' ').replace(']', ' ');
+
+            if (t.getCause() != null) {
+                return "\n    Caused by :" + msgFromThrowable(t.getCause());
+            }
+
+            return msg;
         }
     }
 }
