@@ -143,6 +143,9 @@ public class Avail extends AJCTreeVisitor {
     public void visitAssign(AJCAssign jcAssign) {
         log.debug("Visit assign!");
         markAvailableExpressions(jcAssign);
+        if (!eligibleForCSE(jcAssign)) {
+            return;
+        }
         visit(jcAssign.rhs);
         currentScope.enterExpression(jcAssign);
     }

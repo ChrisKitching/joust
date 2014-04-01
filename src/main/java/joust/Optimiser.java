@@ -7,6 +7,7 @@ import joust.joustcache.JOUSTCache;
 import joust.optimisers.avail.normalisedexpressions.PossibleSymbol;
 import joust.optimisers.runnables.AssertionStrip;
 import joust.optimisers.runnables.AssignmentStrip;
+import joust.optimisers.runnables.CSE;
 import joust.optimisers.runnables.ConstFold;
 import joust.optimisers.runnables.LoopInvar;
 import joust.optimisers.runnables.TreeConverter;
@@ -96,6 +97,7 @@ public class Optimiser extends AbstractProcessor {
         // OptimisationPhaseManager.register(new AssignmentStrip(), AFTER, DESUGAR);
         OptimisationPhaseManager.register(new LoopInvar(), AFTER, DESUGAR);
         OptimisationPhaseManager.register(new Unroll(), AFTER, DESUGAR);
+        OptimisationPhaseManager.register(new CSE(), AFTER, DESUGAR);
 
         // The post-compilation pass to populate the disk cache with the results of classes processed
         // during this job. Needs to happen here so we can compute a checksum over the bytecode and

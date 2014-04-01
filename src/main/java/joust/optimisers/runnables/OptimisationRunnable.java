@@ -48,7 +48,7 @@ public abstract class OptimisationRunnable implements Runnable {
         protected void logExecution(AJCTree node) {
             if (node instanceof AJCTree.AJCClassDecl) {
                 AJCTree.AJCClassDecl clazz = (AJCTree.AJCClassDecl) node;
-                log.debug("Running {} on {}", translatorInstance.getClass().getSimpleName(), clazz.getSym());
+                log.info("Running {} on {}", translatorInstance.getClass().getSimpleName(), clazz.getSym());
             }
         }
     }

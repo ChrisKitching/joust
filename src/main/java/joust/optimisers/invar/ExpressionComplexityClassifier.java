@@ -1,5 +1,7 @@
 package joust.optimisers.invar;
 
+import com.sun.tools.javac.code.Symbol;
+import joust.tree.annotatedtree.AJCTree;
 import joust.tree.annotatedtree.AJCTreeVisitor;
 import lombok.Getter;
 
@@ -18,7 +20,8 @@ import static com.sun.tools.javac.tree.JCTree.Tag;
  */
 public class ExpressionComplexityClassifier extends AJCTreeVisitor {
     // The additional price to associate with an operation if it involves an assignment.
-    private static final int ASSIGNMENT_COST = 2;
+    public static final int ASSIGNMENT_COST = 2;
+    public static final int IDENT_COST = 1;
 
     private static final Map<Tag, Integer> operationCosts;
     static {
@@ -69,11 +72,26 @@ public class ExpressionComplexityClassifier extends AJCTreeVisitor {
                 put(DIV_ASG, get(DIV) + ASSIGNMENT_COST);
                 put(MOD_ASG, get(MOD) + ASSIGNMENT_COST);
 
+                // Unary op-asg...
+                put(PREDEC, get(MINUS) + ASSIGNMENT_COST);
+                put(POSTDEC, get(MINUS) + ASSIGNMENT_COST);
+                put(PREINC, get(PLUS) + ASSIGNMENT_COST);
+                put(POSTINC, get(PLUS) + ASSIGNMENT_COST);
+
                 // instanceof
                 put(TYPETEST, 2);
                 put(SELECT, 2);
 
                 put(TYPECAST, 2);
+
+                // Cost of accessing a local variable.
+                put(IDENT, IDENT_COST);
+
+                // Method call.
+                put(APPLY, 6);
+
+                // Conditional expression.
+                put(CONDEXPR, 4);
             }
         };
         operationCosts = Collections.unmodifiableMap(map);
@@ -116,5 +134,14 @@ public class ExpressionComplexityClassifier extends AJCTreeVisitor {
     protected void visitInstanceOf(AJCInstanceOf that) {
         score += operationCosts.get(that.getTag());
         super.visitInstanceOf(that);
+    }
+
+    @Override
+    protected void visitIdent(AJCIdent that) {
+        if (that.getTargetSymbol() instanceof Symbol.VarSymbol) {
+            score += operationCosts.get(that.getTag());
+        }
+
+        super.visitIdent(that);
     }
 }

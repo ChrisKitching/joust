@@ -2,7 +2,6 @@ package joust.tree.annotatedtree;
 
 import com.sun.source.tree.*;
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.tree.JCTree;
@@ -21,8 +20,6 @@ import lombok.Getter;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -223,6 +220,10 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
          * Get the statement in which this expression resides.
          */
         public AJCStatement getEnclosingStatement() {
+            log.debug("getEnclosingStatement on {} parent {}", this, mParentNode);
+            if (mParentNode == null) {
+                log.debug("PANIC");
+            }
             AJCTree parent = mParentNode;
             while (!(parent instanceof AJCStatement) && parent.mParentNode != null) {
                 parent = parent.mParentNode;
@@ -505,6 +506,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
          */
         public void insert(AJCStatement statement, int index) {
             statement.enclosingBlock = this;
+            statement.mParentNode = this;
             if (statement instanceof AJCBlock) {
                 ((AJCBlock) statement).enclosingMethod = enclosingMethod;
             }
@@ -519,6 +521,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             stats = JavacListUtils.addAtIndex(stats, index, statements);
             for (AJCStatement st : stats) {
                 st.enclosingBlock = this;
+                st.mParentNode = this;
                 if (st instanceof AJCBlock) {
                     ((AJCBlock) st).enclosingMethod = enclosingMethod;
                 }
@@ -567,6 +570,8 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
          * Swap the given statement for the other given statement.
          */
         public void swap(AJCStatement target, AJCStatement replacement) {
+            replacement.mParentNode = this;
+            replacement.enclosingBlock = this;
             stats = JavacListUtils.replace(stats, target, replacement);
             decoratedTree.stats = JavacListUtils.replace(decoratedTree.stats, target.decoratedTree, replacement.decoratedTree);
         }

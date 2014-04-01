@@ -74,7 +74,7 @@ public class TreePreparationTranslator extends TreeTranslator {
     public void visitForLoop(JCForLoop jcForLoop) {
         super.visitForLoop(jcForLoop);
         jcForLoop.body = ensureBlock(jcForLoop.body);
-        result = jcForLoop;
+        result = javacTreeMaker.Block(0, List.<JCStatement>of(jcForLoop));
     }
 
     @Override
@@ -116,6 +116,14 @@ public class TreePreparationTranslator extends TreeTranslator {
 
         return javacTreeMaker.Block(flags, List.of(tree));
     }
+
+    @Override
+    public void visitLetExpr(LetExpr letExpr) {
+        log.error("FOUND A LET EXPRESSION\n{}", letExpr);
+
+        super.visitLetExpr(letExpr);
+    }
+
     private static JCStatement ensureBlock(JCStatement tree) {
         return ensureBlock(tree, 0);
     }
