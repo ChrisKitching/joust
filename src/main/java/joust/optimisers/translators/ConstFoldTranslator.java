@@ -20,8 +20,7 @@ import static joust.tree.annotatedtree.AJCTree.*;
  */
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
-public
-class ConstFoldTranslator extends BaseTranslator {
+public class ConstFoldTranslator extends BaseTranslator {
     @Override
     public void visitUnary(AJCUnary tree) {
         super.visitUnary(tree);
@@ -38,7 +37,9 @@ class ConstFoldTranslator extends BaseTranslator {
 
         // To Values...
         Value operand = Value.of(((AJCLiteral) expr).getValue());
-        tree.swapFor(Value.unary(nodeTag, operand).toLiteral());
+        AJCLiteral replacement = Value.unary(nodeTag, operand).toLiteral();
+        tree.swapFor(replacement);
+        log.info("{}{} -> {}", nodeTag, expr, replacement);
     }
 
     @Override
@@ -60,6 +61,8 @@ class ConstFoldTranslator extends BaseTranslator {
         Value lValue = Value.of(((AJCLiteral) leftOperand).getValue());
         Value rValue = Value.of(((AJCLiteral) rightOperand).getValue());
 
-        tree.swapFor(Value.binary(nodeTag, lValue, rValue).toLiteral());
+        AJCLiteral replacement = Value.binary(nodeTag, lValue, rValue).toLiteral();
+        tree.swapFor(replacement);
+        log.info("{} {} {} -> {}", leftOperand, nodeTag, rightOperand, replacement);
     }
 }
