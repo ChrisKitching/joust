@@ -55,12 +55,6 @@ public class SideEffectVisitor extends AJCTreeVisitor {
 
         log.debug("Visiting method: {}:{}", sym, sym.owner);
 
-        if ((sym.flags() & Flags.NATIVE) != 0) {
-            // Ha. No.
-            TreeInfoManager.registerMethodEffects(sym, new Effects(ALL_EFFECTS));
-            return;
-        }
-
         // Create the sets of filtered methods that might inherit from each other.
         // Constructors are omitted, since calls to super() or this() are explicit in the AST of all constructors
         // at this point, so the proper deps will already be present.
@@ -75,6 +69,13 @@ public class SideEffectVisitor extends AJCTreeVisitor {
 
             unfinishedMethodEffects.put(sym, placeholderEffects);
 
+            return;
+        }
+
+        if ((sym.flags() & Flags.NATIVE) != 0) {
+            // Ha. No.
+            unfinishedMethodEffects.put(sym, new Effects(ALL_EFFECTS, ALL_EFFECTS));
+            methodDeps.ensure(sym);
             return;
         }
 
@@ -522,7 +523,14 @@ public class SideEffectVisitor extends AJCTreeVisitor {
     public void visitArrayAccess(AJCArrayAccess that) {
         super.visitArrayAccess(that);
 
-        that.effects = Effects.unionWithDirect(read(that.indexed.getTargetSymbol()), that.index.effects);
+        log.info("Visit array access: {}", that);
+        VarSymbol tSym = that.getTargetSymbol();
+        if (tSym != null) {
+            that.effects = Effects.unionWithDirect(read(tSym), that.index.effects);
+        } else {
+            // Unconventional array acces, a la f()[3];
+            that.effects = Effects.unionWithDirect(NO_EFFECTS, that.index.effects);
+        }
     }
 
     @Override

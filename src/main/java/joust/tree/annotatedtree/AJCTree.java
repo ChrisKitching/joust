@@ -2,6 +2,7 @@ package joust.tree.annotatedtree;
 
 import com.sun.source.tree.*;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.tree.JCTree;
@@ -11,9 +12,9 @@ import com.sun.tools.javac.util.Name;
 import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableExpression;
 import joust.optimisers.visitors.sideeffects.Effects;
 import joust.treeinfo.EffectSet;
-import joust.utils.JCTreeStructurePrinter;
 import joust.utils.JavacListUtils;
 import joust.utils.LogUtils;
+import joust.utils.TreeUtils;
 import lombok.Delegate;
 import lombok.Getter;
 import lombok.experimental.ExtensionMethod;
@@ -387,8 +388,6 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         @Delegate @Getter private final JCVariableDecl decoratedTree;
 
         public AJCModifiers mods;
-        /** variable name expression */
-        public AJCExpressionTree nameexpr;
         /** type of the variable */
         public AJCTypeExpression vartype;
         /** variable's initial value */
@@ -819,8 +818,6 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         public List<AJCExpressionTree> dims;
         // type annotations on inner-most component
         public List<AJCAnnotation> annotations = List.nil();
-        // type annotations on dimensions
-        public List<List<AJCAnnotation>> dimAnnotations = List.nil();
         public List<AJCExpressionTree> elems;
 
         protected AJCNewArray(JCNewArray tree) {
@@ -855,6 +852,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
 
         @Override
         public VarSymbol getTargetSymbol() {
+            log.debug("GetTargetSymbol on: {}", this);
             return lhs.getTargetSymbol();
         }
     }
@@ -979,25 +977,24 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
 
         @Delegate
         public AJCSymbolRefTree<VarSymbol> expr;
-        public AJCSymbolRefTree<ClassSymbol> clazz;
+        public AJCSymbolRef<TypeSymbol> clazz;
 
         protected AJCInstanceOf(JCInstanceOf tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCInstanceOf(JCInstanceOf tree, AJCSymbolRefTree<VarSymbol> expr, AJCSymbolRefTree<ClassSymbol> clazz) {
+        protected AJCInstanceOf(JCInstanceOf tree, AJCSymbolRefTree<VarSymbol> expr, AJCSymbolRef<TypeSymbol> clazz) {
             this(tree);
             this.expr = expr;
             this.clazz = clazz;
         }
     }
 
-    public static class AJCArrayAccess extends AJCExpressionTree implements ArrayAccessTree, AJCSymbolRef<VarSymbol>  {
+    public static class AJCArrayAccess extends AJCSymbolRefTree<VarSymbol> implements ArrayAccessTree {
         @Delegate @Getter private final JCArrayAccess decoratedTree;
 
-        @Delegate
-        public AJCSymbolRefTree<VarSymbol> indexed;
+        public AJCExpressionTree indexed;
         public AJCExpressionTree index;
 
         protected AJCArrayAccess(JCArrayAccess tree) {
@@ -1010,20 +1007,34 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             this.indexed = indexed;
             this.index = index;
         }
+
+        @Override
+        public VarSymbol getTargetSymbol() {
+            // Since you can do things like `f()[3]`, the field can't be a SymbolRefTree.
+            if (indexed instanceof AJCSymbolRef) {
+                Symbol sym = ((AJCSymbolRef) indexed).getTargetSymbol();
+                if (sym instanceof VarSymbol) {
+                    return (VarSymbol) sym;
+                }
+            }
+
+            log.warn("Unconventional array access {} returning null symbol!", this);
+            return null;
+        }
     }
 
     public static class AJCFieldAccess<T extends Symbol> extends AJCSymbolRefTree<T> implements MemberSelectTree {
         @Delegate @Getter private final JCFieldAccess decoratedTree;
 
-        /** selected Tree hierarchy */
-        public AJCSymbolRefTree<? extends Symbol> selected;
+        // The lhs of the dot... We're selecting <selected>.<name>. So literals...
+        public AJCExpressionTree selected;
 
         protected AJCFieldAccess(JCFieldAccess tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCFieldAccess(JCFieldAccess tree, AJCSymbolRefTree<? extends Symbol> selected) {
+        protected AJCFieldAccess(JCFieldAccess tree, AJCExpressionTree selected) {
             this(tree);
             this.selected = selected;
         }
@@ -1066,7 +1077,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
     /**
      * Base class of type expressions - may not hold an effect annotation.
      */
-    public abstract static class AJCTypeExpression extends AJCTree implements ExpressionTree, AJCExpression {
+    public abstract static class AJCTypeExpression extends AJCTree implements ExpressionTree, AJCExpression, AJCSymbolRef<TypeSymbol> {
         @Delegate @Getter private final JCExpression decoratedTree;
 
         protected AJCTypeExpression(JCExpression tree) {
@@ -1082,12 +1093,17 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             super(tree);
             decoratedTree = tree;
         }
+
+        @Override
+        public TypeSymbol getTargetSymbol() {
+            return TreeUtils.typeKindToType(decoratedTree.getPrimitiveTypeKind()).tsym;
+        }
     }
 
     /**
      * Non-primitive type tree...
      */
-    public static class AJCObjectTypeTree extends AJCTypeExpression implements AJCSymbolRef<TypeSymbol> {
+    public static class AJCObjectTypeTree extends AJCTypeExpression {
         @Delegate @Getter private final AJCSymbolRefTree<TypeSymbol> underlyingSymbol;
 
         protected AJCObjectTypeTree(AJCSymbolRefTree<TypeSymbol> tree) {
@@ -1113,6 +1129,11 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             this(tree);
             this.elemtype = elemtype;
         }
+
+        @Override
+        public TypeSymbol getTargetSymbol() {
+            return elemtype.getTargetSymbol();
+        }
     }
 
     public static class AJCTypeUnion extends AJCTypeExpression implements UnionTypeTree {
@@ -1128,6 +1149,19 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         protected AJCTypeUnion(JCTypeUnion tree, List<AJCTypeExpression> components) {
             this(tree);
             alternatives = components;
+        }
+
+        /**
+         * By convention, just return the first one. If type unions get more widespread adoption in Java more work needed
+         * here... (ie. The ability to return sets of TypeSymbols).
+         */
+        @Override
+        public TypeSymbol getTargetSymbol() {
+            if (!alternatives.isEmpty()) {
+                return alternatives.get(0).getTargetSymbol();
+            }
+
+            return null;
         }
     }
 
@@ -1166,20 +1200,25 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         }
     }
 
-
+    // TODO: What does this even represent? o.0
     public static class AJCAnnotatedType extends AJCTypeExpression implements AnnotatedTypeTree {
         @Delegate @Getter private final JCAnnotatedType decoratedTree;
 
-        public AJCExpressionTree underlyingType;
+        public AJCTypeExpression underlyingType;
 
         protected AJCAnnotatedType(JCAnnotatedType tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCAnnotatedType(JCAnnotatedType tree, AJCExpressionTree underlyingType) {
+        protected AJCAnnotatedType(JCAnnotatedType tree, AJCTypeExpression underlyingType) {
             this(tree);
             this.underlyingType = underlyingType;
+        }
+
+        @Override
+        public TypeSymbol getTargetSymbol() {
+            return underlyingType.getTargetSymbol();
         }
     }
 
@@ -1286,9 +1325,9 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         AJCUnaryAsg UnaryAsg(Tag opcode, AJCSymbolRefTree<VarSymbol> arg);
         AJCBinary Binary(Tag opcode, AJCExpressionTree lhs, AJCExpressionTree rhs);
         AJCTypeCast TypeCast(AJCTypeExpression clazz, AJCExpressionTree expr);
-        AJCInstanceOf InstanceOf(AJCSymbolRefTree<VarSymbol> expr, AJCSymbolRefTree<ClassSymbol> clazz);
+        AJCInstanceOf InstanceOf(AJCSymbolRefTree<VarSymbol> expr, AJCSymbolRef<TypeSymbol> clazz);
         AJCArrayAccess ArrayAccess(AJCExpressionTree indexed, AJCExpressionTree index);
-        AJCFieldAccess Select(AJCSymbolRefTree<? extends Symbol> selected, Name selector);
+        AJCFieldAccess Select(AJCExpressionTree selected, Name selector);
         <T extends Symbol> AJCFieldAccess<T> Select(AJCSymbolRefTree<? extends Symbol> base, T sym);
         <T extends Symbol> AJCIdent<T> Ident(Name idname);
         <T extends Symbol> AJCIdent<T> Ident(T sym);
@@ -1300,7 +1339,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         AJCAnnotation Annotation(AJCTree annotationType, List<AJCExpressionTree> args);
         AJCModifiers Modifiers(long flags, List<AJCAnnotation> annotations);
         AJCModifiers Modifiers(long flags);
-        AJCAnnotatedType AnnotatedType(AJCExpressionTree underlyingType);
+        AJCAnnotatedType AnnotatedType(AJCTypeExpression underlyingType);
         AJCErroneous Erroneous(List<? extends AJCTree> errs);
         AJCLetExpr LetExpr(List<AJCVariableDecl> defs, AJCExpressionTree expr);
     }

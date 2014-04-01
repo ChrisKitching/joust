@@ -41,7 +41,9 @@ public class CommutativitySorterComparator implements Comparator<AJCExpressionTr
                 put(AJCAssignOp.class, 9);
                 put(AJCConditional.class, 10);
                 put(AJCCall.class, 11);
-                put(AJCEmptyExpression.class, 12);
+                put(AJCTypeCast.class, 12);
+                put(AJCEmptyExpression.class, 13);
+                put(AJCArrayAccess.class, 14);
             }
         };
 
@@ -153,10 +155,32 @@ public class CommutativitySorterComparator implements Comparator<AJCExpressionTr
             return compareConditionals((AJCConditional) l, (AJCConditional) r);
         } else if (l instanceof AJCCall) {
             return compareCalls((AJCCall) l, (AJCCall) r);
+        } else if (l instanceof AJCArrayAccess) {
+            return compareArrayAccesses((AJCArrayAccess) l, (AJCArrayAccess) r);
+        } else if (l instanceof AJCEmptyExpression) {
+            log.warn("Comparing two empty expressions for {}:{}", l, r);
+            return 0;
         } else {
             log.fatal("Unexpected expression type: " + l.getClass().getCanonicalName());
             return 0;
         }
+    }
+
+    private int compareArrayAccesses(AJCArrayAccess l, AJCArrayAccess r) {
+        VarSymbol a1 = l.getTargetSymbol();
+        VarSymbol a2 = r.getTargetSymbol();
+
+        int symComp = a1.name.toString().compareTo(a2.name.toString());
+        if (symComp != 0) {
+            return symComp;
+        }
+
+        int indComp = compare(l.index, r.index);
+        if (indComp != 0) {
+            return indComp;
+        }
+
+        return 0;
     }
 
     private int compareCalls(AJCCall l, AJCCall r) {
@@ -249,6 +273,14 @@ public class CommutativitySorterComparator implements Comparator<AJCExpressionTr
         int check = lSym.name.toString().compareTo(rSym.name.toString());
         if (check != 0) {
             return check;
+        }
+
+        TypeSymbol lClazz = l.clazz.getTargetSymbol();
+        TypeSymbol rClazz = r.clazz.getTargetSymbol();
+
+        int clazzCheck = lClazz.name.toString().compareTo(rClazz.name.toString());
+        if (clazzCheck != 0) {
+            return clazzCheck;
         }
 
         // TODO: Compare class names... Something to get the ClassSymbol from whatever node type that is?

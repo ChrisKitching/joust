@@ -45,7 +45,6 @@ public class Avail extends AJCTreeVisitor {
     private void markAvailableExpressions(AJCEffectAnnotatedTree tree) {
         HashSet<PotentiallyAvailableExpression> avail = new HashSet<>();
         avail.addAll(currentScope.availableExpressions);
-        log.info("Marking available for {} as:\n{}", tree, Arrays.toString(avail.toArray()));
         tree.avail = avail;
     }
 
@@ -78,10 +77,8 @@ public class Avail extends AJCTreeVisitor {
 
     @Override
     public void visitBlock(AJCBlock jcBlock) {
-        log.info("Entering block for Avail: {}", jcBlock);
         boolean blockWasNewScope = nextBlockIsNewScope;
         if (nextBlockIsNewScope) {
-            log.info("Entering block scope: {}", jcBlock);
             enterScope();
         } else {
             nextBlockIsNewScope = true;
@@ -91,7 +88,6 @@ public class Avail extends AJCTreeVisitor {
         log.debug("After block {}:\nWe have:\n{}", jcBlock, currentScope);
 
         if (blockWasNewScope) {
-            log.info("Exiting block scope: {}", jcBlock);
             leaveScope();
         }
     }

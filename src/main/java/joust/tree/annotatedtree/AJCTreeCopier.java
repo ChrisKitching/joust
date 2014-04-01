@@ -1,5 +1,6 @@
 package joust.tree.annotatedtree;
 
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 
@@ -402,9 +403,9 @@ public class AJCTreeCopier {
         return node;
     }
 
-    
+    @SuppressWarnings("unchecked")
     public AJCInstanceOf copyInstanceOf(AJCInstanceOf that) {
-        AJCInstanceOf node = treeMaker.InstanceOf(copy(that.expr), copy(that.clazz));
+        AJCInstanceOf node = treeMaker.InstanceOf(copy(that.expr), (AJCSymbolRef<Symbol.TypeSymbol>) copy((AJCTree) that.clazz));
 
         node.getDecoratedTree().type = that.getDecoratedTree().type;
         return node;

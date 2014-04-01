@@ -121,11 +121,6 @@ public class BackwardsFlowVisitor extends AJCTreeVisitor {
         visitBackwards(jcNewArray.elems);
         visitBackwards(jcNewArray.dims);
         visit(jcNewArray.elemtype);
-
-        for (List<AJCAnnotation> dimAnno : jcNewArray.dimAnnotations) {
-            visitBackwards(dimAnno);
-        }
-
         visitBackwards(jcNewArray.annotations);
     }
 
@@ -155,7 +150,7 @@ public class BackwardsFlowVisitor extends AJCTreeVisitor {
 
     @Override
     public void visitInstanceOf(AJCInstanceOf jcInstanceOf) {
-        visit(jcInstanceOf.clazz);
+        visit((AJCTree) jcInstanceOf.clazz);
         visit(jcInstanceOf.expr);
     }
 

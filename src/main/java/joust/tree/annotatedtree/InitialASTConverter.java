@@ -2,6 +2,7 @@ package joust.tree.annotatedtree;
 
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.List;
 import joust.utils.LogUtils;
@@ -9,12 +10,14 @@ import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Stack;
 import java.util.logging.Logger;
 
 import static com.sun.tools.javac.tree.JCTree.*;
 import static joust.tree.annotatedtree.AJCTree.*;
+import static joust.utils.StaticCompilerUtils.treeMaker;
 
 /**
  * Scan a Java AST and convert it to the annotated format. Relies on the iteration order of TreeScanner.
@@ -40,7 +43,7 @@ public class InitialASTConverter extends TreeScanner {
                 put(AJCNewClass.class, new String[] {"def", "args", "clazz"});
                 put(AJCClassDecl.class, new String[] {"implementing", "extending", "mods"});
                 put(AJCMethodDecl.class, new String[] {"body", "defaultValue", "thrown", "params", "recvparam", "mods"});
-                put(AJCVariableDecl.class, new String[] {"init", "nameexpr", "mods"});
+                put(AJCVariableDecl.class, new String[] {"init", "mods"});
                 put(AJCSkip.class, NONE);
                 put(AJCBlock.class, new String[] {"stats"});
                 put(AJCDoWhileLoop.class, new String[] {"cond", "body"});
@@ -50,7 +53,7 @@ public class InitialASTConverter extends TreeScanner {
                 put(AJCSwitch.class, new String[] {"cases", "selector"});
                 put(AJCCase.class, new String[] {"stats", "pat"});
                 put(AJCSynchronized.class, new String[] {"body", "lock"});
-                put(AJCTry.class, new String[] {"finalizer", "catchers", "body", "resources"});
+                put(AJCTry.class, new String[] {"finalizer", "catchers", "body"});
                 put(AJCCatch.class, new String[] {"body", "param"});
                 put(AJCCatch.class, new String[] {"body", "param"});
                 put(AJCIf.class, new String[] {"elsepart", "thenpart", "cond"});
@@ -58,7 +61,7 @@ public class InitialASTConverter extends TreeScanner {
                 put(AJCBreak.class, NONE);
                 put(AJCContinue.class, NONE);
                 put(AJCReturn.class, new String[] {"expr"});
-                put(AJCNewArray.class, new String[] {"elems", "dimAnnotations", "dims", "annotations"});
+                put(AJCNewArray.class, new String[] {"elems", "dims", "annotations"});
                 put(AJCAssign.class, new String[] {"rhs", "lhs"});
                 put(AJCAssignOp.class, new String[] {"rhs", "lhs"});
                 put(AJCUnary.class, new String[] {"arg"});
@@ -159,10 +162,10 @@ public class InitialASTConverter extends TreeScanner {
                     continue;
                 }
 
-//              log.debug("Field {} : {}", fieldName, fieldType.getCanonicalName());
+                log.debug("Field {} : {}", fieldName, fieldType.getCanonicalName());
                 if (!"com.sun.tools.javac.util.List".equals(fieldType.getCanonicalName())) {
                     AJCTree value = results.pop();
-//                  log.debug("Assigning: {}:{}", value, value.getClass().getCanonicalName());
+                    log.debug("Assigning: {}:{}", value, value.getClass().getCanonicalName());
                     value.mParentNode = destinationTree;
                     destField.set(destinationTree, value);
                     continue;
@@ -173,39 +176,25 @@ public class InitialASTConverter extends TreeScanner {
 
                 int neededElements = thatList.size();
 
+                log.debug("List size: {}", neededElements);
+
                 // The easy way out.
                 if (neededElements == 0) {
                     destField.set(destinationTree, List.nil());
                     continue;
                 }
 
-                // Is this a list of lists?
+                // Is this not a list of lists?
                 if (!"com.sun.tools.javac.util.List".equals(thatList.get(0).getClass().getCanonicalName())) {
                     List<?> targetList = listFromIntermediatesWithParent(neededElements, destinationTree);
-                    //log.debug("-> {}  ({})", Arrays.toString(targetList.toArray()), neededElements);
+                    log.debug("-> {}  ({})", Arrays.toString(targetList.toArray()), neededElements);
 
                     // Finally, assign the list to the field.
                     destField.set(destinationTree, targetList);
                     continue;
                 }
 
-                // Oh joy! It's a list of lists!
-                @SuppressWarnings("unchecked")
-                List<List<?>> thatCastList = (List<List<?>>) thatList;
-
-                List<List<?>> reconstitutedList = List.nil();
-                // So the elements in this list of lists will have been visited left to right across all lists.
-                // So, they'll be on the stack in reverse order, starting with the last. So, in cubic time, then...
-                for (int j = neededElements - 1; j > 0; j--) {
-                    List<?> innerList = thatCastList.get(j);
-                    int innerElements = innerList.size();
-
-                    // Reconstitute the inner list.
-                    reconstitutedList.prepend(listFromIntermediatesWithParent(innerElements, destinationTree));
-                }
-
-                // Finally, assign the list to the field, and weep for my sanity.
-                destField.set(destinationTree, reconstitutedList);
+                log.fatal("List of lists encountered!");
             } catch (NoSuchFieldException e) {
                 log.fatal("Unable to find field " + fieldName + " on " + destClass.getSimpleName(), e);
             } catch (IllegalAccessException e) {
@@ -229,7 +218,11 @@ public class InitialASTConverter extends TreeScanner {
     // Visitor methods...
     @Override
     public void visitClassDef(JCClassDecl jcClassDecl) {
-        super.visitClassDef(jcClassDecl);
+        scan(jcClassDecl.mods);
+        // Explicitly ignore type parameters...
+        scan(jcClassDecl.extending);
+        scan(jcClassDecl.implementing);
+        scan(jcClassDecl.defs);
 
         AJCClassDecl classDecl = new AJCClassDecl(jcClassDecl);
 
@@ -259,6 +252,7 @@ public class InitialASTConverter extends TreeScanner {
         classDecl.methods = methodDefs;
         classDecl.classes = classDefs;
 
+        dumpStack();
         // Copy the remainder - those fields aren't differently structured.
         setFields(classDecl, jcClassDecl);
 
@@ -277,12 +271,14 @@ public class InitialASTConverter extends TreeScanner {
         scan(jcMethodDecl.thrown);
         scan(jcMethodDecl.defaultValue);
         scan(jcMethodDecl.body);
-        log.debug("Method restype: {} for: {}", jcMethodDecl.restype, jcMethodDecl.sym);
+        log.info("Method restype: {} for: {}", jcMethodDecl.restype, jcMethodDecl.sym);
+        log.info("Method defaultValue: {}", jcMethodDecl.defaultValue);
         if (jcMethodDecl.restype != null) {
             scan(jcMethodDecl.restype);
 
             enclosingMethod.restype = convertToTypeExpression(results.pop());
         }
+
 
         // Now pull in the results...
         setFields(enclosingMethod, jcMethodDecl);
@@ -291,8 +287,8 @@ public class InitialASTConverter extends TreeScanner {
 
     @Override
     public void visitVarDef(JCVariableDecl tree) {
+        log.debug("Visiting: {}", tree);
         scan(tree.mods);
-        scan(tree.nameexpr);
         scan(tree.init);
         scan(tree.vartype);
 
@@ -302,6 +298,7 @@ public class InitialASTConverter extends TreeScanner {
         variableDecl.vartype = convertToTypeExpression(results.pop());
 
         variableDecl.enclosingBlock = enclosingBlock;
+
         setFields(variableDecl, tree);
 
         results.push(variableDecl);
@@ -437,6 +434,10 @@ public class InitialASTConverter extends TreeScanner {
         AJCTry node = new AJCTry(jcTry);
         node.enclosingBlock = enclosingBlock;
         setFields(node, jcTry);
+
+        if (node.finalizer == null) {
+            node.finalizer = treeMaker.Block(0L, List.<AJCStatement>nil());
+        }
         results.push(node);
     }
 
@@ -505,6 +506,10 @@ public class InitialASTConverter extends TreeScanner {
         AJCReturn node = new AJCReturn(jcReturn);
         node.enclosingBlock = enclosingBlock;
         setFields(node, jcReturn);
+
+        if (node.expr == null) {
+            node.expr = treeMaker.EmptyExpression();
+        }
         results.push(node);
     }
 
@@ -542,19 +547,29 @@ public class InitialASTConverter extends TreeScanner {
             return;
         }
 
+        log.debug("Visiting elemtype: {}", jcNewArray.elemtype);
+        log.debug("Visiting elems: {}", jcNewArray.elems);
+        log.debug("Visiting dims: {}", jcNewArray.dims);
+        log.debug("Visiting annotations: {}", jcNewArray.annotations);
+        log.debug("NewArray node: {}", jcNewArray);
+
         scan(jcNewArray.annotations);
         scan(jcNewArray.dims);
-
-        for (List<JCAnnotation> annos : jcNewArray.dimAnnotations) {
-            scan(annos);
-        }
-
         scan(jcNewArray.elems);
+
+        // In the event that this is a {...} style declaration (ie. One with elements) then elemtype is null.
+        // Otherwise, it's the type of the elements.
+
+        // THIS IS STUPID, JAVAC.
         scan(jcNewArray.elemtype);
 
         AJCNewArray node = new AJCNewArray(jcNewArray);
-        node.elemtype = convertToTypeExpression(results.pop());
+
+        if (jcNewArray.elemtype != null) {
+            node.elemtype = convertToTypeExpression(results.pop());
+        }
         setFields(node, jcNewArray);
+
         results.push(node);
     }
 
@@ -678,6 +693,8 @@ public class InitialASTConverter extends TreeScanner {
         AJCArrayTypeTree node = new AJCArrayTypeTree(jcArrayTypeTree);
         node.elemtype = convertToTypeExpression(results.pop());
 
+        log.debug("Type array pushes: {}", node);
+
         results.push(node);
     }
 
@@ -708,7 +725,18 @@ public class InitialASTConverter extends TreeScanner {
         AJCModifiers node = new AJCModifiers(jcModifiers);
         setFields(node, jcModifiers);
         results.push(node);
+        log.debug("Pushing modifiers: {}", node);
     }
+
+    private void dumpStack() {
+        for (int i = 1; i < 10; i++) {
+            if (i > results.size()) {
+                break;
+            }
+            log.info("[{}] {}:{}", i, results.get(results.size() - i), results.get(results.size() - i).getClass().getCanonicalName());
+        }
+    }
+
 
     @Override
     public void visitAnnotatedType(JCAnnotatedType jcAnnotatedType) {

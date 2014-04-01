@@ -28,24 +28,19 @@ class ContextInliningTranslator extends BaseTranslator {
     @Override
     public void visitIdent(AJCIdent tree) {
         super.visitIdent(tree);
-        log.info("Inliner visiting ident: {}", tree);
 
         Symbol sym = tree.getTargetSymbol();
-        log.info("Symbol: {}", sym);
         if (!(sym instanceof VarSymbol)) {
-            log.info("Abort: nonvar symbol");
             return;
         }
-        log.info("Sym: {}", sym.hashCode());
 
         Value knownValue = currentAssignments.get(sym);
-        log.info("knownValue: {}", knownValue);
         if (knownValue == null || knownValue == Value.UNKNOWN) {
             return;
         }
 
         AJCLiteral result = knownValue.toLiteral();
         tree.swapFor(result);
-        log.info("Replacing {} with {}", tree, result);
+        log.debug("Replacing {} with {}", tree, result);
     }
 }

@@ -8,6 +8,7 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 import joust.optimisers.avail.NameFactory;
 import joust.tree.annotatedtree.AJCTree;
+import joust.utils.TreeUtils;
 
 import javax.lang.model.type.TypeKind;
 
@@ -144,7 +145,7 @@ public final class UnitTestTreeFactory {
         return treeMaker.TypeCast(clazz, expr);
     }
 
-    public static AJCInstanceOf InstanceOf(AJCSymbolRefTree<Symbol.VarSymbol> expr, AJCSymbolRefTree<Symbol.ClassSymbol> clazz) {
+    public static AJCInstanceOf InstanceOf(AJCSymbolRefTree<VarSymbol> expr, AJCSymbolRefTree<TypeSymbol> clazz) {
         return treeMaker.InstanceOf(expr, clazz);
     }
 
@@ -198,7 +199,7 @@ public final class UnitTestTreeFactory {
         return treeMaker.Modifiers(flags);
     }
 
-    public static AJCAnnotatedType AnnotatedType(AJCExpressionTree underlyingType) {
+    public static AJCAnnotatedType AnnotatedType(AJCTypeExpression underlyingType) {
         return treeMaker.AnnotatedType(underlyingType);
     }
 
@@ -211,31 +212,7 @@ public final class UnitTestTreeFactory {
     }
 
     private static VarSymbol getFreshVarSymbol(Name name, AJCPrimitiveTypeTree type) {
-        return new VarSymbol(0, name, typeTreeToType(type), testMethod);
-    }
-
-    private static Type typeTreeToType(AJCPrimitiveTypeTree tree) {
-        TypeKind kind = tree.getPrimitiveTypeKind();
-        switch(kind) {
-            case BOOLEAN:
-                return symtab.doubleType;
-            case BYTE:
-                return symtab.byteType;
-            case SHORT:
-                return symtab.shortType;
-            case INT:
-                return symtab.intType;
-            case LONG:
-                return symtab.longType;
-            case CHAR:
-                return symtab.charType;
-            case FLOAT:
-                return symtab.floatType;
-            case DOUBLE:
-                return symtab.doubleType;
-            default:
-                throw new UnsupportedOperationException("Unknown primitive type kind encountered: " + kind);
-        }
+        return new VarSymbol(0, name, TreeUtils.typeTreeToType(type), testMethod);
     }
 
     // Shorthand functions for primitive types...

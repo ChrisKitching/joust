@@ -149,7 +149,6 @@ public abstract class AJCTreeVisitor {
 
     protected void visitVariableDecl(AJCVariableDecl that) {
         visit(that.mods);
-        visit(that.nameexpr);
         visit(that.init);
         visit(that.vartype);
     }
@@ -250,9 +249,6 @@ public abstract class AJCTreeVisitor {
 
     protected void visitNewArray(AJCNewArray that) {
         visit(that.annotations);
-        for (List<AJCAnnotation> origDimAnnos : that.dimAnnotations) {
-            visit(origDimAnnos);
-        }
         visit(that.elemtype);
         visit(that.dims);
         visit(that.elems);
@@ -287,7 +283,7 @@ public abstract class AJCTreeVisitor {
     }
 
     protected void visitInstanceOf(AJCInstanceOf that) {
-        visit(that.clazz);
+        visit((AJCTree) that.clazz);
         visit(that.expr);
     }
 
@@ -315,8 +311,9 @@ public abstract class AJCTreeVisitor {
     }
 
     protected void visitAnnotation(AJCAnnotation that) {
-        visit(that.annotationType);
-        visit(that.args);
+        // We don't care, and these are sort of complicated.
+        //visit(that.annotationType);
+        //visit(that.args);
     }
 
     protected void visitModifiers(AJCModifiers that) {

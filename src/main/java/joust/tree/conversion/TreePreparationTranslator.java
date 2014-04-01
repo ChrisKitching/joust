@@ -31,7 +31,7 @@ import static joust.utils.StaticCompilerUtils.*;
 public class TreePreparationTranslator extends TreeTranslator {
     @Override
     public void visitClassDef(JCClassDecl jcClassDecl) {
-        jcClassDecl.accept(new JCTreeStructurePrinter());
+        //jcClassDecl.accept(new JCTreeStructurePrinter());
 
         int i = 0;
 
@@ -90,6 +90,13 @@ public class TreePreparationTranslator extends TreeTranslator {
         jcIf.thenpart = ensureBlock(jcIf.thenpart);
         jcIf.elsepart = ensureBlock(jcIf.elsepart);
         result = jcIf;
+    }
+
+    // Throw away type parameters - any that are still around by the time we run are just a javac bug anyway..
+    // *cough* enums *cough*.
+    @Override
+    public void visitTypeApply(JCTypeApply jcTypeApply) {
+        result = jcTypeApply.clazz;
     }
 
     /**

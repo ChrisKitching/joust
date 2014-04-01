@@ -1,6 +1,7 @@
 package joust.optimisers.translators;
 
 import joust.optimisers.visitors.Live;
+import joust.tree.annotatedtree.AJCTree;
 import joust.treeinfo.EffectSet;
 import joust.treeinfo.TreeInfoManager;
 import com.sun.tools.javac.code.Symbol;
@@ -40,10 +41,24 @@ public class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
         live.visitTree(tree);
 
         everLive = tree.everLive;
-        super.visitMethodDef(tree);
+
+        // Don't visit the parameters of a method. Deleting parameters isn't allowed.
+        // While we're at it, let's gloss over all the crap we don't care about.
+        visit(tree.restype);
+        visit(tree.mods);
+        visit(tree.recvparam);
+        visit(tree.thrown);
+        visit(tree.body);
+        visit(tree.defaultValue);
 
         log.debug("Result of unused assignment stripping: \n{}", tree);
         // TODO: Datastructure-fu to enable dropping of now-unwanted LVA results here. (To reduce memory footprint).
+    }
+
+    @Override
+    protected void visitCatch(AJCCatch that) {
+        // Don't visit catcher params... (You might try to delete them...)
+        visit(that.body);
     }
 
     /**
@@ -90,6 +105,11 @@ public class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
         Set<VarSymbol> live = tree.liveVariables;
 
         if (!live.contains(target) && TreeUtils.isLocalVariable(target)) {
+            // TODO: Become cleverer so you can touch array assignments.
+            if (tree.lhs instanceof AJCArrayAccess) {
+                return;
+            }
+
             // Determine if the assignment's RHS has meaningful side-effects...
             EffectSet rhsEffects = tree.rhs.effects.getEffectSet();
 
@@ -109,6 +129,11 @@ public class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
         Set<VarSymbol> live = tree.liveVariables;
 
         if (!live.contains(target) && TreeUtils.isLocalVariable(target)) {
+            // TODO: Become cleverer so you can touch array assignments.
+            if (tree.lhs instanceof AJCArrayAccess) {
+                return;
+            }
+
             // Determine if the assignment's RHS has meaningful side-effects...
             EffectSet rhsEffects = tree.rhs.effects.getEffectSet();
 

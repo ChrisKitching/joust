@@ -248,21 +248,18 @@ public class AvailScope extends Scope {
     public PotentiallyAvailableExpression enterExpression(AJCTypeCast expr) {
         log.debug("entering expression:" + expr);
         // TODO: Handle these...
-        log.info("JCTypeCast not implemented in AvailScope.");
         return null;
     }
 
     public PotentiallyAvailableExpression enterExpression(AJCInstanceOf expr) {
         log.debug("entering expression:" + expr);
         // TODO: Handle these... These can probably be considered as PotentiallyAvailableBinaries.
-        log.info("JCInstanceOf not implemented in AvailScope.");
         return null;
     }
 
     public PotentiallyAvailableExpression enterExpression(AJCArrayAccess expr) {
         log.debug("entering expression:" + expr);
         // TODO: Handle these... Fucking complicated.
-        log.info("JCArrayAccess not implemented in AvailScope.");
         return null;
     }
 

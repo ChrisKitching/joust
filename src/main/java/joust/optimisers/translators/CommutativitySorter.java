@@ -49,8 +49,6 @@ public class CommutativitySorter extends AJCTreeVisitor {
         // Sort the elements into a standard order.
         combinedElements.sort(new CommutativitySorterComparator());
 
-        log.info("Elements: {}", Arrays.toString(combinedElements.toArray()));
-
         // Build the tree from the sorted elements.
         Iterator<AJCExpressionTree> iterator = combinedElements.iterator();
         AJCBinary replacementTree = treeMaker.Binary(currentSubtreeTag, iterator.next(), iterator.next());
@@ -78,12 +76,8 @@ public class CommutativitySorter extends AJCTreeVisitor {
 
         // Even if it is, check if this is secretly string concatenation...
         if (currentSubtreeTag == Tag.PLUS) {
-            log.info("Node: {}", tree.lhs);
-            log.info("Node type: {}", tree.lhs.getNodeType());
-            log.info("Node type: {}", tree.rhs.getNodeType());
             if ("java.lang.String".equals(tree.lhs.getNodeType().toString())
              || "java.lang.String".equals(tree.rhs.getNodeType().toString())) {
-                log.info("String concat!");
                 combinedElements.add(tree);
                 return;
             }

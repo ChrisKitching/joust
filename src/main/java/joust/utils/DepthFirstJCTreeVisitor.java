@@ -20,6 +20,10 @@ public class DepthFirstJCTreeVisitor extends Visitor {
     protected HashSet<JCTree> mMarked = new HashSet<>();
 
     protected void visit(List<? extends JCTree> trees) {
+        if (trees == null) {
+            return;
+        }
+
         for (List<? extends JCTree> l = trees; l.nonEmpty(); l = l.tail) {
             if (l.head != null && !mMarked.contains(l.head)) {
                 l.head.accept(this);
@@ -28,13 +32,14 @@ public class DepthFirstJCTreeVisitor extends Visitor {
     }
 
     protected void visit(JCTree tree) {
-        if (tree != null) {
-            if (mMarked.contains(tree)) {
-                return;
-            }
-
-            tree.accept(this);
+        if (tree == null) {
+            return;
         }
+        if (mMarked.contains(tree)) {
+            return;
+        }
+
+        tree.accept(this);
     }
 
     @Override
@@ -371,11 +376,6 @@ public class DepthFirstJCTreeVisitor extends Visitor {
         }
 
         visit(jcNewArray.annotations);
-
-        for (List<JCAnnotation> dimAnno : jcNewArray.dimAnnotations) {
-            visit(dimAnno);
-        }
-
         visit(jcNewArray.elemtype);
         visit(jcNewArray.dims);
         visit(jcNewArray.elems);

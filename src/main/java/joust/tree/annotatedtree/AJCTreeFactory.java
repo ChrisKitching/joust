@@ -509,11 +509,11 @@ public class AJCTreeFactory implements AJCTree.Factory {
     }
 
     @Override
-    public AJCInstanceOf InstanceOf(AJCSymbolRefTree<VarSymbol> expr, AJCSymbolRefTree<ClassSymbol> clazz) {
-        AJCInstanceOf ret = new AJCInstanceOf(javacTreeMaker.TypeTest(expr.getDecoratedTree(), clazz.getDecoratedTree()), expr, clazz);
+    public AJCInstanceOf InstanceOf(AJCSymbolRefTree<VarSymbol> expr, AJCSymbolRef<TypeSymbol> clazz) {
+        AJCInstanceOf ret = new AJCInstanceOf(javacTreeMaker.TypeTest(expr.getDecoratedTree(), ((AJCTree) clazz).getDecoratedTree()), expr, clazz);
 
         expr.mParentNode = ret;
-        clazz.mParentNode = ret;
+        ((AJCTree) clazz).mParentNode = ret;
 
         return ret;
     }
@@ -529,7 +529,7 @@ public class AJCTreeFactory implements AJCTree.Factory {
     }
 
     @Override
-    public AJCFieldAccess Select(AJCSymbolRefTree<? extends Symbol> selected, Name selector) {
+    public AJCFieldAccess Select(AJCExpressionTree selected, Name selector) {
         AJCFieldAccess ret = new AJCFieldAccess<>(javacTreeMaker.Select(selected.getDecoratedTree(), selector), selected);
 
         selected.mParentNode = ret;
@@ -621,7 +621,7 @@ public class AJCTreeFactory implements AJCTree.Factory {
     }
 
     @Override
-    public AJCAnnotatedType AnnotatedType(AJCExpressionTree underlyingType) {
+    public AJCAnnotatedType AnnotatedType(AJCTypeExpression underlyingType) {
         AJCAnnotatedType ret = new AJCAnnotatedType(javacTreeMaker.AnnotatedType(List.<JCAnnotation>nil(), underlyingType.getDecoratedTree()), underlyingType);
 
         underlyingType.mParentNode = ret;
