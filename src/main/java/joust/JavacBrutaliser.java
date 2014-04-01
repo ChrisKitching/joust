@@ -78,36 +78,30 @@ public final class JavacBrutaliser extends OptimisationRunnable {
 
         Todo todoValue = javaCompiler.todo;
 
-        log.info("todo: {}", todoValue);
-
         try {
-            log.info("Entering attribution...");
+            log.info("Attribution.");
             Object attributed = attributeMethod.invoke(javaCompiler, todoValue);
-            log.info("Attribution complete.");
-            log.info("Entering flow...");
+            log.info("Flow.");
             Object flowed = flowMethod.invoke(javaCompiler, attributed);
-            log.info("Flow complete.");
 
-            log.info("Entering desugar...");
+            log.info("Desugar.");
             OptimisationPhaseManager.beforeVirtual(DESUGAR);
 
             Object desugared = desugarMethod.invoke(javaCompiler, flowed);
 
+            log.info("PARTY.");
+            long t = System.currentTimeMillis();
             OptimisationPhaseManager.afterVirtual(DESUGAR);
-            log.info("Desugar complete.");
+            log.info("JOUST took {}ms", System.currentTimeMillis() - t);
 
             // Finish up..
-            log.info("Entering generate...");
+            log.info("Generate.");
             generateMethod.invoke(javaCompiler, desugared);
-            log.info("Generate complete.");
 
-            log.info("todo: {}", todoValue);
-            log.info("Resources released.");
+            log.info("Complete.");
         } catch (IllegalAccessException | InvocationTargetException e) {
             log.fatal(FAILED_TO_BRUTALISE_COMPILER, e);
-            return;
         }
-        log.info("Success.");
     }
 
     /**
@@ -117,7 +111,7 @@ public final class JavacBrutaliser extends OptimisationRunnable {
      * @return true if the mutulation is a success, false if something failed.
      */
     private static boolean hijackCompilePolicy() {
-        log.info("Hijacking compile policy...");
+        log.info("Hijacking javac compilePolicy...");
         Class<JavaCompiler> jCompilerClass = JavaCompiler.class;
 
         // Accessing non-public nested classes must unfortunately be done in this way.
@@ -154,7 +148,7 @@ public final class JavacBrutaliser extends OptimisationRunnable {
             return false;
         }
 
-        log.info("Success.");
+        log.info("Success. (compilePolicy -> SIMPLE)");
         return true;
     }
 

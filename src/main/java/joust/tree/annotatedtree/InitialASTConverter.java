@@ -252,7 +252,6 @@ public class InitialASTConverter extends TreeScanner {
         classDecl.methods = methodDefs;
         classDecl.classes = classDefs;
 
-        dumpStack();
         // Copy the remainder - those fields aren't differently structured.
         setFields(classDecl, jcClassDecl);
 

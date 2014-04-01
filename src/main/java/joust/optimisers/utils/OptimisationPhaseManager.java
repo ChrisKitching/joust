@@ -46,13 +46,13 @@ public abstract class OptimisationPhaseManager implements Runnable {
 
     public static void beforeVirtual(VirtualPhase p) {
         LinkedList<OptimisationRunnable> toRun = tasksBeforeVirtual.get(p);
-        log.debug("Started virtual event: {}", p);
+        log.trace("Started virtual event: {}", p);
         runTasks(toRun);
     }
 
     public static void afterVirtual(VirtualPhase p) {
         LinkedList<OptimisationRunnable> toRun = tasksAfterVirtual.get(p);
-        log.debug("Finished virtual event: {}", p);
+        log.trace("Finished virtual event: {}", p);
         runTasks(toRun);
     }
 
@@ -81,15 +81,15 @@ public abstract class OptimisationPhaseManager implements Runnable {
             @Override
             public void finished(TaskEvent taskEvent) {
                 LinkedList<OptimisationRunnable> toRun = tasksAfter.get(taskEvent.getKind());
-                log.debug("finished event: {}", taskEvent);
+                log.trace("finished event: {}", taskEvent);
                 runTasks(toRun);
             }
 
             @Override
             public void started(TaskEvent taskEvent) {
                 LinkedList<OptimisationRunnable> toRun = tasksBefore.get(taskEvent.getKind());
-                log.debug("started event: {}", taskEvent);
-                runTasks(tasksBefore.get(taskEvent.getKind()));
+                log.trace("started event: {}", taskEvent);
+                runTasks(toRun);
 
                 currentPhase = CompilerPhase.fromKind(taskEvent.getKind());
             }
@@ -104,14 +104,14 @@ public abstract class OptimisationPhaseManager implements Runnable {
 
     public static void runTasks(LinkedList<OptimisationRunnable> runnables) {
         for (OptimisationRunnable r : runnables) {
-            log.debug("Running {}", r.getClass().getName());
+            log.trace("Running {}", r.getClass().getName());
             r.run();
         }
     }
 
     public static void register(OptimisationRunnable task, PhaseModifier modifier, Kind runWhen) {
         if (runWhen == Kind.ENTER || runWhen == Kind.PARSE) {
-            throw new UnsupportedOperationException("It is impossible to run a PhaseSpecific runnable during a phase which has concluded.");
+            log.fatal("Error during JOUST startup.", new UnsupportedOperationException("It is impossible to run a PhaseSpecific runnable during a phase which has concluded."));
         }
 
         Map<Kind, LinkedList<OptimisationRunnable>> tasks = modifier == PhaseModifier.BEFORE ? tasksBefore : tasksAfter;

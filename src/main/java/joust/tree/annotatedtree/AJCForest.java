@@ -56,6 +56,8 @@ public class AJCForest {
             throw new UnsupportedOperationException("Attempt to reassign AJCForest!");
         }
 
+        long t = System.currentTimeMillis();
+
         List<AJCTree> prospectiveRootNodes = List.nil();
 
         // Since it's stateless...
@@ -103,6 +105,8 @@ public class AJCForest {
             }
         }
 
+        log.info("Tree converted and normalised in {}ms", System.currentTimeMillis() - t);
+
         // Deallocate the annoying lookup table.
         InitialASTConverter.uninit();
         initDirect(prospectiveRootNodes, prospectiveMethodTable, prospectiveVarSymbolTable);
@@ -137,7 +141,8 @@ public class AJCForest {
      * Perform initial analysis on the converted tree that has to occur prior to other optimisation steps taking place.
      */
     public void initialAnalysis() {
-        log.info("Commencing initial side effect analysis on converted tree.");
+        long t = System.currentTimeMillis();
+        log.info("Initial side effect analysis started.");
         effectVisitor = new SideEffectVisitor();
 
         // Run the initial effect analysis on the tree (It's kept incrementally updated)...
@@ -147,7 +152,7 @@ public class AJCForest {
 
         // So now we've populated the direct effects of each method. Let's resolve all the loose ends...
         effectVisitor.bootstrap();
-        log.info("Initial side effect analysis complete.");
+        log.info("Initial side effect analysis completed in {}ms.", System.currentTimeMillis() - t);
     }
 
     // Prevent direct instantiation.
