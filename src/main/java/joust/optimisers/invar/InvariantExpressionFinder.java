@@ -24,8 +24,15 @@ public class InvariantExpressionFinder extends AJCTreeVisitor {
 
     // Symbols invalidated in the loop of interest - passed by the caller.
     @NonNull private final Set<VarSymbol> writtenInLoop;
+    @NonNull private final Set<VarSymbol> readInLoop;
 
     private void addIfInvariant(AJCExpressionTree that) {
+        ArrayAccessDetector detector = new ArrayAccessDetector();
+        detector.visitTree(that);
+        if (detector.failureInducing) {
+            return;
+        }
+
         log.debug("Considering invariance of {}", that);
         EffectSet exprEffects = that.effects.getEffectSet();
         log.debug("Effects: {}", exprEffects);
@@ -33,7 +40,6 @@ public class InvariantExpressionFinder extends AJCTreeVisitor {
         // Escaping symbol uses are omitted to avoid concurrency problems.
         // Write effects cause something to be omitted from moving out of the loop.
         if (exprEffects.contains(EffectSet.EffectType.READ_ESCAPING)
-         || exprEffects.contains(EffectSet.EffectType.WRITE_INTERNAL)
          || exprEffects.contains(EffectSet.EffectType.WRITE_ESCAPING)
          || exprEffects.contains(EffectSet.EffectType.IO)) {
             log.debug("No good - contains unacceptable writes of escaping reads.");
@@ -50,6 +56,20 @@ public class InvariantExpressionFinder extends AJCTreeVisitor {
 
             if (!readSymbols.isEmpty()) {
                 log.debug("No good - reads symbols written in the loop.");
+                return;
+            }
+        }
+
+        if (exprEffects.contains(EffectSet.EffectType.WRITE_INTERNAL)) {
+            // Determine if this expression writes any symbols that are read in the loop.
+            SymbolSet writeSymbols = new SymbolSet(exprEffects.writeInternal);
+
+            log.debug("ReadSymbols: {}", writeSymbols);
+            writeSymbols.retainAll(readInLoop);
+            log.debug("After dropping: {}", writeSymbols);
+
+            if (!writeSymbols.isEmpty()) {
+                log.debug("No good - writes symbols read in the loop.");
                 return;
             }
         }

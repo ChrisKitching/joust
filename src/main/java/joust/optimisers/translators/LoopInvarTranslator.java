@@ -36,8 +36,9 @@ public class LoopInvarTranslator extends BaseTranslator {
 
         // The local variables written by the loop. Expressions that depend on these aren't loop invariants. (Usually)
         Set<VarSymbol> writtenInLoop = loopEffects.writeInternal;
+        Set<VarSymbol> readInLoop = loopEffects.readInternal;
 
-        InvariantExpressionFinder invariantFinder = new InvariantExpressionFinder(writtenInLoop);
+        InvariantExpressionFinder invariantFinder = new InvariantExpressionFinder(writtenInLoop, readInLoop);
         invariantFinder.visitTree(loop);
 
         log.debug("Invariant expressions: {}", Arrays.toString(invariantFinder.invariantExpressions.toArray()));
