@@ -1,6 +1,7 @@
 package joust.optimisers.runnables;
 
 import joust.optimisers.translators.BaseTranslator;
+import joust.tree.annotatedtree.AJCForest;
 import joust.tree.annotatedtree.AJCTree;
 import joust.utils.LogUtils;
 import lombok.experimental.ExtensionMethod;
@@ -8,8 +9,6 @@ import lombok.extern.java.Log;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Logger;
-
-import static joust.Optimiser.inputTrees;
 
 /**
  * Base class for optimisation runnables. Each one represents a single optimisation task.
@@ -23,7 +22,7 @@ public abstract class OptimisationRunnable implements Runnable {
     abstract static class TreeProcessing extends OptimisationRunnable {
         @Override
         public void run() {
-            for (AJCTree tree : inputTrees.rootNodes) {
+            for (AJCTree tree : AJCForest.getInstance().rootNodes) {
                 processRootNode(tree);
             }
         }

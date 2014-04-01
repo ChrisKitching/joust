@@ -10,6 +10,7 @@ import tests.unittests.utils.VisitorResultPurger;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
@@ -67,8 +68,13 @@ public abstract class BaseAnalyserTest<T extends AJCTreeVisitor> extends TreeFab
             }
 
             log.debug("Checking live at {}", resultNode);
-            log.debug("Expecting: {}", resultValue[i].toString());
-            log.debug("Found:     {}", resultObject.toString());
+            Level logLevel = Level.INFO;
+            if (!resultValue[i].equals(resultObject)) {
+                logLevel = Level.SEVERE;
+            }
+
+            log.log(logLevel, "Expecting: " + resultValue[i]);
+            log.log(logLevel, "Found:     " + resultObject);
 
             assertTrue(resultValue[i].equals(resultObject));
         }

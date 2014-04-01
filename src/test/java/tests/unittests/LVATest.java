@@ -1,9 +1,11 @@
 package tests.unittests;
 
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 import joust.optimisers.avail.NameFactory;
 import joust.optimisers.visitors.Live;
+import joust.optimisers.visitors.sideeffects.SideEffectVisitor;
 import joust.utils.LogUtils;
 import joust.utils.SymbolSet;
 import junitparams.JUnitParamsRunner;
@@ -13,6 +15,7 @@ import lombok.extern.java.Log;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import javax.swing.text.html.HTML;
 import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
@@ -20,6 +23,7 @@ import static junitparams.JUnitParamsRunner.$;
 import static tests.unittests.utils.ShorthandExpressionFactory.*;
 import static  com.sun.tools.javac.code.Symbol.*;
 import static tests.unittests.utils.UnitTestTreeFactory.*;
+import static joust.utils.StaticCompilerUtils.treeCopier;
 
 /**
  * Unit tests for live variable analysis.
@@ -51,6 +55,9 @@ public class LVATest extends BaseAnalyserTest<Live> {
             symbolSets[i] = expected;
         }
 
+        SideEffectVisitor effects = new SideEffectVisitor();
+        effects.visitMethodDef(inputTree);
+
         testVisitNode(inputTree, targetNodes, symbolSets);
     }
 
@@ -68,6 +75,7 @@ public class LVATest extends BaseAnalyserTest<Live> {
         VarSymbol ySym = yEqFour.getTargetSymbol();
 
         AJCVariableDecl zDecl = local(zName, Int(), plus(Ident(xSym), Ident(xSym)));
+        VarSymbol zSym = zDecl.getTargetSymbol();
 
         AJCAssign xAsgSeven = Assign(Ident(xSym), l(7));      // x = 7;
 
@@ -86,12 +94,25 @@ public class LVATest extends BaseAnalyserTest<Live> {
                                  Block(xEqEight, Assign(Ident(ySym), l(9))));
 
 
-        AJCVariableDecl yEqThree = local(xName, Int(), l(3));  // int x = 3;
-
         AJCBinary xGtFive = gt(Ident(xSym), l(5));
         AJCUnaryAsg xPlusPlus = postInc(Ident(xSym));
 
         AJCForLoop emptyFor = ForLoop(List.<AJCStatement>of(xEqThree), xGtFive, List.of(Exec(xPlusPlus)), Block(0, List.<AJCStatement>nil()));
+
+
+
+        AJCVariableDecl zDeclThree = local(zName, Int(), l(3));
+        AJCVariableDecl yDeclThree = local(yName, Int(), l(3));
+
+        AJCAssign yAsgOne = Assign(Ident(ySym), l(1));
+        AJCAssignOp zPlusEqualsI = Assignop(JCTree.Tag.PLUS_ASG, Ident(zSym), Ident(xSym));
+        AJCBlock forBlock = Block(yAsgOne,  callFor(zSym), zPlusEqualsI);
+        AJCForLoop nonemptyFor = ForLoop(List.<AJCStatement>of(xEqThree), xGtFive, List.of(Exec(xPlusPlus)), forBlock);
+
+
+        AJCAssign yEqX = Assign(Ident(ySym), Ident(xSym));
+        AJCForLoop yxFor = ForLoop(List.<AJCStatement>of(xEqThree), xGtFive, List.of(Exec(xPlusPlus)), Block(yEqX));
+
 
         return
         $(
@@ -123,9 +144,8 @@ public class LVATest extends BaseAnalyserTest<Live> {
                 ),
 
                 /*
-
                 for (int i = 0;   <-- Target
-                    i < 10;
+                    i < 5;
                     i++)          <-- Target
                     {}
                  */
@@ -143,6 +163,35 @@ public class LVATest extends BaseAnalyserTest<Live> {
                     MethodFromBlock(Block(xEqThree, xPlusPlus)),
                      $(xPlusPlus, xEqThree),
                      $($v(), $($v(xSym)))
+                ),
+
+                /*
+                int z = 3;
+                int y = 3;      <-- Target
+                for (int x = 3; x < 5; x++) {
+                    y = 1;      <-- Target
+                    f(z);
+                    z += x      <-- Target
+                }
+                 */
+                $(
+                     MethodFromBlock(Block(zDeclThree, yDeclThree, nonemptyFor)),
+                       $(yDeclThree, yAsgOne, zPlusEqualsI),
+                       $($v(zSym, xSym), $v(zSym, xSym), $v(zSym, xSym))
+                ),
+
+
+                /*
+                int y = 3;      <-- Target
+                for (int x = 3; x < 5; x++) {
+                    y = x;      <-- Target
+                }
+                f(y);
+                 */
+                $(
+                    MethodFromBlock(Block(yDeclThree, yxFor, callFor(ySym))),
+                      $(yDeclThree, yEqX),
+                      $($v(xSym, ySym), $v(xSym, ySym))
                 )
         );
     }

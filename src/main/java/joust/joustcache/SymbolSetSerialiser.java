@@ -5,6 +5,7 @@ import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import joust.joustcache.data.ClassInfo;
+import joust.tree.annotatedtree.AJCForest;
 import joust.utils.LogUtils;
 import joust.utils.SymbolSet;
 import lombok.experimental.ExtensionMethod;
@@ -13,7 +14,6 @@ import lombok.extern.java.Log;
 import java.util.logging.Logger;
 
 import static com.sun.tools.javac.code.Symbol.*;
-import static joust.Optimiser.inputTrees;
 
 /**
  * Serialiser for SymbolSets. Adds support for the universal set singleton, and ensures elements are serialised using
@@ -57,8 +57,8 @@ public class SymbolSetSerialiser extends Serializer<SymbolSet> {
             log.trace("Got symbol hash: {}", symbolHash);
 
             // Determine if this is a symbol we care about...
-            if (inputTrees.varsymbolTable.containsKey(symbolHash)) {
-                VarSymbol symGot = inputTrees.varsymbolTable.get(symbolHash);
+            if (AJCForest.getInstance().varsymbolTable.containsKey(symbolHash)) {
+                VarSymbol symGot = AJCForest.getInstance().varsymbolTable.get(symbolHash);
                 log.trace("Obtained concrete symbol: {}", symGot);
                 ret.add(symGot);
             } else {

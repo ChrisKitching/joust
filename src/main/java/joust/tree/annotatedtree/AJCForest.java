@@ -1,12 +1,15 @@
 package joust.tree.annotatedtree;
 
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.util.List;
 import joust.Optimiser;
+import joust.joustcache.JOUSTCache;
 import joust.joustcache.data.ClassInfo;
 import joust.optimisers.translators.ExpressionNormalisingTranslator;
 import joust.optimisers.visitors.sideeffects.SideEffectVisitor;
 import joust.tree.conversion.TreePreparationTranslator;
+import joust.treeinfo.TreeInfoManager;
 import joust.utils.LogUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
@@ -26,8 +29,14 @@ import static joust.tree.annotatedtree.AJCTree.*;
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class AJCForest {
+    private static AJCForest instance;
+    // TODO: Something something context.
+    public static AJCForest getInstance() {
+        return instance;
+    }
+
     // The input root nodes, after conversion.
-    public final List<AJCClassDecl> rootNodes;
+    public final List<AJCTree> rootNodes;
 
     // Maps method symbols to their corresponding declaration nodes.
     public final HashMap<MethodSymbol, AJCMethodDecl> methodTable;
@@ -35,13 +44,19 @@ public class AJCForest {
     // Used to provide a deserialisation target for VarSymbols.
     public final HashMap<String, VarSymbol> varsymbolTable;
 
+    public SideEffectVisitor effectVisitor;
+
     /**
      * Init the forest from the given set of root elements.
      * Iterate the root elements converting them to our tree representation, populating the various tables
      * as you go.
      */
     public static void init(Iterable<JCCompilationUnit> rootElements) {
-        List<AJCClassDecl> prospectiveRootNodes = List.nil();
+        if (instance != null) {
+            throw new UnsupportedOperationException("Attempt to reassign AJCForest!");
+        }
+
+        List<AJCTree> prospectiveRootNodes = List.nil();
 
         // Since it's stateless...
         final TreePreparationTranslator sanity = new TreePreparationTranslator();
@@ -90,30 +105,53 @@ public class AJCForest {
 
         // Deallocate the annoying lookup table.
         InitialASTConverter.uninit();
+        initDirect(prospectiveRootNodes, prospectiveMethodTable, prospectiveVarSymbolTable);
+    }
 
-        AJCForest ret = new AJCForest(prospectiveRootNodes, prospectiveMethodTable, prospectiveVarSymbolTable);
-        Optimiser.inputTrees = ret;
+    public static void initDirect(List<AJCTree> trees, HashMap<MethodSymbol, AJCMethodDecl> mTable, HashMap<String, VarSymbol> vTable) {
+        if (instance != null) {
+            throw new UnsupportedOperationException("Attempt to reassign AJCForest!");
+        }
+
+
+        // Effect handler utils...
+        TreeInfoManager.init();
+        JOUSTCache.init();
+
+        AJCForest ret = new AJCForest(trees, mTable, vTable);
+
+        instance = ret;
+
         ret.initialAnalysis();
+    }
+
+    /**
+     * *sigh*
+     */
+    public static void uninit() {
+        log.warning("Uniniting AJCTree.");
+        instance = null;
     }
 
     /**
      * Perform initial analysis on the converted tree that has to occur prior to other optimisation steps taking place.
      */
-    private void initialAnalysis() {
+    public void initialAnalysis() {
         log.info("Commencing initial side effect analysis on converted tree.");
+        effectVisitor = new SideEffectVisitor();
+
         // Run the initial effect analysis on the tree (It's kept incrementally updated)...
-        SideEffectVisitor effects = new SideEffectVisitor();
-        for (AJCClassDecl tree : rootNodes) {
-            effects.visit(tree);
+        for (AJCTree tree : rootNodes) {
+            effectVisitor.visit(tree);
         }
 
         // So now we've populated the direct effects of each method. Let's resolve all the loose ends...
-        effects.bootstrap();
+        effectVisitor.bootstrap();
         log.info("Initial side effect analysis complete.");
     }
 
     // Prevent direct instantiation.
-    private AJCForest(List<AJCClassDecl> trees, HashMap<MethodSymbol, AJCMethodDecl> mTable, HashMap<String, VarSymbol> vTable) {
+    private AJCForest(List<AJCTree> trees, HashMap<MethodSymbol, AJCMethodDecl> mTable, HashMap<String, VarSymbol> vTable) {
         rootNodes = trees;
         methodTable = mTable;
         varsymbolTable = vTable;

@@ -39,6 +39,27 @@ public class Effects {
         directPart = direct;
     }
 
+    /**
+     * Shift all the dependency relations from this Effects to the target.
+     */
+    public void reparent(Effects target) {
+        target.deps = deps;
+        target.dependantOnThis = dependantOnThis;
+
+        for (Effects e : dependantOnThis) {
+            e.deps.remove(this);
+            e.deps.add(target);
+        }
+
+        for (Effects e : deps) {
+            e.dependantOnThis.remove(this);
+            e.dependantOnThis.add(target);
+        }
+
+        deps = null;
+        dependantOnThis = null;
+    }
+
     public Effects(EffectSet eSet) {
         this(eSet, EffectSet.NO_EFFECTS);
     }

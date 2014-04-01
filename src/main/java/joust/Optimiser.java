@@ -64,6 +64,7 @@ public class Optimiser extends AbstractProcessor {
     public synchronized void init(ProcessingEnvironment env) {
         super.init(env);
         StaticCompilerUtils.uninit();
+        AJCForest.uninit();
 
         environ = (JavacProcessingEnvironment) env;
 
@@ -78,10 +79,7 @@ public class Optimiser extends AbstractProcessor {
 
         conventionalTrees = new LinkedHashSet<>();
 
-        JOUSTCache.init();
-        ChecksumUtils.init();
         PossibleSymbol.init();
-        TreeInfoManager.init();
 
         OptimisationPhaseManager.init(env);
         OptimisationPhaseManager.register(new JavacBrutaliser(), AFTER, ANNOTATION_PROCESSING);

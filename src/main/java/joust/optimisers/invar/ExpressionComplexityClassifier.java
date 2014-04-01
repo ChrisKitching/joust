@@ -72,6 +72,8 @@ public class ExpressionComplexityClassifier extends AJCTreeVisitor {
                 // instanceof
                 put(TYPETEST, 2);
                 put(SELECT, 2);
+
+                put(TYPECAST, 2);
             }
         };
         operationCosts = Collections.unmodifiableMap(map);

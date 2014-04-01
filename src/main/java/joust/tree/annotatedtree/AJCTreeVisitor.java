@@ -1,6 +1,11 @@
 package joust.tree.annotatedtree;
 
 import com.sun.tools.javac.util.List;
+import joust.utils.LogUtils;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
+
+import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 
@@ -9,6 +14,8 @@ import static joust.tree.annotatedtree.AJCTree.*;
  * Differs notably from javac's tree traversers in that it doesn't put the traversal logic in the tree nodes
  * themselves.
  */
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public abstract class AJCTreeVisitor {
     /**
      * The entry point for users of the class...

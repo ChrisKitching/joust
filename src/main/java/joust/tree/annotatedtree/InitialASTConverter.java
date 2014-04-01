@@ -271,8 +271,6 @@ public class InitialASTConverter extends TreeScanner {
         scan(jcMethodDecl.thrown);
         scan(jcMethodDecl.defaultValue);
         scan(jcMethodDecl.body);
-        log.info("Method restype: {} for: {}", jcMethodDecl.restype, jcMethodDecl.sym);
-        log.info("Method defaultValue: {}", jcMethodDecl.defaultValue);
         if (jcMethodDecl.restype != null) {
             scan(jcMethodDecl.restype);
 
@@ -546,12 +544,6 @@ public class InitialASTConverter extends TreeScanner {
         if (jcNewArray == null) {
             return;
         }
-
-        log.debug("Visiting elemtype: {}", jcNewArray.elemtype);
-        log.debug("Visiting elems: {}", jcNewArray.elems);
-        log.debug("Visiting dims: {}", jcNewArray.dims);
-        log.debug("Visiting annotations: {}", jcNewArray.annotations);
-        log.debug("NewArray node: {}", jcNewArray);
 
         scan(jcNewArray.annotations);
         scan(jcNewArray.dims);

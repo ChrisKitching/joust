@@ -301,6 +301,34 @@ public class EffectSet {
         return (effectTypes & unifiedMask) != 0;
     }
 
+    public boolean writesSymbol(VarSymbol sym) {
+        if (writeInternal != null) {
+            if (writeInternal.contains(sym)) {
+                return true;
+            }
+        }
+
+        if (writeEscaping != null) {
+            return writeEscaping.contains(sym);
+        }
+
+        return false;
+    }
+
+    public boolean readsSymbol(VarSymbol sym) {
+        if (readInternal != null) {
+            if (readInternal.contains(sym)) {
+                return true;
+            }
+        }
+
+        if (readEscaping != null) {
+            return readEscaping.contains(sym);
+        }
+
+        return false;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof EffectSet)) {

@@ -56,6 +56,8 @@ public class JOUSTCache {
     static HashMap<String, TransientClassInfo> transientClassInfo = new HashMap<>();
 
     public static void init() {
+        log.error("Init JOUSTCache!");
+        ChecksumUtils.init();
         if (databaseRecordManager != null) {
             return;
         }
@@ -151,6 +153,10 @@ public class JOUSTCache {
      * @param sym ClassSymbol from which to load definitions.
      */
     public static void loadCachedInfoForClass(ClassSymbol sym) {
+        if (sym == null) {
+            return;
+        }
+
         if (loadedSymbols.contains(sym)) {
             return;
         }

@@ -68,13 +68,16 @@ public class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
      * @return true if the assignment under consideration lacks interesting side effects, false otherwise.
      */
     private boolean shouldCull(EffectSet rhsEffects, Set<VarSymbol> live) {
+        log.debug(rhsEffects);
         if (rhsEffects.containsAny(EffectSet.EffectType.IO, EffectSet.EffectType.WRITE_ESCAPING)) {
+            log.debug("Should not cull because effects.");
             return false;
         } else if (rhsEffects.contains(EffectSet.EffectType.WRITE_INTERNAL)) {
             // Determine if any of the symbols are interesting. A symbol is interesting if it is live at
             // this point (In which case write side effects to it matter) or if it is global.
             for (VarSymbol sym : rhsEffects.writeInternal) {
                 if (live.contains(sym)) {
+                    log.debug("Should not cull because {} is live.", sym);
                     return false;
                 }
             }
@@ -151,30 +154,56 @@ public class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
 
         VarSymbol target = tree.getTargetSymbol();
 
-        if (!everLive.contains(target) && TreeUtils.isLocalVariable(target)) {
-            log.info("Culling assignment: {}", tree);
-            log.debug("Enclosing block: {}", tree.getEnclosingBlock());
-            mHasMadeAChange = true;
-            tree.getEnclosingBlock().remove(tree);
+        if (!TreeUtils.isLocalVariable(target)) {
             return;
         }
+
         Set<VarSymbol> live = tree.liveVariables;
 
         if (live != null && !live.contains(target)) {
-            if (tree.getInit() != null) {
-                EffectSet rhsEffects = tree.getInit().effects.getEffectSet();
-                if (!shouldCull(rhsEffects, live)) {
-                    return;
+            // This assignment is certainly not needed.
+
+            if (tree.getInit().isEmptyExpression()) {
+                // There's no assignment to remove.
+                if (!everLive.contains(target)) {
+                    // But even the declaration is pointless.
+                    log.debug("Binning declaration: {}", tree);
+                    tree.getEnclosingBlock().remove(tree);
+                    mHasMadeAChange = true;
                 }
+
+                return;
             }
 
-            if (tree.getInit() != null) {
-                log.info("Killing redundant assignment: {}", tree);
+            // Check if the assignment has interesting side effects.
+            EffectSet rhsEffects = tree.getInit().effects.getEffectSet();
+            boolean cull = shouldCull(rhsEffects, live);
+
+            if (everLive.contains(target)) {
+                // We need the variable declaration.
+                if (cull) {
+                    // But we can kill the assignment.
+                    log.debug("Dropping assignment: {}", tree);
+                    tree.setInit(treeMaker.EmptyExpression());
+                    mHasMadeAChange = true;
+                }
+
+                return;
+            }
+
+            // We don't need the declaration - but do we need the assignment?
+            if (cull) {
+                // Nope. Bin everything.
+                log.debug("Binning everything: {}", tree);
+                tree.getEnclosingBlock().remove(tree);
                 mHasMadeAChange = true;
-
-                // So this *assignment* is redundant, but we need the decl.
-                tree.setInit(treeMaker.EmptyExpression());
+                return;
             }
+
+            // We do - so shunt it.
+            log.debug("Shunting: {}", tree);
+            tree.swapFor(treeMaker.Exec(tree.getInit()));
+            mHasMadeAChange = true;
         }
     }
 }

@@ -37,14 +37,16 @@ public class UnusedAssignmentStripperTest extends BaseTreeTranslatorTest<UnusedA
     @Parameters(method = "unusedArgs")
     public void testUnused(AJCMethodDecl input, AJCMethodDecl expected) {
         SideEffectVisitor effects = new SideEffectVisitor();
-        effects.visitTree(input);
+        effects.visitMethodDef(input);
 
+        log.debug("Unused assignment strip for: {}", input);
         testVisitNodeBluntForce(input, expected);
     }
 
     @SuppressWarnings("unchecked")
     public Object[] unusedArgs() {
         final Name xName = NameFactory.getName();
+        final Name yName = NameFactory.getName();
         final Name zName = NameFactory.getName();
 
         // Declaration nodes for three local variables.
@@ -112,17 +114,50 @@ public class UnusedAssignmentStripperTest extends BaseTreeTranslatorTest<UnusedA
                                                          treeCopier.copy(aSwitch),
                                                          treeCopier.copy(callForX)));
 
-        AJCMethodDecl switchExpected = MethodFromBlock(Block(treeCopier.copy(xDecl),
+        AJCMethodDecl switchExpected = MethodFromBlock(Block(treeCopier.copy(xEqThree),
                                                              treeCopier.copy(aSwitch),
                                                              treeCopier.copy(callForX)));
 
         switchExpected.getDecoratedTree().name = switchTest.getName();
         switchExpected.getDecoratedTree().sym = switchTest.getTargetSymbol();
 
+
+        /*
+        int x = 3;  <--- Redundant
+        int y = 3;
+        switch(y) {
+            case 3:
+                x = 3;
+                break;
+            default:
+                x = 8;
+                break;
+        }
+         */
+
+        AJCVariableDecl yEqThree = local(yName, Int(), l(3));  // int y = 3;
+        VarSymbol ySym = yEqThree.getTargetSymbol();
+
+        AJCSwitch aSwitch2 = Switch(Ident(ySym), List.of(treeCopier.copy(c1), treeCopier.copy(def)));
+
+        AJCMethodDecl switchTest2 = MethodFromBlock(Block(treeCopier.copy(xEqThree),
+                                                          treeCopier.copy(yEqThree),
+                                                          treeCopier.copy(aSwitch2),
+                                                          treeCopier.copy(callForX)));
+
+        AJCMethodDecl switchExpected2 = MethodFromBlock(Block(treeCopier.copy(xDecl),
+                                                              treeCopier.copy(yEqThree),
+                                                              treeCopier.copy(aSwitch2),
+                                                              treeCopier.copy(callForX)));
+
+        switchExpected2.getDecoratedTree().name = switchTest2.getName();
+        switchExpected2.getDecoratedTree().sym = switchTest2.getTargetSymbol();
+
         return
         $(
             $(loneAssignments, expected),
             $(usedAssignments, expected2),
+            $(switchTest2, switchExpected2),
             $(switchTest, switchExpected)
         );
     }

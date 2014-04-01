@@ -103,7 +103,6 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
                 log.fatal("NoSuchFieldException accessing field " + fields[i] + " on " + pClass.getCanonicalName(), e);
             }
         }
-
     }
 
     /**
@@ -424,6 +423,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
     public static class AJCEmptyExpression extends AJCExpressionTree {
         protected AJCEmptyExpression() {
             super(null);
+            effects = new Effects(EffectSet.NO_EFFECTS);
         }
 
         @Override
@@ -443,6 +443,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         protected AJCSkip(JCSkip tree) {
             super(tree);
             decoratedTree = tree;
+            effects = new Effects(EffectSet.NO_EFFECTS);
         }
 
         @Override
@@ -475,9 +476,6 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         public void remove(AJCStatement statement) {
             stats = JavacListUtils.removeElement(stats, statement);
             decoratedTree.stats = JavacListUtils.removeElement(decoratedTree.stats, statement.decoratedTree);
-            // TODO: Need to update EffectSets to be happy with this change, too...
-            // Walking up the tree unioning EffectSets is sufficient, but once you reach the enclosing method you need
-            // a dependency graph for those to facilitate dispersal of the change across recursive calls and suchlike.
         }
 
         /**
@@ -505,7 +503,6 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             }
 
             decoratedTree.stats = JavacListUtils.addAtIndex(decoratedTree.stats, index, unwrapped);
-
         }
 
         private int indexOfOrFail(AJCStatement node) {

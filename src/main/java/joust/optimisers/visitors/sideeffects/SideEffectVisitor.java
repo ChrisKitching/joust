@@ -4,6 +4,7 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.util.List;
 import joust.joustcache.JOUSTCache;
+import joust.tree.annotatedtree.AJCForest;
 import joust.tree.annotatedtree.AJCTreeVisitor;
 import joust.treeinfo.EffectSet;
 import joust.treeinfo.TreeInfoManager;
@@ -21,7 +22,6 @@ import java.util.logging.Logger;
 import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.code.Symbol.*;
 import static joust.treeinfo.EffectSet.*;
-import static joust.Optimiser.inputTrees;
 import static joust.utils.StaticCompilerUtils.types;
 
 @Log
@@ -139,10 +139,10 @@ public class SideEffectVisitor extends AJCTreeVisitor {
         log.info("Commencing effect dependency resolution.");
         // Ask the cache for information on all called methods that aren't in the method table. These
         // can be resolved right away.
-        Set<MethodSymbol> knownSymbols = inputTrees.methodTable.keySet();
+        Set<MethodSymbol> knownSymbols = AJCForest.getInstance().methodTable.keySet();
 
         log.debug("Keyset: {}", Arrays.toString(methodDeps.keySet().toArray()));
-        log.debug("mTable Keyset: {}", Arrays.toString(inputTrees.methodTable.keySet().toArray()));
+        log.debug("mTable Keyset: {}", Arrays.toString(AJCForest.getInstance().methodTable.keySet().toArray()));
         calledMethodsWithoutSource.removeAll(knownSymbols);
         log.debug("calledCopy: {}", Arrays.toString(calledMethodsWithoutSource.toArray()));
 
@@ -291,12 +291,6 @@ public class SideEffectVisitor extends AJCTreeVisitor {
     @Override
     public void visitSkip(AJCSkip that) {
         super.visitSkip(that);
-        that.effects = new Effects(NO_EFFECTS);
-    }
-
-    @Override
-    public void visitEmptyExpression(AJCEmptyExpression that) {
-        super.visitEmptyExpression(that);
         that.effects = new Effects(NO_EFFECTS);
     }
 
@@ -597,7 +591,9 @@ public class SideEffectVisitor extends AJCTreeVisitor {
 
     @Override
     public void visitVariableDecl(AJCVariableDecl that) {
+        log.debug("Visit variable decl{} ", that);
         super.visitVariableDecl(that);
+
 
         that.effects = Effects.unionWithDirect(write(that.getTargetSymbol()), that.getInit().effects);
     }

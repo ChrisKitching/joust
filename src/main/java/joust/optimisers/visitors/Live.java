@@ -1,11 +1,14 @@
 package joust.optimisers.visitors;
 
 import com.sun.tools.javac.util.List;
+import joust.tree.annotatedtree.AJCTree;
+import joust.treeinfo.EffectSet;
 import joust.utils.LogUtils;
 import joust.utils.SymbolSet;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -20,6 +23,13 @@ import static com.sun.tools.javac.code.Symbol.*;
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class Live extends BackwardsFlowVisitor {
+    // If we're currently processing inside a loop, this flag is set.
+    private boolean withinLoop = false;
+
+    // The set of symbols that are freshly declared within this loop. These are the only symbols that may be killed
+    // while we're within the current loop.
+    Set<VarSymbol> symbolWhitelist;
+
     Set<VarSymbol> currentlyLive = new SymbolSet();
 
     // Every symbol that has ever been live.
@@ -48,26 +58,101 @@ public class Live extends BackwardsFlowVisitor {
         recentlyKilled = recentlyKilledList.peek();
     }
 
-    //TODO: Can we remove these?
+    private void kill(VarSymbol sym) {
+        if (withinLoop && !symbolWhitelist.contains(sym)) {
+            return;
+        }
+
+        if (!currentlyLive.contains(sym)) {
+            return;
+        }
+
+        recentlyKilled.add(sym);
+        currentlyLive.remove(sym);
+    }
+    private void kill(Set<VarSymbol> syms) {
+        if (withinLoop) {
+            syms.retainAll(symbolWhitelist);
+        }
+
+        // Drop those that aren't currently live...
+        Set<VarSymbol> copy = new HashSet<>(syms);
+        copy.retainAll(currentlyLive);
+
+        // And remove it from the in-progress killed set.
+        recentlyKilled.addAll(copy);
+        currentlyLive.removeAll(copy);
+    }
+
+    // Visit loops twice, so the liveness between loops is considered...
     @Override
     public void visitDoWhileLoop(AJCDoWhileLoop jcDoWhileLoop) {
+        boolean wasInLoop = enterLoop(jcDoWhileLoop);
+
         enterBlock();
         super.visitDoWhileLoop(jcDoWhileLoop);
         leaveBlock();
+
+        withinLoop = wasInLoop;
     }
 
     @Override
     public void visitWhileLoop(AJCWhileLoop jcWhileLoop) {
+        boolean wasInLoop = enterLoop(jcWhileLoop);
+
         enterBlock();
         super.visitWhileLoop(jcWhileLoop);
         leaveBlock();
+
+        withinLoop = wasInLoop;
     }
 
     @Override
     public void visitForLoop(AJCForLoop jcForLoop) {
+        // Loops are annoying - stuff can be made live within the loop that isn't live after the loop and which is
+        // assigned within the loop, later than the read. That assignment needs to be kept, though, but possibly
+        // redundant ones that shadow it might not.
+        // Fun.
+
+        boolean wasInLoop = enterLoop(jcForLoop);
+
         enterBlock();
         super.visitForLoop(jcForLoop);
         leaveBlock();
+
+        withinLoop = wasInLoop;
+    }
+
+    /**
+     * Update the state as required to enter a loop.
+     * @param loop The loop node we're about to process.
+     * @return If the loop has readInternal == UNIVERSAL_SET.
+     */
+    private boolean enterLoop(AJCEffectAnnotatedTree loop) {
+        AssignmentLocator asgLocator = new AssignmentLocator();
+        asgLocator.visitTree(loop);
+
+        symbolWhitelist = asgLocator.declarations;
+
+        boolean wasInLoop = withinLoop;
+        withinLoop = true;
+
+        // Add to the live set every variable read somewhere in the loop that isn't declared within the loop.
+        // TODO: This makes us miss some redundant assignments... :(
+        EffectSet effects = loop.effects.getEffectSet();
+        Set<VarSymbol> syms = effects.readInternal;
+        if (syms != SymbolSet.UNIVERSAL_SET) {
+            if (syms != null) {
+                Set<VarSymbol> symCopy = new HashSet<>(syms);
+                symCopy.removeAll(symbolWhitelist);
+
+                currentlyLive.addAll(symCopy);
+            }
+        } else {
+            symbolWhitelist = new HashSet<>();
+        }
+
+        return wasInLoop;
     }
 
     @Override
@@ -96,9 +181,8 @@ public class Live extends BackwardsFlowVisitor {
         // Take the intersection of the kill sets...
         killedInThen.retainAll(killedInElse);
 
-        // And remove it from the in-progress killed set.
-        recentlyKilled.removeAll(killedInThen);
-        currentlyLive.removeAll(killedInThen);
+        kill(killedInThen);
+
         visit(jcIf.cond);
     }
 
@@ -132,9 +216,61 @@ public class Live extends BackwardsFlowVisitor {
         }
 
         if (killedEverywhere != null && haveDefaultBranch) {
-            recentlyKilled.addAll(killedEverywhere);
-            currentlyLive.removeAll(killedEverywhere);
+            kill(killedEverywhere);
         }
+
+        visit(jcSwitch.selector);
+    }
+
+
+
+    @Override
+    public void visitTry(AJCTry jcTry) {
+        // If there's a finaliser, the analysis of everything else takes place in series with it.
+        enterBlock();
+        visit(jcTry.finalizer);
+        HashSet<VarSymbol> finaliserDeaths = new HashSet<>(recentlyKilled);
+        leaveBlock();
+
+        finaliserDeaths.retainAll(currentlyLive);
+
+        // If it's killed in the finaliser, it's dead in the catchers/body.
+        recentlyKilled.addAll(finaliserDeaths);
+        currentlyLive.removeAll(finaliserDeaths);
+
+        // Find the things killed in every catcher, similarly to how we handle switch cases.
+        HashSet<VarSymbol> catcherDeaths = null;
+        for (AJCCatch catcher : jcTry.catchers) {
+            enterBlock();
+            visit(catcher);
+
+            // Track everything that is killed in every catcher.
+            if (catcherDeaths == null) {
+                catcherDeaths = new HashSet<>(recentlyKilled);
+            } else {
+                catcherDeaths.retainAll(recentlyKilled);
+            }
+
+            // And then we restore the live set to the original state for the next one.
+            leaveBlock();
+        }
+
+        enterBlock();
+        visit(jcTry.body);
+        HashSet<VarSymbol> bodyDeaths = new HashSet<>(recentlyKilled);
+
+        leaveBlock();
+
+        // If there are no catchers, we can't kill anything at all - it'll jump from the try to the finally at some
+        // point. Without a system to determine where that jump occurs, we're stuck. TODO: That!
+        if (catcherDeaths == null) {
+            return;
+        }
+
+        // If it's dead in all catchers and the body, it's also dead.
+        bodyDeaths.retainAll(catcherDeaths);
+
+        kill(bodyDeaths);
     }
 
     // Stuff should start being live if it's live *anywhere* and stop being live if it stops *everywhere*.
@@ -149,30 +285,41 @@ public class Live extends BackwardsFlowVisitor {
 
     @Override
     public void visitVariableDecl(AJCVariableDecl jcVariableDecl) {
-        markLive(jcVariableDecl);
         if (!jcVariableDecl.getInit().isEmptyExpression()) {
             visit(jcVariableDecl.getInit());
+        }
 
+        markLive(jcVariableDecl);
+
+        if (!jcVariableDecl.getInit().isEmptyExpression()) {
             // If there's an assignment, we just killed this symbol (But may have added some, too!).
             VarSymbol referenced = jcVariableDecl.getTargetSymbol();
-            currentlyLive.remove(referenced);
-            recentlyKilled.add(referenced);
+            kill(referenced);
         }
     }
 
     @Override
     public void visitAssign(AJCAssign jcAssign) {
+        log.debug("VisitAsg: {}", jcAssign);
+        log.debug(Arrays.toString(currentlyLive.toArray()));
         visit(jcAssign.rhs);
 
         markLive(jcAssign);
 
+        // Array accesses aren't *really* writes.
+        if (jcAssign.lhs instanceof AJCArrayAccess) {
+            return;
+        }
+
         VarSymbol referenced = jcAssign.lhs.getTargetSymbol();
-        currentlyLive.remove(referenced);
-        recentlyKilled.add(referenced);
+
+        kill(referenced);
     }
 
     @Override
     public void visitAssignop(AJCAssignOp jcAssignOp) {
+        log.debug("VisitAsgOp: {}", jcAssignOp);
+        log.debug(Arrays.toString(currentlyLive.toArray()));
         visit(jcAssignOp.rhs);
 
         markLive(jcAssignOp);
@@ -184,6 +331,7 @@ public class Live extends BackwardsFlowVisitor {
     @Override
     public void visitUnaryAsg(AJCUnaryAsg that) {
         log.debug("Arg is: {}", that.arg);
+        log.debug(Arrays.toString(currentlyLive.toArray()));
         markLive(that);
         visit(that.arg);
     }
@@ -208,10 +356,10 @@ public class Live extends BackwardsFlowVisitor {
         if (!(tree.getTargetSymbol() instanceof VarSymbol)) {
             return;
         }
+        log.debug("Visit ref: {}", tree);
+        log.debug(Arrays.toString(currentlyLive.toArray()));
+
         VarSymbol referenced = (VarSymbol) tree.getTargetSymbol();
-        if (referenced == null) {
-            return;
-        }
 
         currentlyLive.add(referenced);
         everLive.add(referenced);
