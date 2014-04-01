@@ -138,6 +138,10 @@ class EvaluationContext {
 
         // Increment the stored value for this VarSymbol.
         Value existingValue = currentAssignments.get(target);
+        if (existingValue == null) {
+            return Value.UNKNOWN;
+        }
+
         Value newValue = Value.binary(Tag.PLUS, existingValue, Value.of(inc));
         if (result == null) {
             result = newValue;
