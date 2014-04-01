@@ -38,6 +38,7 @@ public class CommutativitySorterComparator implements Comparator<AJCExpressionTr
                 put(AJCAssignOp.class, 9);
                 put(AJCConditional.class, 10);
                 put(AJCCall.class, 11);
+                put(AJCEmptyExpression.class, 12);
             }
         };
 
