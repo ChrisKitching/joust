@@ -44,6 +44,13 @@ public abstract class OptimisationRunnable implements Runnable {
                 log.fatal("Exception thrown from OneShot while instantiating translator: ", e);
             }
         }
+
+        protected void logExecution(AJCTree node) {
+            if (node instanceof AJCTree.AJCClassDecl) {
+                AJCTree.AJCClassDecl clazz = (AJCTree.AJCClassDecl) node;
+                log.debug("Running {} on {}", translatorInstance.getClass().getSimpleName(), clazz.getSym());
+            }
+        }
     }
 
     abstract static class OneShot extends SingleTranslatorInstance {
@@ -53,6 +60,8 @@ public abstract class OptimisationRunnable implements Runnable {
 
         @Override
         public void processRootNode(AJCTree node) {
+            logExecution(node);
+
             // Apply the visitor once to each tree.
             translatorInstance.visitTree(node);
         }
@@ -65,6 +74,8 @@ public abstract class OptimisationRunnable implements Runnable {
 
         @Override
         protected void processRootNode(AJCTree node) {
+            logExecution(node);
+
             do {
                 translatorInstance.visitTree(node);
             } while(translatorInstance.makingChanges());
@@ -89,9 +100,15 @@ public abstract class OptimisationRunnable implements Runnable {
 
         @Override
         protected void processRootNode(AJCTree node) {
+            logExecution(node);
+
             do {
                 translatorInstance.visitTree(node);
 
+                if (node instanceof AJCTree.AJCClassDecl) {
+                    AJCTree.AJCClassDecl clazz = (AJCTree.AJCClassDecl) node;
+                    log.debug("Running {} on {}", secondaryTranslatorInstance.getClass().getSimpleName(), clazz.getSym());
+                }
                 do {
                     secondaryTranslatorInstance.visitTree(node);
                 } while (secondaryTranslatorInstance.makingChanges());
