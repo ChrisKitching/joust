@@ -101,6 +101,8 @@ public class AJCTreeCopier {
             return (T) copyArrayType((AJCArrayTypeTree) that);
         } else if (that instanceof AJCTypeUnion) {
             return (T) copyTypeUnion((AJCTypeUnion) that);
+        } else if (that instanceof AJCObjectTypeTree) {
+            return (T) copyObjectType((AJCObjectTypeTree) that);
         } else if (that instanceof AJCAnnotation) {
             return (T) copyAnnotation((AJCAnnotation) that);
         } else if (that instanceof AJCModifiers) {
@@ -453,6 +455,13 @@ public class AJCTreeCopier {
     
     public AJCArrayTypeTree copyArrayType(AJCArrayTypeTree that) {
         AJCArrayTypeTree node = treeMaker.TypeArray(copy(that.elemtype));
+
+        node.getDecoratedTree().type = that.getDecoratedTree().type;
+        return node;
+    }
+
+    private AJCObjectTypeTree copyObjectType(AJCObjectTypeTree that) {
+        AJCObjectTypeTree node = treeMaker.ObjectType(copy(that.getUnderlyingSymbol()));
 
         node.getDecoratedTree().type = that.getDecoratedTree().type;
         return node;

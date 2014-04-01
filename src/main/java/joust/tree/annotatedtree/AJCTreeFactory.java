@@ -506,7 +506,12 @@ public class AJCTreeFactory implements AJCTree.Factory {
 
     @Override
     public AJCTypeCast TypeCast(AJCTypeExpression clazz, AJCExpressionTree expr) {
-        AJCTypeCast ret = new AJCTypeCast(javacTreeMaker.TypeCast(clazz.getDecoratedTree(), expr.getDecoratedTree()), clazz, expr);
+        AJCTypeCast ret = new AJCTypeCast(
+                javacTreeMaker.TypeCast(
+                        clazz.getDecoratedTree(),
+                        expr.getDecoratedTree()),
+                clazz,
+                expr);
 
         clazz.mParentNode = ret;
         expr.mParentNode = ret;
@@ -582,6 +587,15 @@ public class AJCTreeFactory implements AJCTree.Factory {
         AJCArrayTypeTree ret = new AJCArrayTypeTree(javacTreeMaker.TypeArray(elemtype.getDecoratedTree()), elemtype);
 
         elemtype.mParentNode = ret;
+
+        return ret;
+    }
+
+    @Override
+    public AJCObjectTypeTree ObjectType(AJCSymbolRefTree<TypeSymbol> ref) {
+        AJCObjectTypeTree ret = new AJCObjectTypeTree(ref);
+
+        ref.mParentNode = ret;
 
         return ret;
     }

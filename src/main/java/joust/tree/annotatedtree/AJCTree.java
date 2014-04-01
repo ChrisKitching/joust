@@ -1355,6 +1355,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         AJCLiteral Literal(Object value);
         AJCPrimitiveTypeTree TypeIdent(TypeTag typetag);
         AJCArrayTypeTree TypeArray(AJCTypeExpression elemtype);
+        AJCObjectTypeTree ObjectType(AJCSymbolRefTree<TypeSymbol> ref);
         AJCTypeUnion TypeUnion(List<AJCTypeExpression> components);
         AJCAnnotation Annotation(AJCTree annotationType, List<AJCExpressionTree> args);
         AJCModifiers Modifiers(long flags, List<AJCAnnotation> annotations);
