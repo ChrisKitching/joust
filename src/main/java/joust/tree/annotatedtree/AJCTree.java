@@ -100,6 +100,16 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
                     theList = JavacListUtils.replace(theList, this, replacement);
                     replacement.mParentNode = mParentNode;
                     fields[i].set(mParentNode, theList);
+
+                    // Push this change onto the JCTree, as well...
+                    Class<? extends JCTree> underlyingClass = mParentNode.decoratedTree.getClass();
+                    Field targetField = ReflectionUtils.findField(underlyingClass, fields[i].getName());
+
+                    @SuppressWarnings("unchecked")
+                    List<JCTree> realList = (List<JCTree>) targetField.get(mParentNode.decoratedTree);
+                    realList = JavacListUtils.replace(realList, decoratedTree, replacement.decoratedTree);
+                    targetField.set(mParentNode.decoratedTree, realList);
+
                     return;
                 }
             } catch (IllegalAccessException e) {
