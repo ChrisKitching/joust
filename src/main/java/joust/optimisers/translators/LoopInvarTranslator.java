@@ -5,6 +5,7 @@ import com.sun.tools.javac.util.Name;
 import joust.optimisers.avail.NameFactory;
 import joust.optimisers.invar.ExpressionComplexityClassifier;
 import joust.optimisers.invar.InvariantExpressionFinder;
+import joust.tree.annotatedtree.AJCForest;
 import joust.treeinfo.EffectSet;
 import joust.utils.LogUtils;
 import lombok.experimental.ExtensionMethod;
@@ -71,6 +72,7 @@ public class LoopInvarTranslator extends BaseTranslator {
             AJCIdent ref = treeMaker.Ident(newSym);
             expr.swapFor(ref);
             mHasMadeAChange = true;
+            AJCForest.getInstance().initialAnalysis();
         }
 
         if (mHasMadeAChange) {

@@ -2,6 +2,7 @@ package joust.optimisers.translators;
 
 import com.sun.tools.javac.code.Symbol;
 import joust.optimisers.evaluation.Value;
+import joust.tree.annotatedtree.AJCForest;
 import joust.utils.LogUtils;
 import joust.utils.TreeUtils;
 import lombok.AllArgsConstructor;
@@ -42,5 +43,6 @@ class ContextInliningTranslator extends BaseTranslator {
         AJCLiteral result = knownValue.toLiteral();
         tree.swapFor(result);
         log.debug("Replacing {} with {}", tree, result);
+        AJCForest.getInstance().initialAnalysis();
     }
 }

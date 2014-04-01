@@ -1,6 +1,7 @@
 package joust.optimisers.translators;
 
 import joust.optimisers.visitors.Live;
+import joust.tree.annotatedtree.AJCForest;
 import joust.tree.annotatedtree.AJCTree;
 import joust.treeinfo.EffectSet;
 import joust.treeinfo.TreeInfoManager;
@@ -97,6 +98,7 @@ public class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
         if (tree.expr.isEmptyExpression()) {
             mHasMadeAChange = true;
             tree.getEnclosingBlock().remove(tree);
+            AJCForest.getInstance().initialAnalysis();
         }
     }
 
@@ -120,6 +122,7 @@ public class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
                 log.info("Killing redundant assignment: {}", tree);
                 mHasMadeAChange = true;
                 tree.swapFor(treeMaker.EmptyExpression());
+                AJCForest.getInstance().initialAnalysis();
             }
         }
     }
@@ -144,6 +147,7 @@ public class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
                 log.info("Killing redundant assignment: {}", tree);
                 mHasMadeAChange = true;
                 tree.swapFor(treeMaker.EmptyExpression());
+                AJCForest.getInstance().initialAnalysis();
             }
         }
     }
@@ -169,6 +173,7 @@ public class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
                     // But even the declaration is pointless.
                     log.debug("Binning declaration: {}", tree);
                     tree.getEnclosingBlock().remove(tree);
+                    AJCForest.getInstance().initialAnalysis();
                     mHasMadeAChange = true;
                 }
 
@@ -185,6 +190,7 @@ public class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
                     // But we can kill the assignment.
                     log.debug("Dropping assignment: {}", tree);
                     tree.setInit(treeMaker.EmptyExpression());
+                    AJCForest.getInstance().initialAnalysis();
                     mHasMadeAChange = true;
                 }
 
@@ -196,6 +202,7 @@ public class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
                 // Nope. Bin everything.
                 log.debug("Binning everything: {}", tree);
                 tree.getEnclosingBlock().remove(tree);
+                AJCForest.getInstance().initialAnalysis();
                 mHasMadeAChange = true;
                 return;
             }
@@ -203,6 +210,7 @@ public class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
             // We do - so shunt it.
             log.debug("Shunting: {}", tree);
             tree.swapFor(treeMaker.Exec(tree.getInit()));
+            AJCForest.getInstance().initialAnalysis();
             mHasMadeAChange = true;
         }
     }
