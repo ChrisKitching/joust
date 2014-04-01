@@ -1,7 +1,7 @@
 package tests.unittests;
 
-import joust.utils.LogUtils;
-import joust.utils.map.StackMap;
+import joust.utils.logging.LogUtils;
+import joust.utils.data.StackMap;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 import org.junit.Test;

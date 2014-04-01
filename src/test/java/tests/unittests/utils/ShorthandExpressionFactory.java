@@ -2,7 +2,7 @@ package tests.unittests.utils;
 
 import com.sun.tools.javac.code.TypeTag;
 
-import static joust.utils.StaticCompilerUtils.treeMaker;
+import static joust.utils.compiler.StaticCompilerUtils.treeMaker;
 import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.tree.JCTree.Tag;
 import static com.sun.tools.javac.code.Symbol.*;

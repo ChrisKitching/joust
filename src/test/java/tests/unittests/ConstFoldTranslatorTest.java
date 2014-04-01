@@ -1,7 +1,7 @@
 package tests.unittests;
 
 import joust.optimisers.translators.ConstFoldTranslator;
-import joust.utils.LogUtils;
+import joust.utils.logging.LogUtils;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import lombok.experimental.ExtensionMethod;
@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 import static joust.tree.annotatedtree.AJCTree.*;
 import static junitparams.JUnitParamsRunner.$;
 import static tests.unittests.utils.ShorthandExpressionFactory.*;
-import static joust.utils.StaticCompilerUtils.treeMaker;
+import static joust.utils.compiler.StaticCompilerUtils.treeMaker;
 
 /**
  * Test for the constant folder.

@@ -3,7 +3,7 @@ package joust.optimisers.runnables;
 import com.sun.tools.javac.tree.JCTree;
 import joust.optimisers.translators.AssertionStrippingTranslator;
 
-import static joust.Optimiser.conventionalTrees;
+import static joust.JOUST.conventionalTrees;
 
 /**
  * Assertion stripping.

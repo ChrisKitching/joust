@@ -14,20 +14,18 @@ import jdbm.RecordManagerFactory;
 import joust.joustcache.data.ClassInfo;
 import joust.joustcache.data.MethodInfo;
 import joust.joustcache.data.TransientClassInfo;
-import joust.treeinfo.EffectSet;
-import joust.treeinfo.TreeInfoManager;
-import joust.utils.LogUtils;
-import joust.utils.SymbolSet;
+import joust.tree.annotatedtree.treeinfo.EffectSet;
+import joust.tree.annotatedtree.treeinfo.TreeInfoManager;
+import joust.utils.logging.LogUtils;
+import joust.utils.data.SymbolSet;
 import lombok.Cleanup;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
-import javax.tools.JavaFileObject;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 

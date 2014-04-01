@@ -2,7 +2,7 @@ package tests.unittests;
 
 import static org.junit.Assert.*;
 
-import joust.utils.LogUtils;
+import joust.utils.logging.LogUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 import org.junit.Test;

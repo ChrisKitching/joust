@@ -2,9 +2,8 @@ package joust.tree.annotatedtree;
 
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.util.List;
-import joust.utils.LogUtils;
+import joust.utils.logging.LogUtils;
 import lombok.AllArgsConstructor;
-import lombok.Delegate;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
@@ -19,7 +18,6 @@ import static joust.tree.annotatedtree.AJCTree.*;
  * it returns true if the other expression is equivalent to this one (ie. One node could be replaced with the
  * other in the tree without any affect on the output).
  */
-
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 @AllArgsConstructor

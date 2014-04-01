@@ -6,8 +6,8 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import joust.joustcache.data.ClassInfo;
 import joust.tree.annotatedtree.AJCForest;
-import joust.utils.LogUtils;
-import joust.utils.SymbolSet;
+import joust.utils.logging.LogUtils;
+import joust.utils.data.SymbolSet;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 

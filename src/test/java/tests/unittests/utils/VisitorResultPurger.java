@@ -1,9 +1,9 @@
 package tests.unittests.utils;
 
-import joust.optimisers.visitors.sideeffects.Effects;
+import joust.analysers.sideeffects.Effects;
 import joust.tree.annotatedtree.AJCTree;
 import joust.tree.annotatedtree.AJCTreeVisitor;
-import joust.treeinfo.EffectSet;
+import joust.tree.annotatedtree.treeinfo.EffectSet;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 

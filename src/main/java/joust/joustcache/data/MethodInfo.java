@@ -1,10 +1,9 @@
 package joust.joustcache.data;
 
 import com.sun.tools.javac.code.Symbol;
-import joust.optimisers.visitors.sideeffects.Effects;
-import joust.treeinfo.EffectSet;
+import joust.analysers.sideeffects.Effects;
+import joust.tree.annotatedtree.treeinfo.EffectSet;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**

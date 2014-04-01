@@ -1,16 +1,14 @@
 package joust.tree.annotatedtree;
 
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.util.List;
-import joust.Optimiser;
 import joust.joustcache.JOUSTCache;
 import joust.joustcache.data.ClassInfo;
-import joust.optimisers.translators.ExpressionNormalisingTranslator;
-import joust.optimisers.visitors.sideeffects.SideEffectVisitor;
+import joust.optimisers.normalise.ExpressionNormalisingTranslator;
+import joust.analysers.sideeffects.SideEffectVisitor;
 import joust.tree.conversion.TreePreparationTranslator;
-import joust.treeinfo.TreeInfoManager;
-import joust.utils.LogUtils;
+import joust.tree.annotatedtree.treeinfo.TreeInfoManager;
+import joust.utils.logging.LogUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 

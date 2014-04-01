@@ -5,7 +5,7 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 
 import static joust.tree.annotatedtree.AJCTree.*;
-import static joust.utils.StaticCompilerUtils.*;
+import static joust.utils.compiler.StaticCompilerUtils.*;
 
 public class AJCTreeCopier {
     protected static final Context.Key<AJCTreeCopier> AJCTreeCopierKey = new Context.Key<>();

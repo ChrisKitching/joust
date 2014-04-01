@@ -1,21 +1,19 @@
 package joust.optimisers.invar;
 
 import joust.tree.annotatedtree.AJCTreeVisitor;
-import joust.treeinfo.EffectSet;
-import joust.utils.LogUtils;
-import joust.utils.SymbolSet;
+import joust.tree.annotatedtree.treeinfo.EffectSet;
+import joust.utils.logging.LogUtils;
+import joust.utils.data.SymbolSet;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
-import static com.sun.tools.javac.code.Symbol.*;
 
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})

@@ -2,7 +2,7 @@ package tests.unittests;
 
 import joust.tree.annotatedtree.AJCTree;
 import joust.tree.annotatedtree.AJCTreeVisitor;
-import joust.utils.LogUtils;
+import joust.utils.logging.LogUtils;
 import joust.utils.ReflectionUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;

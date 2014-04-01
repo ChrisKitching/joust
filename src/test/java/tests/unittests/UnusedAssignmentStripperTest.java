@@ -2,10 +2,10 @@ package tests.unittests;
 
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
-import joust.utils.NameFactory;
+import joust.utils.tree.NameFactory;
 import joust.optimisers.translators.UnusedAssignmentStripper;
-import joust.optimisers.visitors.sideeffects.SideEffectVisitor;
-import joust.utils.LogUtils;
+import joust.analysers.sideeffects.SideEffectVisitor;
+import joust.utils.logging.LogUtils;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import lombok.experimental.ExtensionMethod;
@@ -19,7 +19,7 @@ import static joust.tree.annotatedtree.AJCTree.*;
 import static junitparams.JUnitParamsRunner.$;
 import static tests.unittests.utils.ShorthandExpressionFactory.*;
 import static  com.sun.tools.javac.code.Symbol.*;
-import static joust.utils.StaticCompilerUtils.treeCopier;
+import static joust.utils.compiler.StaticCompilerUtils.treeCopier;
 import static tests.unittests.utils.UnitTestTreeFactory.*;
 
 /**

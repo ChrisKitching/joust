@@ -1,7 +1,7 @@
 package joust.optimisers.invar;
 
-import joust.optimisers.evaluation.EvaluationContext;
-import joust.optimisers.evaluation.Value;
+import joust.utils.tree.evaluation.EvaluationContext;
+import joust.utils.tree.evaluation.Value;
 import joust.tree.annotatedtree.AJCTreeVisitor;
 
 import static joust.tree.annotatedtree.AJCTree.*;

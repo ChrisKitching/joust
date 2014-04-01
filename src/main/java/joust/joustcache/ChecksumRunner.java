@@ -4,14 +4,14 @@ import static javax.tools.StandardLocation.CLASS_OUTPUT;
 
 import joust.joustcache.data.TransientClassInfo;
 import joust.optimisers.runnables.OptimisationRunnable;
-import joust.utils.LogUtils;
+import joust.utils.logging.LogUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import static joust.utils.StaticCompilerUtils.fileManager;
+import static joust.utils.compiler.StaticCompilerUtils.fileManager;
 
 /**
  * A phase to be run after writing the classfiles which computes the checksums of the produced files

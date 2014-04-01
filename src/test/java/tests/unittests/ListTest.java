@@ -1,8 +1,8 @@
 package tests.unittests;
 
 import com.sun.tools.javac.util.List;
-import joust.utils.JavacListUtils;
-import joust.utils.LogUtils;
+import joust.utils.data.JavacListUtils;
+import joust.utils.logging.LogUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 import org.junit.Rule;

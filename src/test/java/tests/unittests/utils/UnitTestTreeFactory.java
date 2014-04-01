@@ -6,15 +6,13 @@ import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
-import joust.utils.NameFactory;
+import joust.utils.tree.NameFactory;
 import joust.tree.annotatedtree.AJCTree;
-import joust.utils.TreeUtils;
-
-import javax.lang.model.type.TypeKind;
+import joust.utils.tree.TreeUtils;
 
 import static joust.tree.annotatedtree.AJCTree.*;
-import static joust.utils.StaticCompilerUtils.symtab;
-import static joust.utils.StaticCompilerUtils.treeMaker;
+import static joust.utils.compiler.StaticCompilerUtils.symtab;
+import static joust.utils.compiler.StaticCompilerUtils.treeMaker;
 import static com.sun.tools.javac.code.Symbol.*;
 
 public final class UnitTestTreeFactory {

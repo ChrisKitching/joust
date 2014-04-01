@@ -7,11 +7,11 @@ import joust.optimisers.invar.ExpressionComplexityClassifier;
 import joust.optimisers.translators.BaseTranslator;
 import joust.tree.annotatedtree.AJCComparableExpressionTree;
 import joust.tree.annotatedtree.AJCForest;
-import joust.treeinfo.EffectSet;
-import joust.utils.LogUtils;
-import joust.utils.NameFactory;
-import joust.utils.SymbolSet;
-import joust.utils.map.StackMap;
+import joust.tree.annotatedtree.treeinfo.EffectSet;
+import joust.utils.logging.LogUtils;
+import joust.utils.tree.NameFactory;
+import joust.utils.data.SymbolSet;
+import joust.utils.data.StackMap;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
-import static joust.utils.StaticCompilerUtils.*;
+import static joust.utils.compiler.StaticCompilerUtils.*;
 import static joust.tree.annotatedtree.AJCComparableExpressionTree.*;
 
 /**

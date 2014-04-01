@@ -2,10 +2,10 @@ package joust.tree.annotatedtree;
 
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.List;
-import joust.utils.LogUtils;
+import joust.tree.annotatedtree.AJCTree;
+import joust.utils.logging.LogUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
@@ -17,16 +17,19 @@ import java.util.logging.Logger;
 
 import static com.sun.tools.javac.tree.JCTree.*;
 import static joust.tree.annotatedtree.AJCTree.*;
-import static joust.utils.StaticCompilerUtils.treeMaker;
+import static joust.utils.compiler.StaticCompilerUtils.treeMaker;
 
 /**
  * Scan a Java AST and convert it to the annotated format. Relies on the iteration order of TreeScanner.
+ * Not in the conversion package since it uses constructors on AJCTree classes that are not public (And should not be
+ * used outside this class).
  */
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class InitialASTConverter extends TreeScanner {
     // The 0-length String[]...
     public static final String[] NONE = {};
+
     // This horror is a mapping from new tree classes to the lists of field names they need copied from the source
     // AST node, in the order they must be popped from the stack to do so successfully. (The reverse of the order that
     // TreeScanner visits them.

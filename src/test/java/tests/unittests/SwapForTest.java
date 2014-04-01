@@ -2,10 +2,10 @@ package tests.unittests;
 
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
-import joust.utils.NameFactory;
+import joust.utils.tree.NameFactory;
 import joust.tree.annotatedtree.AJCTree;
-import joust.utils.JavacListUtils;
-import joust.utils.LogUtils;
+import joust.utils.data.JavacListUtils;
+import joust.utils.logging.LogUtils;
 import joust.utils.ReflectionUtils;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -16,10 +16,9 @@ import org.junit.runner.RunWith;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static joust.utils.StaticCompilerUtils.*;
+import static joust.utils.compiler.StaticCompilerUtils.*;
 import static org.junit.Assert.*;
 import static joust.tree.annotatedtree.AJCTree.*;
 import static junitparams.JUnitParamsRunner.$;

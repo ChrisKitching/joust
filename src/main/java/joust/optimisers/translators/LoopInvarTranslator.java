@@ -5,10 +5,10 @@ import com.sun.tools.javac.util.Name;
 import joust.optimisers.invar.ExpressionComplexityClassifier;
 import joust.optimisers.invar.InvariantExpressionFinder;
 import joust.tree.annotatedtree.AJCForest;
-import joust.treeinfo.EffectSet;
-import joust.utils.LogUtils;
-import joust.utils.NameFactory;
-import joust.utils.SymbolSet;
+import joust.tree.annotatedtree.treeinfo.EffectSet;
+import joust.utils.logging.LogUtils;
+import joust.utils.tree.NameFactory;
+import joust.utils.data.SymbolSet;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
@@ -17,9 +17,9 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
-import static joust.utils.StaticCompilerUtils.treeCopier;
+import static joust.utils.compiler.StaticCompilerUtils.treeCopier;
 import static com.sun.tools.javac.code.Symbol.*;
-import static joust.utils.StaticCompilerUtils.treeMaker;
+import static joust.utils.compiler.StaticCompilerUtils.treeMaker;
 
 /**
  * Tree translator implementing loop-invariant code motion.

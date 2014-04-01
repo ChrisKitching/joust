@@ -3,7 +3,7 @@ package joust.optimisers.translators;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeTranslator;
 
-import static joust.utils.StaticCompilerUtils.*;
+import static joust.utils.compiler.StaticCompilerUtils.*;
 
 public class AssertionStrippingTranslator extends TreeTranslator {
     @Override

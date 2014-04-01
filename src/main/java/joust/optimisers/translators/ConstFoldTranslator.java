@@ -1,9 +1,9 @@
 package joust.optimisers.translators;
 
-import joust.optimisers.evaluation.Value;
-import joust.utils.LogUtils;
+import joust.utils.logging.LogUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
+import joust.utils.tree.evaluation.Value;
 
 import java.util.logging.Logger;
 

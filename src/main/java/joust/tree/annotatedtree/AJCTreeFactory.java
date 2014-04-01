@@ -9,19 +9,18 @@ import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
-import joust.utils.LogUtils;
+import joust.utils.logging.LogUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.logging.Logger;
 
 import static com.sun.tools.javac.code.TypeTag.*;
 import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.tree.JCTree.*;
-import static joust.utils.StaticCompilerUtils.javacTreeMaker;
+import static joust.utils.compiler.StaticCompilerUtils.javacTreeMaker;
 import static com.sun.tools.javac.code.Symbol.*;
 
 /**

@@ -5,8 +5,8 @@ import com.sun.tools.javac.util.List;
 import joust.tree.annotatedtree.AJCForest;
 import joust.tree.annotatedtree.AJCTree;
 import joust.tree.annotatedtree.AJCTreeVisitor;
-import joust.treeinfo.TreeInfoManager;
-import joust.utils.LogUtils;
+import joust.tree.annotatedtree.treeinfo.TreeInfoManager;
+import joust.utils.logging.LogUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 

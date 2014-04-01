@@ -3,11 +3,11 @@ package tests.unittests;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
-import joust.utils.NameFactory;
-import joust.optimisers.visitors.Live;
-import joust.optimisers.visitors.sideeffects.SideEffectVisitor;
-import joust.utils.LogUtils;
-import joust.utils.SymbolSet;
+import joust.utils.tree.NameFactory;
+import joust.analysers.Live;
+import joust.analysers.sideeffects.SideEffectVisitor;
+import joust.utils.logging.LogUtils;
+import joust.utils.data.SymbolSet;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import lombok.experimental.ExtensionMethod;
@@ -15,7 +15,6 @@ import lombok.extern.java.Log;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.swing.text.html.HTML;
 import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
@@ -23,7 +22,6 @@ import static junitparams.JUnitParamsRunner.$;
 import static tests.unittests.utils.ShorthandExpressionFactory.*;
 import static  com.sun.tools.javac.code.Symbol.*;
 import static tests.unittests.utils.UnitTestTreeFactory.*;
-import static joust.utils.StaticCompilerUtils.treeCopier;
 
 /**
  * Unit tests for live variable analysis.

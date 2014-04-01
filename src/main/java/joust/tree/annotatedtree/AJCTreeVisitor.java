@@ -1,7 +1,7 @@
 package joust.tree.annotatedtree;
 
 import com.sun.tools.javac.util.List;
-import joust.utils.LogUtils;
+import joust.utils.logging.LogUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 

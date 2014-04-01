@@ -1,13 +1,10 @@
 package joust.optimisers.translators;
 
-import joust.optimisers.visitors.Live;
+import joust.analysers.Live;
 import joust.tree.annotatedtree.AJCForest;
-import joust.tree.annotatedtree.AJCTree;
-import joust.treeinfo.EffectSet;
-import joust.treeinfo.TreeInfoManager;
-import com.sun.tools.javac.code.Symbol;
-import joust.utils.LogUtils;
-import joust.utils.TreeUtils;
+import joust.tree.annotatedtree.treeinfo.EffectSet;
+import joust.utils.logging.LogUtils;
+import joust.utils.tree.TreeUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
@@ -17,7 +14,7 @@ import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.code.Symbol.*;
-import static joust.utils.StaticCompilerUtils.treeMaker;
+import static joust.utils.compiler.StaticCompilerUtils.treeMaker;
 
 /**
  * Detects and deletes unused assignments.

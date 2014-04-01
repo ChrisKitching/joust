@@ -2,15 +2,15 @@ package tests.unittests;
 
 import com.sun.tools.javac.util.Context;
 import joust.tree.annotatedtree.AJCTree;
-import joust.utils.LogUtils;
-import joust.utils.StaticCompilerUtils;
+import joust.utils.logging.LogUtils;
+import joust.utils.compiler.StaticCompilerUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 import org.junit.BeforeClass;
 
 import java.util.logging.Logger;
 
-import static joust.utils.StaticCompilerUtils.treeCopier;
+import static joust.utils.compiler.StaticCompilerUtils.treeCopier;
 
 /**
  * Base class for unit tests that require the ability to fabricate AST fragments as test inputs.

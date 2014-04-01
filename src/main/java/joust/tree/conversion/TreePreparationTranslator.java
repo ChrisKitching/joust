@@ -3,16 +3,15 @@ package joust.tree.conversion;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeTranslator;
 import com.sun.tools.javac.util.List;
-import joust.utils.JCTreeStructurePrinter;
-import joust.utils.JavacListUtils;
-import joust.utils.LogUtils;
+import joust.utils.data.JavacListUtils;
+import joust.utils.logging.LogUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
 import java.util.logging.Logger;
 
 import static com.sun.tools.javac.tree.JCTree.*;
-import static joust.utils.StaticCompilerUtils.*;
+import static joust.utils.compiler.StaticCompilerUtils.*;
 
 /**
  * A tree translator to perform translations that simplify the tree prior to converting it to our own representation.

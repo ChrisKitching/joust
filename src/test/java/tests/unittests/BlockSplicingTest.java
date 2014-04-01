@@ -2,11 +2,8 @@ package tests.unittests;
 
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
-import joust.utils.NameFactory;
-import joust.tree.annotatedtree.AJCForest;
-import joust.tree.annotatedtree.AJCTree;
-import joust.treeinfo.TreeInfoManager;
-import joust.utils.LogUtils;
+import joust.utils.tree.NameFactory;
+import joust.utils.logging.LogUtils;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import lombok.experimental.ExtensionMethod;
@@ -14,7 +11,6 @@ import lombok.extern.java.Log;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.HashMap;
 import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
