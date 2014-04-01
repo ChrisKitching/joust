@@ -56,7 +56,7 @@ public class JOUSTCache {
     static HashMap<String, TransientClassInfo> transientClassInfo = new HashMap<>();
 
     public static void init() {
-        log.error("Init JOUSTCache!");
+        log.info("Init JOUSTCache!");
         ChecksumUtils.init();
         if (databaseRecordManager != null) {
             return;

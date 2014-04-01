@@ -55,7 +55,7 @@ public class LoopInvarTranslator extends BaseTranslator {
             classifier.visitTree(expr);
 
             if (classifier.getScore() < INVAR_COMPLEXITY_THRESHOLD) {
-                log.debug("Ignoring invariant expression {} because score {} is below complexity threshold.", expr, classifier.getScore());
+                log.info("Ignoring invariant expression {} because score {} is below complexity threshold.", expr, classifier.getScore());
                 continue;
             }
 
@@ -71,12 +71,13 @@ public class LoopInvarTranslator extends BaseTranslator {
             // Replace the expression with a reference to the new temporary variable.
             AJCIdent ref = treeMaker.Ident(newSym);
             expr.swapFor(ref);
+
             mHasMadeAChange = true;
             AJCForest.getInstance().initialAnalysis();
         }
 
         if (mHasMadeAChange) {
-            log.debug("After invariant code motion:\n{}", loop.getEnclosingBlock());
+            log.info("After invariant code motion:\n{}", loop.getEnclosingBlock());
         }
     }
 
