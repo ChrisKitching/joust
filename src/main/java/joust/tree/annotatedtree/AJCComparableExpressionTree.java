@@ -23,7 +23,7 @@ import static joust.tree.annotatedtree.AJCTree.*;
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 @AllArgsConstructor
-public class AJCComparableExpressionTree<T extends AJCExpressionTree> {
+public class AJCComparableExpressionTree<T extends AJCTree & AJCExpression> {
     public final T wrappedNode;
 
     @Override
@@ -75,6 +75,12 @@ public class AJCComparableExpressionTree<T extends AJCExpressionTree> {
             return new ComparableAJCLiteral((AJCLiteral) that);
         } else if (that instanceof AJCEmptyExpression) {
             return new ComparableAJCEmptyExpression((AJCEmptyExpression) that);
+        } else if (that instanceof AJCPrimitiveTypeTree) {
+            return new ComparableAJCPrimitiveTypeTree((AJCPrimitiveTypeTree) that);
+        }  else if (that instanceof AJCArrayTypeTree) {
+            return new ComparableAJCArrayTypeTree((AJCArrayTypeTree) that);
+        }  else if (that instanceof AJCTypeUnion) {
+            return new ComparableAJCTypeUnion((AJCTypeUnion) that);
         } else if (that instanceof AJCSymbolRefTree) {
             return new ComparableAJCSymbolRefTree((AJCSymbolRefTree) that);
         }
@@ -355,6 +361,70 @@ public class AJCComparableExpressionTree<T extends AJCExpressionTree> {
             }
 
             return wrappedNode.getValue().equals(cast.wrappedNode.getValue());
+        }
+    }
+
+    public static class ComparableAJCPrimitiveTypeTree extends AJCComparableExpressionTree<AJCPrimitiveTypeTree> {
+        public ComparableAJCPrimitiveTypeTree(AJCPrimitiveTypeTree wrappedNode) {
+            super(wrappedNode);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof ComparableAJCPrimitiveTypeTree)) {
+                return false;
+            }
+
+            ComparableAJCPrimitiveTypeTree cast = (ComparableAJCPrimitiveTypeTree) obj;
+
+            return wrappedNode.getDecoratedTree().typetag == cast.wrappedNode.getDecoratedTree().typetag;
+        }
+    }
+
+    // Object type trees are handled ad SymbolRefTree<TypeSymbol>.
+
+
+    public static class ComparableAJCArrayTypeTree extends AJCComparableExpressionTree<AJCArrayTypeTree> {
+        public ComparableAJCArrayTypeTree(AJCArrayTypeTree wrappedNode) {
+            super(wrappedNode);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof ComparableAJCArrayTypeTree)) {
+                return false;
+            }
+
+            ComparableAJCArrayTypeTree cast = (ComparableAJCArrayTypeTree) obj;
+
+            // Just like a SymbolRefTree<TypeSymbol>, but it can only match another ArrayTypeTree.
+            return wrappedNode.getTargetSymbol().equals(cast.wrappedNode.getTargetSymbol());
+        }
+    }
+
+    public static class ComparableAJCTypeUnion extends AJCComparableExpressionTree<AJCTypeUnion> {
+        public ComparableAJCTypeUnion(AJCTypeUnion wrappedNode) {
+            super(wrappedNode);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof ComparableAJCTypeUnion)) {
+                return false;
+            }
+
+            ComparableAJCTypeUnion cast = (ComparableAJCTypeUnion) obj;
+
+            AJCTypeExpression[] alternatives = wrappedNode.alternatives.toArray(new AJCTypeExpression[5]);
+            AJCTypeExpression[] alternativesCast = cast.wrappedNode.alternatives.toArray(new AJCTypeExpression[5]);
+
+            for (int i = 0; i < alternatives.length; i++) {
+                if (!wrap(alternatives[i]).equals(wrap(alternativesCast[i]))) {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

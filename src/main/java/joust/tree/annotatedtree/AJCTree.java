@@ -1104,7 +1104,6 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
          * @return The value that is necessary for creating a JCLiteral to hold this information.
          */
         public static Object sanitiseLiteralValue(TypeTag tag, Object value) {
-
             if (tag == BOOLEAN) {
                 // Booleans are represented as integer 1/0 in the obvious way.
                 if (value instanceof Boolean) {
@@ -1133,7 +1132,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
                     }
                     break;
                 case INT:
-                    if (!(value instanceof String)) {
+                    if (!(value instanceof Integer)) {
                         log.fatal(INVALID_ARGUMENT_TYPE, tag, value.getClass().getSimpleName());
                         throw new IllegalArgumentException(INVALID_ARGUMENT_TYPE_SIMPLE);
                     }
@@ -1151,7 +1150,8 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
                     }
                     break;
                 case CHAR:
-                    if (!(value instanceof Character)) {
+                    // ... Because chars are integers, remember...
+                    if (!(value instanceof Integer)) {
                         log.fatal(INVALID_ARGUMENT_TYPE, tag, value.getClass().getSimpleName());
                         throw new IllegalArgumentException(INVALID_ARGUMENT_TYPE_SIMPLE);
                     }
@@ -1175,7 +1175,8 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
                     }
                     break;
                 case BOOLEAN:
-                    if (!(value instanceof Boolean)) {
+                    // Booleans are secretly ints...
+                    if (!(value instanceof Integer)) {
                         log.fatal(INVALID_ARGUMENT_TYPE, tag, value.getClass().getSimpleName());
                         throw new IllegalArgumentException(INVALID_ARGUMENT_TYPE_SIMPLE);
                     }
@@ -1188,33 +1189,12 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             return value;
         }
 
-        @Delegate(excludes = NoGetVal.class) @Getter private final JCLiteral decoratedTree;
-
-        // Interface to have Lombok exclude the getValue function (So we can "override" it).
-        private interface NoGetVal { Object getValue(); }
+        @Delegate @Getter private final JCLiteral decoratedTree;
 
         protected AJCLiteral(JCLiteral tree) {
             super(tree);
             decoratedTree = tree;
             effects = new Effects(EffectSet.NO_EFFECTS);
-        }
-
-        /**
-         * Override the underlying getValue with one that hides Javac's stupidity of representation.
-         * @return A Java value representing the value of the underlying literal - undoing Javac's quirky transformations.
-         */
-        public Object getValue() {
-            Object val = decoratedTree.getValue();
-            if (decoratedTree.typetag == BOOLEAN) {
-                return (Integer) val > 0;
-            }
-
-            if (decoratedTree.typetag == CHAR) {
-                Integer cast = (Integer) val;
-                return (char) cast.intValue();
-            }
-
-            return val;
         }
 
         /**

@@ -16,14 +16,14 @@ public class AvailableExpression {
     // The first encountered instance of this expression. Useful for introducing the temporary variable.
     // Note that multiple AvailableExpression objects with equivalent but different firstInstance expressions may exist
     // if intervening code invalidates earlier ones.
-    public final AJCComparableExpressionTree firstInstance;
+    public final AJCComparableExpressionTree<? extends AJCExpressionTree> firstInstance;
 
     // The sum of the complexity scores of each instance of this expression.
     // If this value is greater than the cost of the temporary plus |usagesInternal| * TEMP_VAR_READ_COST the transformation
     // is performed.
     @Getter private int complexityScore;
 
-    public AvailableExpression(AJCComparableExpressionTree first) {
+    public AvailableExpression(AJCComparableExpressionTree<? extends AJCExpressionTree> first) {
         firstInstance = first;
         addUsage(first);
     }

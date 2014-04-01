@@ -133,7 +133,7 @@ public class CommonSubExpressionTranslator extends BaseTranslator {
      * @return true if the visitor should continue down the tree, false if this branch should be explored no further.
      *         (Used to avoid exploring down trees that are already too inexpensive to be interesting).
      */
-    private void visitExpression(AJCComparableExpressionTree that) {
+    private void visitExpression(AJCComparableExpressionTree<? extends AJCExpressionTree> that) {
         // Determine if this tree is cheap enough that we don't care about it.
         ExpressionComplexityClassifier classifier = new ExpressionComplexityClassifier();
         classifier.visitTree(that.wrappedNode);
@@ -181,13 +181,17 @@ public class CommonSubExpressionTranslator extends BaseTranslator {
         // TODO: Make this more efficient.
         Set<AJCComparableExpressionTree> keysCopy = new HashSet<>(availableExpressions.keySet());
         for (AJCComparableExpressionTree t : keysCopy) {
-            EffectSet availEffects = t.wrappedNode.effects.getEffectSet();
-            for (Symbol.VarSymbol sym : availEffects.readInternal) {
-                if (internalWrites.contains(sym)) {
-                    log.debug("Dropping {} because {} wrote {}", t, tree, sym);
-                    finaliseAvailableExpression(availableExpressions.get(t));
-                    availableExpressions.remove(t);
-                    break;
+            if (t.wrappedNode instanceof AJCEffectAnnotatedTree) {
+                AJCEffectAnnotatedTree effectTree = (AJCEffectAnnotatedTree) t.wrappedNode;
+
+                EffectSet availEffects = effectTree.effects.getEffectSet();
+                for (Symbol.VarSymbol sym : availEffects.readInternal) {
+                    if (internalWrites.contains(sym)) {
+                        log.debug("Dropping {} because {} wrote {}", t, tree, sym);
+                        finaliseAvailableExpression(availableExpressions.get(t));
+                        availableExpressions.remove(t);
+                        break;
+                    }
                 }
             }
         }
