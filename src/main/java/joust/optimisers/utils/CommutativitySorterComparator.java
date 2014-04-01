@@ -114,6 +114,8 @@ public class CommutativitySorterComparator implements Comparator<AJCExpressionTr
                 put(Kind.DOUBLE_LITERAL, 4);
                 put(Kind.FLOAT_LITERAL, 5);
                 put(Kind.STRING_LITERAL, 6);
+                put(Kind.BOOLEAN_LITERAL, 7);
+                put(Kind.NULL_LITERAL, 8);
             }
         };
 
