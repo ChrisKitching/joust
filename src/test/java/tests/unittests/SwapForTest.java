@@ -2,7 +2,7 @@ package tests.unittests;
 
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
-import joust.optimisers.avail.NameFactory;
+import joust.utils.NameFactory;
 import joust.tree.annotatedtree.AJCTree;
 import joust.utils.JavacListUtils;
 import joust.utils.LogUtils;

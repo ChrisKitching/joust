@@ -2,11 +2,7 @@ package joust;
 
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
-import joust.joustcache.ChecksumUtils;
-import joust.joustcache.JOUSTCache;
-import joust.optimisers.avail.normalisedexpressions.PossibleSymbol;
 import joust.optimisers.runnables.AssertionStrip;
-import joust.optimisers.runnables.AssignmentStrip;
 import joust.optimisers.runnables.CSE;
 import joust.optimisers.runnables.ConstFold;
 import joust.optimisers.runnables.LoopInvar;
@@ -14,7 +10,6 @@ import joust.optimisers.runnables.TreeConverter;
 import joust.optimisers.runnables.Unroll;
 import joust.optimisers.utils.OptimisationPhaseManager;
 import joust.tree.annotatedtree.AJCForest;
-import joust.treeinfo.TreeInfoManager;
 import joust.utils.LogUtils;
 import joust.utils.StaticCompilerUtils;
 import lombok.experimental.ExtensionMethod;
@@ -80,8 +75,6 @@ public class Optimiser extends AbstractProcessor {
         }
 
         conventionalTrees = new LinkedHashSet<>();
-
-        PossibleSymbol.init();
 
         OptimisationPhaseManager.init(env);
         OptimisationPhaseManager.register(new JavacBrutaliser(), AFTER, ANNOTATION_PROCESSING);

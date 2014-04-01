@@ -17,7 +17,6 @@ public class VisitorResultPurger extends AJCTreeVisitor {
             AJCEffectAnnotatedTree cast = (AJCEffectAnnotatedTree) that;
             cast.liveVariables = null;
             cast.effects = new Effects(EffectSet.ALL_EFFECTS);
-            cast.avail = null;
         }
 
         super.visit(that);

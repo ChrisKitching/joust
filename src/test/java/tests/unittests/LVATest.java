@@ -3,7 +3,7 @@ package tests.unittests;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
-import joust.optimisers.avail.NameFactory;
+import joust.utils.NameFactory;
 import joust.optimisers.visitors.Live;
 import joust.optimisers.visitors.sideeffects.SideEffectVisitor;
 import joust.utils.LogUtils;

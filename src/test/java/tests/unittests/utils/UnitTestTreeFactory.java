@@ -6,7 +6,7 @@ import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
-import joust.optimisers.avail.NameFactory;
+import joust.utils.NameFactory;
 import joust.tree.annotatedtree.AJCTree;
 import joust.utils.TreeUtils;
 

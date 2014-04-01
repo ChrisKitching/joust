@@ -2,7 +2,7 @@ package tests.unittests;
 
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
-import joust.optimisers.avail.NameFactory;
+import joust.utils.NameFactory;
 import joust.optimisers.translators.UnusedAssignmentStripper;
 import joust.optimisers.visitors.sideeffects.SideEffectVisitor;
 import joust.utils.LogUtils;

@@ -1,17 +1,14 @@
-package joust.optimisers.avail;
+package joust.utils;
 
 import com.sun.tools.javac.util.Name;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static joust.utils.StaticCompilerUtils.names;
+import static joust.utils.StaticCompilerUtils.*;
 
-/**
- * Class for creating unique character strings for use as temporary variable names.
- */
-public class NameFactory {
+public final class NameFactory {
     // The next name to generate.
-    private static AtomicInteger tempName = new AtomicInteger(-1);
+    private static final AtomicInteger tempName = new AtomicInteger(-1);
 
     public static Name getName() {
         // You can't start a name with an integer in Java source... But the AST doesn't mind.

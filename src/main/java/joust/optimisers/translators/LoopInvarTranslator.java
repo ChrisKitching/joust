@@ -2,12 +2,12 @@ package joust.optimisers.translators;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.util.Name;
-import joust.optimisers.avail.NameFactory;
 import joust.optimisers.invar.ExpressionComplexityClassifier;
 import joust.optimisers.invar.InvariantExpressionFinder;
 import joust.tree.annotatedtree.AJCForest;
 import joust.treeinfo.EffectSet;
 import joust.utils.LogUtils;
+import joust.utils.NameFactory;
 import joust.utils.SymbolSet;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;

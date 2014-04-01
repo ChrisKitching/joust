@@ -8,7 +8,6 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.JCDiagnostic;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
-import joust.optimisers.avail.normalisedexpressions.PotentiallyAvailableExpression;
 import joust.optimisers.visitors.sideeffects.Effects;
 import joust.treeinfo.EffectSet;
 import joust.utils.JavacListUtils;
@@ -152,9 +151,6 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
 
         // The results of LVA at this node.
         public Set<VarSymbol> liveVariables;
-
-        // The results of available expression analysis at this node.
-        public Set<PotentiallyAvailableExpression> avail;
 
         protected AJCEffectAnnotatedTree(JCTree tree) {
             super(tree);
