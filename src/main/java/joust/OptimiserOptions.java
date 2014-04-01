@@ -2,6 +2,7 @@ package joust;
 
 import com.lexicalscope.jewel.cli.ArgumentValidationException;
 import com.lexicalscope.jewel.cli.CliFactory;
+import com.lexicalscope.jewel.cli.HelpRequestedException;
 import joust.utils.LogUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
@@ -49,12 +50,14 @@ public class OptimiserOptions {
     public static boolean configureFromArgumentArray(String[] argsArray) {
         log.debug("Args: " + Arrays.toString(argsArray));
 
-
         CLITarget result;
         try {
             result = CliFactory.parseArguments(CLITarget.class, argsArray);
+        } catch (HelpRequestedException e) {
+            log.fatal(e.getMessage());
+            return false;
         } catch (ArgumentValidationException e) {
-            log.fatal("Argument validation exception:\n{}", e);
+            log.fatal("Argument validation exception:\n", e.getMessage());
             return false;
         }
 
