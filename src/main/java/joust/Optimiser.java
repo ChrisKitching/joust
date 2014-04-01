@@ -7,6 +7,7 @@ import joust.joustcache.JOUSTCache;
 import joust.optimisers.avail.normalisedexpressions.PossibleSymbol;
 import joust.optimisers.runnables.AssertionStrip;
 import joust.optimisers.runnables.AssignmentStrip;
+import joust.optimisers.runnables.ConstFold;
 import joust.optimisers.runnables.LoopInvar;
 import joust.optimisers.runnables.TreeConverter;
 import joust.optimisers.runnables.Unroll;
@@ -89,6 +90,7 @@ public class Optimiser extends AbstractProcessor {
         // As it happens, almost all our phases operate on the virtual AFTER DESUGAR phase (as this turns out to be
         // very much more convenient than working on the actual tree if you don't care about the desugared things.)
         OptimisationPhaseManager.register(new TreeConverter(), AFTER, DESUGAR);
+        OptimisationPhaseManager.register(new ConstFold(), AFTER, DESUGAR);
 
         // TODO: Repair and re-enable this.
         // OptimisationPhaseManager.register(new AssignmentStrip(), AFTER, DESUGAR);
