@@ -1076,6 +1076,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         protected AJCLiteral(JCLiteral tree) {
             super(tree);
             decoratedTree = tree;
+            effects = new Effects(EffectSet.NO_EFFECTS);
         }
     }
 
