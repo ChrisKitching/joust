@@ -89,7 +89,7 @@ public class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
         VarSymbol target = tree.getTargetSymbol();
         Set<VarSymbol> live = tree.liveVariables;
 
-        if (!live.contains(target)) {
+        if (!live.contains(target) && TreeUtils.isLocalVariable(target)) {
             // Determine if the assignment's RHS has meaningful side-effects...
             EffectSet rhsEffects = tree.rhs.effects.getEffectSet();
 
@@ -108,7 +108,7 @@ public class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
         VarSymbol target = tree.getTargetSymbol();
         Set<VarSymbol> live = tree.liveVariables;
 
-        if (!live.contains(target)) {
+        if (!live.contains(target) && TreeUtils.isLocalVariable(target)) {
             // Determine if the assignment's RHS has meaningful side-effects...
             EffectSet rhsEffects = tree.rhs.effects.getEffectSet();
 
@@ -126,7 +126,7 @@ public class UnusedAssignmentStripper extends MethodsOnlyTreeTranslator {
 
         VarSymbol target = tree.getTargetSymbol();
 
-        if (!everLive.contains(target)) {
+        if (!everLive.contains(target) && TreeUtils.isLocalVariable(target)) {
             log.info("Culling assignment: {}", tree);
             log.debug("Enclosing block: {}", tree.getEnclosingBlock());
             mHasMadeAChange = true;

@@ -19,6 +19,7 @@ import static com.sun.tools.javac.code.Symbol.*;
 public final class UnitTestTreeFactory {
     // TODO: Might need more than just nulls here...
     private static final ClassSymbol testClass = new ClassSymbol(0, NameFactory.getName(), symtab.voidType, null);
+    private static MethodSymbol testMethod = newMethod();
 
     public static AJCVariableDecl VarDef(AJCModifiers mods, Name name, AJCTypeExpression vartype, AJCExpressionTree init) {
         if (!(vartype instanceof AJCPrimitiveTypeTree)) {
@@ -209,8 +210,8 @@ public final class UnitTestTreeFactory {
         return treeMaker.LetExpr(defs, expr);
     }
 
-    private static Symbol.VarSymbol getFreshVarSymbol(Name name, AJCPrimitiveTypeTree type) {
-        return new Symbol.VarSymbol(0, name, typeTreeToType(type), null);
+    private static VarSymbol getFreshVarSymbol(Name name, AJCPrimitiveTypeTree type) {
+        return new VarSymbol(0, name, typeTreeToType(type), testMethod);
     }
 
     private static Type typeTreeToType(AJCPrimitiveTypeTree tree) {
@@ -294,9 +295,23 @@ public final class UnitTestTreeFactory {
         return Block(0, stats);
     }
 
+    /**
+     * Called to cause all future nodes to be created "inside" a fresh virtual method for testing.
+     */
+    public static MethodSymbol newMethod() {
+        testMethod = new MethodSymbol(0, NameFactory.getName(), symtab.voidType, testClass);
+        return testMethod;
+    }
+
+    /**
+     * Complete the in-progress test method with the given block and create a new method symbol for future constructions.
+     */
     public static AJCMethodDecl MethodFromBlock(AJCBlock block) {
         AJCMethodDecl decl = treeMaker.MethodDef(Modifiers(0), NameFactory.getName(), TypeIdent(TypeTag.VOID), null, List.<AJCVariableDecl>nil(), List.<AJCExpressionTree>nil(), block, null);
-        decl.getDecoratedTree().sym = new MethodSymbol(0, NameFactory.getName(), symtab.voidType, testClass);
+        decl.getDecoratedTree().sym = testMethod;
+
+        // Create a new virtual method, as the current one is finished.
+        newMethod();
 
         return decl;
     }
