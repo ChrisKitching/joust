@@ -63,6 +63,8 @@ public class LogUtils {
                 sb.append(objects[i]);
                 index = newInd + 2;
             }
+            sb.append(msg.substring(index));
+
             return sb.toString();
         }
 
