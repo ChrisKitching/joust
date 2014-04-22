@@ -4,6 +4,7 @@ import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.file.JavacFileManager;
+import com.sun.tools.javac.jvm.Gen;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.TreeMaker;
@@ -38,6 +39,9 @@ public final class StaticCompilerUtils {
     // The compiler's symbol table.
     public static Symtab symtab;
 
+    // The compiler's bytecode generator.
+    public static Gen gen;
+
     // Javac's file manager.
     public static JavaFileManager fileManager;
 
@@ -50,6 +54,7 @@ public final class StaticCompilerUtils {
     public static Context context;
 
     public static JavacElements javaElements;
+
 
     public static void init(ProcessingEnvironment env) {
         if (isInitialised()) {
@@ -83,6 +88,7 @@ public final class StaticCompilerUtils {
         javacTreeMaker = TreeMaker.instance(con);
         treeMaker = AJCTreeFactory.instance(con);
         treeCopier = AJCTreeCopier.instance(con);
+        gen = Gen.instance(con);
         javacTreeCopier = new NonStupidJCTreeCopier<>(javacTreeMaker);
         names = Names.instance(con);
         types = Types.instance(con);
@@ -106,5 +112,6 @@ public final class StaticCompilerUtils {
         names = null;
         symtab = null;
         trees = null;
+        gen = null;
     }
 }

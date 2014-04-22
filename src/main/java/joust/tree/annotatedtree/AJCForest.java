@@ -67,6 +67,9 @@ public class AJCForest {
 
         InitialASTConverter.init();
         for (JCCompilationUnit element : rootElements) {
+            // Perform the sanity translations on the tree that are more convenient to do before the translation step...
+            element.accept(sanity);
+
             // Find the class definitions in here...
             for (JCTree def : element.defs) {
                 if (def instanceof JCClassDecl) {

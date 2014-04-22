@@ -1,5 +1,7 @@
 package joust.tree.conversion;
 
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.jvm.Gen;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeTranslator;
 import com.sun.tools.javac.util.List;
@@ -8,10 +10,14 @@ import joust.utils.logging.LogUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
 import static com.sun.tools.javac.tree.JCTree.*;
 import static joust.utils.compiler.StaticCompilerUtils.*;
+import static joust.utils.compiler.StaticCompilerUtils.gen;
 
 /**
  * A tree translator to perform translations that simplify the tree prior to converting it to our own representation.
@@ -24,23 +30,62 @@ import static joust.utils.compiler.StaticCompilerUtils.*;
  * node under consideration. (Instead of iterating a single-element block).
  * If enabled, stripping of assertions. No point converting them just to throw them away...
  * Elimination of the empty blocks that javac puts in instead of inner classes..... (WAT).
+ * Apply the Gen phase's tree normalisation (Combines  static initialisers into the <clinit> method, shifts initialisers
+ * from fields into the constructors, etc.)
  */
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class TreePreparationTranslator extends TreeTranslator {
+    private Method normaliseMethod;
+    private Field endPosTableField;
+    private Field toplevelField;
+    public TreePreparationTranslator() {
+        // Set up reflective access to some more parts of Javac that need beating with a stick...
+        Class<Gen> genClass = Gen.class;
+        try {
+            normaliseMethod = genClass.getDeclaredMethod("normalizeDefs", List.class, Symbol.ClassSymbol.class);
+            normaliseMethod.setAccessible(true);
+            endPosTableField = genClass.getDeclaredField("endPosTable");
+            endPosTableField.setAccessible(true);
+            toplevelField = genClass.getDeclaredField("toplevel");
+            toplevelField.setAccessible(true);
+        } catch (NoSuchMethodException | NoSuchFieldException e) {
+            log.fatal("Exception initialising TreePreparationTranslator!", e);
+        }
+    }
+
+    private JCCompilationUnit currentToplevel;
+
+    @Override
+    public void visitTopLevel(JCCompilationUnit tree) {
+        currentToplevel = tree;
+        super.visitTopLevel(tree);
+    }
+
     @Override
     public void visitClassDef(JCClassDecl jcClassDecl) {
-        //jcClassDecl.accept(new JCTreeStructurePrinter());
+        try {
+            toplevelField.set(gen, currentToplevel);
+            endPosTableField.set(gen, currentToplevel.endPositions);
+            jcClassDecl.defs = (List<JCTree>) normaliseMethod.invoke(gen, jcClassDecl.defs, jcClassDecl.sym);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            log.fatal("Exception normalising class def!", e);
+            return;
+        }
 
         int i = 0;
 
         for (JCTree t : jcClassDecl.defs) {
             if (t instanceof JCBlock) {
-                jcClassDecl.defs = JavacListUtils.removeAtIndex(jcClassDecl.defs, i);
+                JCBlock cast = (JCBlock) t;
+                if (cast.stats.isEmpty()) {
+                    jcClassDecl.defs = JavacListUtils.removeAtIndex(jcClassDecl.defs, i);
+                }
                 i--;
             }
             i++;
         }
+
         super.visitClassDef(jcClassDecl);
     }
 
@@ -118,8 +163,7 @@ public class TreePreparationTranslator extends TreeTranslator {
 
     @Override
     public void visitLetExpr(LetExpr letExpr) {
-        log.error("FOUND A LET EXPRESSION\n{}", letExpr);
-
+        log.fatal("FOUND A LET EXPRESSION!\n{}", letExpr);
         super.visitLetExpr(letExpr);
     }
 
