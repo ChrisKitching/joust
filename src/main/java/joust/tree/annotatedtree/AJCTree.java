@@ -1177,7 +1177,16 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
                         throw new IllegalArgumentException(INVALID_ARGUMENT_TYPE_SIMPLE);
                     }
                     break;
+                case BOT:
+                    // Null literal.
+                    if (value != null) {
+                        log.fatal(INVALID_ARGUMENT_TYPE, tag, "Null literal without null value!");
+                        throw new IllegalArgumentException(INVALID_ARGUMENT_TYPE_SIMPLE);
+                    }
+                    break;
+
                 default:
+                    log.error(tag);
                     log.fatal(INVALID_ARGUMENT_TYPE, tag, value.getClass().getSimpleName());
                     throw new IllegalArgumentException(INVALID_ARGUMENT_TYPE_SIMPLE);
             }
@@ -1189,6 +1198,8 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
 
         protected AJCLiteral(JCLiteral tree) {
             super(tree);
+
+            tree.value = sanitiseLiteralValue(tree.typetag, tree.value);
             decoratedTree = tree;
             effects = new Effects(EffectSet.NO_EFFECTS);
         }

@@ -42,6 +42,5 @@ public class ContextInliningTranslator extends BaseTranslator {
         AJCLiteral result = knownValue.toLiteral();
         tree.swapFor(result);
         log.debug("Replacing {} with {}", tree, result);
-        AJCForest.getInstance().initialAnalysis();
     }
 }

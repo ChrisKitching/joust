@@ -7,6 +7,7 @@ import joust.optimisers.invar.ExpressionComplexityClassifier;
 import joust.optimisers.translators.BaseTranslator;
 import joust.tree.annotatedtree.AJCComparableExpressionTree;
 import joust.tree.annotatedtree.AJCForest;
+import joust.tree.annotatedtree.AJCTree;
 import joust.tree.annotatedtree.treeinfo.EffectSet;
 import joust.utils.logging.LogUtils;
 import joust.utils.tree.NameFactory;
@@ -264,6 +265,7 @@ public class CommonSubExpressionTranslator extends BaseTranslator {
     @Override
     protected void visitCall(AJCCall that) {
         visitUpdate(that);
+        visitExpression(new ComparableAJCCall(that));
         super.visitCall(that);
     }
 
@@ -283,5 +285,37 @@ public class CommonSubExpressionTranslator extends BaseTranslator {
     protected void visitAssign(AJCAssign that) {
         visitUpdate(that);
         super.visitAssign(that);
+    }
+
+    @Override
+    protected void visitDoWhileLoop(AJCDoWhileLoop that) {
+        visitUpdate(that);
+        super.visitDoWhileLoop(that);
+    }
+
+    @Override
+    protected void visitWhileLoop(AJCWhileLoop that) {
+        visitUpdate(that);
+        super.visitWhileLoop(that);
+    }
+
+    @Override
+    protected void visitForLoop(AJCForLoop that) {
+        visitUpdate(that);
+        super.visitForLoop(that);
+    }
+
+    @Override
+    protected void visitSwitch(AJCSwitch that) {
+        // Because of the stupid scoping rules, this needs special treatment.
+        // You enter a scope when you hit the first case, and you leave it when you hit a break.
+        visit(that.selector);
+
+        // For the purposes of CSE, you want to throw away newly-available expressions between cases.
+        for (AJCCase cas : that.cases) {
+            enterScope();
+            visitCase(cas);
+            leaveScope();
+        }
     }
 }

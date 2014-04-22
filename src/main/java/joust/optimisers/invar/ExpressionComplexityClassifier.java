@@ -1,6 +1,8 @@
 package joust.optimisers.invar;
 
 import com.sun.tools.javac.code.Symbol;
+import joust.tree.annotatedtree.AJCForest;
+import joust.tree.annotatedtree.AJCRecursionResistantTreeVisitor;
 import joust.tree.annotatedtree.AJCTree;
 import joust.tree.annotatedtree.AJCTreeVisitor;
 import lombok.Getter;
@@ -18,10 +20,13 @@ import static com.sun.tools.javac.tree.JCTree.Tag;
  * evaluating that expression. Used to determine when it is beneficial to perform
  * certain transformations.
  */
-public class ExpressionComplexityClassifier extends AJCTreeVisitor {
+public class ExpressionComplexityClassifier extends AJCRecursionResistantTreeVisitor {
     // The additional price to associate with an operation if it involves an assignment.
     public static final int ASSIGNMENT_COST = 2;
     public static final int IDENT_COST = 1;
+
+    // The cost assigned to a call to a method for which the cost of the body is not known.
+    private static final int UNKNOWN_METHOD_COST = 10;
 
     private static final Map<Tag, Integer> operationCosts;
     static {
@@ -143,5 +148,18 @@ public class ExpressionComplexityClassifier extends AJCTreeVisitor {
         }
 
         super.visitIdent(that);
+    }
+
+    @Override
+    protected void visitCall(AJCCall that) {
+        score += operationCosts.get(that.getTag());
+        super.visitCall(that);
+
+        AJCMethodDecl decl = AJCForest.getInstance().methodTable.get(that.getTargetSymbol());
+        if (decl == null) {
+            score += UNKNOWN_METHOD_COST;
+        } else {
+            visitTree(decl.body);
+        }
     }
 }
