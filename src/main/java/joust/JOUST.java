@@ -21,6 +21,7 @@ import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedOptions;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -40,20 +41,8 @@ import static joust.utils.compiler.StaticCompilerUtils.javaElements;
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedAnnotationTypes("*")
+@SupportedOptions({"JOUSTLogLevel", "JOUSTStripAssertions", "JOUSTMinCSEScore", "JOUSTHelp"})
 public class JOUST extends AbstractProcessor {
-    static {
-        System.setProperty("java.util.logging.SimpleFormatter.format", "[%4$s] %5$s\n");
-        System.setProperty("java.util.logging.ConsoleHandler.level", "FINEST");
-        Logger rootLogger = Logger.getLogger("");
-        rootLogger.setLevel(Level.ALL);
-        Handler[] handlers = rootLogger.getHandlers();
-        for(Handler h: handlers){
-            h.setLevel(Level.ALL);
-        }
-    }
-
-    public static AJCForest inputTrees;
-
     // The untranslated input JCTrees. The route to the AST prior to the desugaring step.
     public static LinkedHashSet<JCTree.JCCompilationUnit> conventionalTrees;
 
@@ -67,21 +56,20 @@ public class JOUST extends AbstractProcessor {
 
         environ = (JavacProcessingEnvironment) env;
 
-        // So we can log those fatal errors...
-        LogUtils.init(processingEnv);
-
         // Parse command line options.
         if (!OptimiserOptions.configureFromProcessingEnvironment(env)) {
             log.fatal("JOUST aborted by command line argument processor.");
             return;
         }
 
+        // So we can log those fatal errors...
+        LogUtils.init(processingEnv);
+
         conventionalTrees = new LinkedHashSet<>();
 
         OptimisationPhaseManager.init(env);
-        OptimisationPhaseManager.register(new JavacBrutaliser(), AFTER, ANNOTATION_PROCESSING);
-
         OptimisationPhaseManager.register(new AssertionStrip(), AFTER, ANNOTATION_PROCESSING);
+        OptimisationPhaseManager.register(new JavacBrutaliser(), AFTER, ANNOTATION_PROCESSING);
 
         // As it happens, almost all our phases operate on the virtual AFTER DESUGAR phase (as this turns out to be
         // very much more convenient than working on the actual tree if you don't care about the desugared things.)

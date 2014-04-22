@@ -1,8 +1,6 @@
 package joust.utils.commandline;
 
-import com.lexicalscope.jewel.cli.ArgumentValidationException;
-import com.lexicalscope.jewel.cli.CliFactory;
-import com.lexicalscope.jewel.cli.HelpRequestedException;
+import joust.optimisers.cse.CommonSubExpressionTranslator;
 import joust.utils.logging.LogUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
@@ -10,6 +8,7 @@ import lombok.extern.java.Log;
 import javax.annotation.processing.ProcessingEnvironment;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -21,6 +20,8 @@ public class OptimiserOptions {
     // If true, assertions found in the input program are deleted.
     public static boolean stripAssertions;
 
+    public static Level logLevel = Level.INFO;
+
     /**
      * Configure the OptimiserOptions from the given processing environment's command line arguments.
      *
@@ -30,48 +31,50 @@ public class OptimiserOptions {
      */
     public static boolean configureFromProcessingEnvironment(ProcessingEnvironment env) {
         Map<String, String> args = env.getOptions();
-        String argString = args.get("joustOptions");
+        log.error("KeySet: {}", Arrays.toString(args.keySet().toArray()));
 
-        // No arguments given.
-        if (argString == null) {
-            return true;
+        String loggingLevel = args.get("JOUSTLogLevel");
+        log.error("Got log level: {}", loggingLevel);
+        if (loggingLevel != null) {
+            switch (loggingLevel) {
+                case "SEVERE":
+                    logLevel = Level.SEVERE;
+                    break;
+                case "WARNING":
+                    logLevel = Level.WARNING;
+                    break;
+                case "INFO":
+                    logLevel = Level.INFO;
+                    break;
+                case "CONFIG":
+                    logLevel = Level.CONFIG;
+                    break;
+                case "FINE":
+                    logLevel = Level.FINE;
+                    break;
+                case "FINER":
+                    logLevel = Level.FINER;
+                    break;
+                case "FINEST":
+                    logLevel = Level.FINEST;
+                    break;
+                case "ALL":
+                    logLevel = Level.ALL;
+                    break;
+                case "OFF":
+                    logLevel = Level.OFF;
+                    break;
+                default:
+                    return false;
+            }
         }
 
-        return configureFromArgumentArray( argString.split(" "));
-    }
+        stripAssertions = args.containsKey("JOUSTStripAssertions");
 
-    /**
-     * Configure the OptimiserOptions from the given argument array.
-     *
-     * @param argsArray The array of command line arguments to parse.
-     * @return true if parsing was a success and the options are valid, false if the program should
-     *         now abort.
-     */
-    public static boolean configureFromArgumentArray(String[] argsArray) {
-        log.debug("Args: " + Arrays.toString(argsArray));
-
-        CLITarget result;
-        try {
-            result = CliFactory.parseArguments(CLITarget.class, argsArray);
-        } catch (HelpRequestedException e) {
-            log.fatal(e.getMessage());
-            return false;
-        } catch (ArgumentValidationException e) {
-            log.fatal("Argument validation exception:\n", e.getMessage());
-            return false;
+        if (args.containsKey("JOUSTMinCSEScore")) {
+            CommonSubExpressionTranslator.MINIMUM_CSE_SCORE = Integer.parseInt(args.get("JOUSTMinCSEScore"));
         }
-
-        configureFromCLITarget(result);
 
         return true;
-    }
-
-    /**
-     * Configure the OptimiserOptions from a CLITarget object.
-     *
-     * @param target The CLITarget object to process
-     */
-    public static void configureFromCLITarget(CLITarget target) {
-        stripAssertions = target.getStripAssertions();
     }
 }

@@ -1,5 +1,6 @@
 package joust.utils.logging;
 
+import joust.utils.commandline.OptimiserOptions;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
@@ -14,20 +15,17 @@ import java.util.logging.Logger;
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class LogUtils {
-    static {
-        // Since the Ansi library doesn't understand zsh...
-        System.setProperty("Ansi", "true");
-        Logger logger = LogManager.getLogManager().getLogger("");
-        logger.setLevel(Level.FINEST);
-        Handler handler = logger.getHandlers()[0];
-        handler.setLevel(Level.FINEST);
-        handler.setFormatter(new LogFormatter());
-    }
-
     private static ProcessingEnvironment processingEnv;
 
     public static void init(ProcessingEnvironment env) {
         processingEnv = env;
+        // Since the Ansi library doesn't understand zsh...
+        System.setProperty("Ansi", "true");
+        Logger logger = LogManager.getLogManager().getLogger("");
+        logger.setLevel(OptimiserOptions.logLevel);
+        Handler handler = logger.getHandlers()[0];
+        handler.setLevel(OptimiserOptions.logLevel);
+        handler.setFormatter(new LogFormatter());
     }
 
     /**
