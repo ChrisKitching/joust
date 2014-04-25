@@ -110,7 +110,7 @@ public class LogUtils {
         }
 
         public static void error(Logger logger, String msg, Throwable thrown) {
-            msg = msg + msgFromThrowable(thrown);
+            msg = msg + '\n' + msgFromThrowable(thrown);
             logger.log(Level.SEVERE, msg, thrown);
         }
 
@@ -125,7 +125,7 @@ public class LogUtils {
         }
 
         public static void fatal(Logger logger, String msg, Throwable thrown) {
-            msg = msg + msgFromThrowable(thrown);
+            msg = msg + '\n' + msgFromThrowable(thrown);
             logger.log(Level.SEVERE, msg, thrown);
             raiseCompilerError(msg);
         }
