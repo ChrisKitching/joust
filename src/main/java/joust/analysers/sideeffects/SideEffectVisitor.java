@@ -4,6 +4,7 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.util.List;
 import joust.joustcache.JOUSTCache;
+import joust.joustcache.data.ClassInfo;
 import joust.tree.annotatedtree.AJCForest;
 import joust.tree.annotatedtree.AJCTreeVisitor;
 import joust.tree.annotatedtree.treeinfo.EffectSet;
@@ -27,6 +28,8 @@ import static joust.utils.compiler.StaticCompilerUtils.types;
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class SideEffectVisitor extends AJCTreeVisitor {
+    private boolean bootstrapped;
+
     // Track the method calls which depend on incomplete methods so we can go back and fix them up when we complete
     // the method in question. Keyed by MethodSymbol of the incomplete method.
     private final SetHashMap<MethodSymbol, AJCEffectAnnotatedTree> incompleteCalls = new SetHashMap<>();
@@ -42,11 +45,24 @@ public class SideEffectVisitor extends AJCTreeVisitor {
     // The set of methods depended on by each method.
     private final SetHashMap<MethodSymbol, MethodSymbol> reverseMethodDeps = new SetHashMap<>();
 
-    // The set of methods with a particular name - the set we check to see if an inheritence exists whenever
+    // The set of methods with a particular name - the set we check to see if an inheritance exists whenever
     // we see a new symbol.
     private final SetHashMap<String, MethodSymbol> possibleInheitors = new SetHashMap<>();
 
     private MethodSymbol methodBeingVisited;
+
+    /**
+     * Reset all state, but do not touch the bootstrapped flag.
+     */
+    public void reset() {
+        incompleteCalls.clear();
+        unfinishedMethodEffects.clear();
+        calledMethodsWithoutSource.clear();
+        methodDeps.clear();
+        reverseMethodDeps.clear();
+        possibleInheitors.clear();
+        methodBeingVisited = null;
+    }
 
     @Override
     public void visitMethodDef(AJCMethodDecl that) {
@@ -146,9 +162,11 @@ public class SideEffectVisitor extends AJCTreeVisitor {
         calledMethodsWithoutSource.removeAll(knownSymbols);
         log.debug("calledCopy: {}", Arrays.toString(calledMethodsWithoutSource.toArray()));
 
-        for (MethodSymbol mSym : calledMethodsWithoutSource) {
-            log.debug("Loading effects for {} from cache... (Owner is {})", mSym, mSym.enclClass());
-            JOUSTCache.loadCachedInfoForClass(mSym.enclClass());
+        if (!bootstrapped) {
+            for (MethodSymbol mSym : calledMethodsWithoutSource) {
+                log.debug("Loading effects for {} from cache... (Owner is {})", mSym, mSym.enclClass());
+                JOUSTCache.loadCachedInfoForClass(mSym.enclClass());
+            }
         }
 
         // Now everything we need is loaded, let's start completing methods. Firstly the easy ones...
@@ -171,6 +189,7 @@ public class SideEffectVisitor extends AJCTreeVisitor {
         while (resolveMethodsWithoutDeps());
 
         if (methodDeps.keySet().isEmpty()) {
+            bootstrapped = true;
             return;
         }
 
@@ -208,6 +227,8 @@ public class SideEffectVisitor extends AJCTreeVisitor {
             log.debug("After: {}", missingEff);
             methodCompleted(sym, missingEff);
         }
+
+        bootstrapped = true;
     }
 
     /**
@@ -243,7 +264,7 @@ public class SideEffectVisitor extends AJCTreeVisitor {
     private void methodCompleted(MethodSymbol completedSym, Effects effects) {
         log.debug("{}:{} completed with {}", completedSym, completedSym.owner, effects);
         methodDeps.remove(completedSym);
-        TreeInfoManager.registerMethodEffects(completedSym, effects);
+        TreeInfoManager.registerMethodEffects(completedSym, effects, !bootstrapped);
         unfinishedMethodEffects.remove(completedSym);
 
         Set<AJCEffectAnnotatedTree> incompleted = incompleteCalls.get(completedSym);
@@ -537,6 +558,11 @@ public class SideEffectVisitor extends AJCTreeVisitor {
             return;
         }
 
+        String hash = ClassInfo.getHashForVariable((VarSymbol) targetSym);
+        if (!JOUSTCache.varSymbolTable.containsKey(hash)) {
+            JOUSTCache.varSymbolTable.put(hash, (VarSymbol) targetSym);
+        }
+
         VarSymbol tSym = (VarSymbol) targetSym;
 
         that.effects = Effects.unionWithDirect(read(tSym), that.selected.effects);
@@ -546,10 +572,15 @@ public class SideEffectVisitor extends AJCTreeVisitor {
     public void visitIdent(AJCIdent that) {
         super.visitIdent(that);
 
-        Symbol sym = that.getTargetSymbol();
+        Symbol targetSym = that.getTargetSymbol();
 
-        if (sym instanceof VarSymbol) {
-            that.effects = new Effects(NO_EFFECTS, read((VarSymbol) sym));
+        if (targetSym instanceof VarSymbol) {
+            String hash = ClassInfo.getHashForVariable((VarSymbol) targetSym);
+            if (!JOUSTCache.varSymbolTable.containsKey(hash)) {
+                JOUSTCache.varSymbolTable.put(hash, (VarSymbol) targetSym);
+            }
+
+            that.effects = new Effects(NO_EFFECTS, read((VarSymbol) targetSym));
             return;
         }
 
@@ -590,9 +621,10 @@ public class SideEffectVisitor extends AJCTreeVisitor {
 
     @Override
     public void visitVariableDecl(AJCVariableDecl that) {
-        log.debug("Visit variable decl{} ", that);
         super.visitVariableDecl(that);
 
+        VarSymbol sym = that.getTargetSymbol();
+        JOUSTCache.varSymbolTable.put(ClassInfo.getHashForVariable(that.getTargetSymbol()), that.getTargetSymbol());
 
         that.effects = Effects.unionWithDirect(write(that.getTargetSymbol()), that.getInit().effects);
     }

@@ -13,8 +13,7 @@ import lombok.NoArgsConstructor;
  */
 @NoArgsConstructor
 @AllArgsConstructor
-public
-class MethodInfo {
+public class MethodInfo {
     public String methodHash;
     public Effects effectSet;
 

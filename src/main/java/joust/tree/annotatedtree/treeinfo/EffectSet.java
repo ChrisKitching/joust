@@ -334,4 +334,7 @@ public class EffectSet {
 
         return contains(cast) && cast.contains(this);
     }
+
+    // Kryo constructor
+    private EffectSet() {}
 }

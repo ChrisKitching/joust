@@ -2,13 +2,18 @@ package joust.joustcache;
 
 import static javax.tools.StandardLocation.CLASS_OUTPUT;
 
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.util.List;
 import joust.joustcache.data.TransientClassInfo;
 import joust.optimisers.runnables.OptimisationRunnable;
+import joust.tree.annotatedtree.AJCTree;
 import joust.utils.logging.LogUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 import javax.tools.JavaFileObject;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 import static joust.utils.compiler.StaticCompilerUtils.fileManager;
@@ -22,7 +27,19 @@ import static joust.utils.compiler.StaticCompilerUtils.fileManager;
 public class ChecksumRunner extends OptimisationRunnable {
     @Override
     public void run() {
-        log.debug("ChecksumRunner starting!");
+        log.info("ChecksumRunner started.");
+        log.info("Event: {}", currentEvent);
+
+        List<String> keysToProcess = List.nil();
+
+        List<JCTree> trees = ((JCTree.JCCompilationUnit) currentEvent.getCompilationUnit()).defs;
+        for (JCTree t : trees) {
+            if (t instanceof JCTree.JCClassDecl) {
+                JCTree.JCClassDecl cast = (JCTree.JCClassDecl) t;
+                keysToProcess = keysToProcess.prepend(cast.sym.flatName().toString());
+            }
+        }
+
         long s = System.currentTimeMillis();
 
         for (String className : JOUSTCache.classInfo.keySet()) {
@@ -33,8 +50,13 @@ public class ChecksumRunner extends OptimisationRunnable {
 
             try {
                 // Get a reference to the file to which this ClassSymbol was written.
-                JavaFileObject outFile
-                        = fileManager.getJavaFileForOutput(CLASS_OUTPUT,
+                log.info("Looking for a file for {}", className);
+                if (transientInfo != null) {
+                    log.info("Transient: {}", transientInfo.getSourceFile());
+                }
+
+                JavaFileObject outFile =
+                        fileManager.getJavaFileForOutput(CLASS_OUTPUT,
                         className,
                         JavaFileObject.Kind.CLASS,
                         transientInfo.getSourceFile());
@@ -46,15 +68,17 @@ public class ChecksumRunner extends OptimisationRunnable {
                 }
 
                 final int hash = ChecksumUtils.computeHash(outFile);
-                log.debug("Hash for {} is {}", className, hash);
+                log.info("Hash for {} is {}", className, hash);
 
                 JOUSTCache.writeSymbolToDisk(className, hash);
                 transientInfo.setFlushed(true);
+            } catch (FileNotFoundException e) {
+                // Probably just called too soon...
             } catch (IOException e) {
-                log.debug("Can't find file for: {}", className);
+                log.error("Can't find file for: {}", className, e);
             }
         }
         long e = System.currentTimeMillis();
-        log.debug("Total time for ChecksumRunner is " + (e - s) + "ms");
+        log.info("Done in " + (e - s) + "ms");
     }
 }

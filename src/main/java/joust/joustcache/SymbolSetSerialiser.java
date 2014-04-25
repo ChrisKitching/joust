@@ -27,6 +27,7 @@ import static com.sun.tools.javac.code.Symbol.*;
 public class SymbolSetSerialiser extends Serializer<SymbolSet> {
     @Override
     public void write(Kryo kryo, Output output, SymbolSet object) {
+        log.info("Writing: {}", object);
         // Record if this is the universal set or not.
         if (object == SymbolSet.UNIVERSAL_SET) {
             output.writeByte(1);
@@ -45,7 +46,7 @@ public class SymbolSetSerialiser extends Serializer<SymbolSet> {
     @Override
     public SymbolSet read(Kryo kryo, Input input, Class<SymbolSet> type) {
         byte isUniversalSet = input.readByte();
-        if (isUniversalSet == 1) {
+        if (isUniversalSet == (byte) 1) {
             return SymbolSet.UNIVERSAL_SET;
         }
 
@@ -54,15 +55,15 @@ public class SymbolSetSerialiser extends Serializer<SymbolSet> {
 
         for (int i = 0; i < len; i++) {
             String symbolHash = input.readString();
-            log.trace("Got symbol hash: {}", symbolHash);
+            log.info("Got symbol hash: {}", symbolHash);
 
             // Determine if this is a symbol we care about...
-            if (AJCForest.getInstance().varsymbolTable.containsKey(symbolHash)) {
-                VarSymbol symGot = AJCForest.getInstance().varsymbolTable.get(symbolHash);
-                log.trace("Obtained concrete symbol: {}", symGot);
+            if (JOUSTCache.varSymbolTable.containsKey(symbolHash)) {
+                VarSymbol symGot = JOUSTCache.varSymbolTable.get(symbolHash);
+                log.info("Obtained concrete symbol: {}", symGot);
                 ret.add(symGot);
             } else {
-                log.trace("Discarded.");
+                log.info("Discarded.");
             }
         }
 

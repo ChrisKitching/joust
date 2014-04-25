@@ -1,7 +1,6 @@
 package joust.tree.annotatedtree.treeinfo;
 
-import static com.sun.tools.javac.tree.JCTree.*;
-
+import joust.joustcache.JOUSTCache;
 import joust.joustcache.data.ClassInfo;
 import joust.joustcache.data.MethodInfo;
 import joust.analysers.sideeffects.Effects;
@@ -10,8 +9,6 @@ import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import static com.sun.tools.javac.code.Symbol.*;
@@ -25,19 +22,28 @@ public final class TreeInfoManager {
     // Maps method symbol hashes to the effect sets of their corresponding JCMethodDecl nodes, which
     // may or may not actually *exist* in the parsed code.
     private static HashMap<String, Effects> methodEffectMap;
-
-    private static HashMap<MethodSymbol, Set<VarSymbol>> mEverLives;
+    public static HashMap<Effects, String> backwardMethodEffectMap;
 
     public static void init() {
         methodEffectMap = new HashMap<>();
-        mEverLives = new HashMap<>();
+        backwardMethodEffectMap = new HashMap<>();
     }
 
     /**
      * Add an EffectSet to the method effect table...
      */
-    public static void registerMethodEffects(MethodSymbol sym, Effects effects) {
+    public static void registerMethodEffects(MethodSymbol sym, Effects effects, boolean shouldSave) {
         methodEffectMap.put(MethodInfo.getHashForMethod(sym), effects);
+        backwardMethodEffectMap.put(effects, MethodInfo.getHashForMethod(sym));
+
+        // Don't safe the set of all effects. No point.
+        if (effects.getEffectSet().contains(EffectSet.ALL_EFFECTS)) {
+            return;
+        }
+
+        if (shouldSave) {
+            JOUSTCache.registerMethodSideEffects(sym, effects);
+        }
     }
 
     /**
@@ -70,16 +76,5 @@ public final class TreeInfoManager {
         for (MethodInfo mI : cInfo.methodInfos) {
             methodEffectMap.put(mI.methodHash, mI.effectSet);
         }
-    }
-
-    /**
-     * Register the ever-live set for a given method.
-     */
-    public static void setEverLiveForMethod(JCMethodDecl jcMethodDecl, HashSet<VarSymbol> everLive) {
-        mEverLives.put(jcMethodDecl.sym, everLive);
-    }
-
-    public static Set<VarSymbol> getEverLive(MethodSymbol meth) {
-        return mEverLives.get(meth);
     }
 }

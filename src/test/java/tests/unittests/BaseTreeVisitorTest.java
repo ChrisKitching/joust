@@ -71,13 +71,12 @@ public abstract class BaseTreeVisitorTest<T extends AJCTreeVisitor> extends Tree
         TreeInfoManager.init();
 
         HashMap<Symbol.MethodSymbol, AJCTree.AJCMethodDecl> methodTable = new HashMap<>();
-        HashMap<String, Symbol.VarSymbol> vTable = new HashMap<>();
         if (input instanceof AJCTree.AJCMethodDecl) {
             AJCTree.AJCMethodDecl cast = (AJCTree.AJCMethodDecl) input;
             methodTable.put(cast.getTargetSymbol(), cast);
         }
 
-        AJCForest.initDirect(List.of(input), methodTable, vTable);
+        AJCForest.initDirect(List.of(input), methodTable);
 
         AJCForest.getInstance().effectVisitor.visitTree(expected);
     }

@@ -11,6 +11,7 @@ import com.esotericsoftware.kryo.serializers.FieldSerializer;
 import jdbm.PrimaryTreeMap;
 import jdbm.RecordManager;
 import jdbm.RecordManagerFactory;
+import joust.analysers.sideeffects.Effects;
 import joust.joustcache.data.ClassInfo;
 import joust.joustcache.data.MethodInfo;
 import joust.joustcache.data.TransientClassInfo;
@@ -25,7 +26,6 @@ import lombok.extern.java.Log;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
@@ -38,10 +38,8 @@ public class JOUSTCache {
     private static final String DATABASE_FILE_NAME = "joustCache";
     private static final int INITIAL_BUFFER_SIZE = 100000;
 
-    private static HashSet<ClassSymbol> loadedSymbols = new HashSet<>();
-
     // For serialising ClassInfo objects before putting them in the database.
-    private static Kryo serialiser = new Kryo();
+    private static final Kryo serialiser = new Kryo();
 
     // The PrimaryTreeMap backed by the database. Note that each call to get will cause partial
     // deserialisation. Key is class name, value is the serialised version of the ClassInfo object,
@@ -53,8 +51,17 @@ public class JOUSTCache {
     static HashMap<String, ClassInfo> classInfo = new HashMap<>();
     static HashMap<String, TransientClassInfo> transientClassInfo = new HashMap<>();
 
+    // Used to provide a deserialisation target for Symbols.
+    public static final HashMap<String, VarSymbol> varSymbolTable = new HashMap<>();
+    public static final HashMap<String, MethodSymbol> methodSymbolTable = new HashMap<>();
+
     public static void init() {
         log.info("Init JOUSTCache!");
+        varSymbolTable.clear();
+        methodSymbolTable.clear();
+        transientClassInfo.clear();
+        classInfo.clear();
+
         ChecksumUtils.init();
         if (databaseRecordManager != null) {
             return;
@@ -77,6 +84,7 @@ public class JOUSTCache {
     private static void initSerialiser() {
         // Register first, so the default serialiser doesn't override the custom one later on...
         serialiser.register(LinkedList.class);
+        serialiser.register(String.class);
 
         // Register the classes with the serialiser to enable slightly more concise output.
         serialiser.setRegistrationRequired(true);
@@ -97,6 +105,7 @@ public class JOUSTCache {
         FieldSerializer effectSetSerialiser = new FieldSerializer(serialiser, EffectSet.class);
 
         SymbolSetSerialiser symbolSetSerialiser = new SymbolSetSerialiser();
+        serialiser.register(SymbolSet.class, symbolSetSerialiser);
 
         // Don't serialise non-escaping symbol sets. Nobody cares.
         effectSetSerialiser.removeField("readInternal");
@@ -104,7 +113,13 @@ public class JOUSTCache {
         effectSetSerialiser.getField("readEscaping").setClass(SymbolSet.class, symbolSetSerialiser);
         effectSetSerialiser.getField("writeEscaping").setClass(SymbolSet.class, symbolSetSerialiser);
 
-        methodInfoSerialiser.getField("effectSet").setClass(EffectSet.class, effectSetSerialiser);
+        serialiser.register(EffectSet.class, effectSetSerialiser);
+
+        // Now you can serialise an EffectSet, you can serialise an Effects.
+        serialiser.register(Effects.class, new EffectsSerialiser());
+
+        methodInfoSerialiser.getField("effectSet").setClass(EffectSet.class, new EffectsSerialiser());
+        serialiser.register(MethodInfo.class, methodInfoSerialiser);
 
         // To serialise the list of MethodInfo objects inside the ClassInfo.
         CollectionSerializer methodInfoListSerialiser = new CollectionSerializer();
@@ -113,11 +128,7 @@ public class JOUSTCache {
 
         // Register the list serialiser with the class serialiser.
         classInfoSerialiser.getField("methodInfos").setClass(LinkedList.class, methodInfoListSerialiser);
-
-        serialiser.register(EffectSet.class, effectSetSerialiser);
         serialiser.register(ClassInfo.class, classInfoSerialiser);
-        serialiser.register(MethodInfo.class, methodInfoSerialiser);
-        serialiser.register(SymbolSet.class, symbolSetSerialiser);
     }
 
     /**
@@ -155,10 +166,6 @@ public class JOUSTCache {
             return;
         }
 
-        if (loadedSymbols.contains(sym)) {
-            return;
-        }
-
         byte[] payload = databaseMap.get(sym.fullname.toString());
         if (payload == null) {
             log.debug("No cached info for class {} seems to exist.", sym.fullname.toString());
@@ -175,7 +182,7 @@ public class JOUSTCache {
         @Cleanup UnsafeInput deserialiserInput = new UnsafeInput(payload);
         ClassInfo cInfo = serialiser.readObject(deserialiserInput, ClassInfo.class);
 
-        log.debug("Loaded info:\n{}", cInfo);
+        log.info("Loaded info:\n{}", cInfo);
 
         if (cInfo == null) {
             log.warn("Unable to load cached info - got null - for class {}", sym.fullname.toString());
@@ -197,8 +204,6 @@ public class JOUSTCache {
                     "Classinfo hash: {}\n", sym.fullname.toString(), classHash, cInfo.hash);
             return;
         }
-
-        loadedSymbols.add(sym);
 
         TreeInfoManager.populateFromClassInfo(cInfo);
     }
@@ -238,8 +243,7 @@ public class JOUSTCache {
      * @param sym Method symbol to relate the side effects with.
      * @param effectSet The effect set of the provided method symbol's declaration.
      */
-    // TODO: Use TreeInfoManager properly...
-    /*public static void registerMethodSideEffects(MethodSymbol sym, EffectSet effectSet, boolean purge) {
+    public static void registerMethodSideEffects(MethodSymbol sym, Effects effectSet) {
         final String methodHash = MethodInfo.getHashForMethod(sym);
         final String className = ((ClassSymbol) sym.owner).flatname.toString();
 
@@ -251,24 +255,15 @@ public class JOUSTCache {
             cInfo = new ClassInfo();
             classInfo.put(className, cInfo);
         }
-        if (purge) {
-            // If purging, scan methodInfos for collisions and drop any existing info.
-            Iterator<MethodInfo> iterator = cInfo.methodInfos.iterator();
-            while (iterator.hasNext()) {
-                MethodInfo mInfo = iterator.next();
-                if (mInfo.methodHash.equals(methodHash)) {
-                    log.debug("Dropping: {}", mInfo);
-                    iterator.remove();
-                }
-            }
-        }
         cInfo.methodInfos.add(m);
 
+        // So we can compute the checksums later on...
         TransientClassInfo tcInfo = transientClassInfo.get(className);
         if (tcInfo == null) {
             tcInfo = new TransientClassInfo();
             transientClassInfo.put(className, tcInfo);
         }
+
         tcInfo.setSourceFile(((ClassSymbol) sym.owner).sourcefile);
-    }*/
+    }
 }
