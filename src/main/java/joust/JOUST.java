@@ -2,6 +2,7 @@ package joust;
 
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
+import joust.joustcache.ChecksumRunner;
 import joust.optimisers.runnables.AssertionStrip;
 import joust.optimisers.runnables.CSE;
 import joust.optimisers.runnables.ConstFold;
@@ -85,7 +86,7 @@ public class JOUST extends AbstractProcessor {
         // The post-compilation pass to populate the disk cache with the results of classes processed
         // during this job. Needs to happen here so we can compute a checksum over the bytecode and
         // spot when things get sneakily changed when we weren't looking.
-        //OptimisationPhaseManager.register(new ChecksumRunner(), AFTER, GENERATE);
+        OptimisationPhaseManager.register(new ChecksumRunner(), AFTER, GENERATE);
 
         StaticCompilerUtils.init(env);
     }
