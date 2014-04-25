@@ -13,7 +13,7 @@ import static joust.tree.annotatedtree.AJCTree.*;
 
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
-public class ExpressionNormalisingTranslator extends BaseTranslator {
+public class TreeNormalisingTranslator extends BaseTranslator {
     @Override
     public void visitBinary(AJCBinary binary) {
         super.visitBinary(binary);

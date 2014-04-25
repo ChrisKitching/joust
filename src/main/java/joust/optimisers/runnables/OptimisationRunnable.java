@@ -1,5 +1,6 @@
 package joust.optimisers.runnables;
 
+import com.sun.source.util.TaskEvent;
 import joust.optimisers.translators.BaseTranslator;
 import joust.tree.annotatedtree.AJCForest;
 import joust.tree.annotatedtree.AJCTree;
@@ -16,12 +17,15 @@ import java.util.logging.Logger;
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public abstract class OptimisationRunnable implements Runnable {
+    public TaskEvent currentEvent;
+
     @Override
     public abstract void run();
 
     abstract static class TreeProcessing extends OptimisationRunnable {
         @Override
         public void run() {
+            log.info("Applying to {} nodes", AJCForest.getInstance().rootNodes.size());
             for (AJCTree tree : AJCForest.getInstance().rootNodes) {
                 processRootNode(tree);
             }

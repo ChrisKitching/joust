@@ -46,13 +46,13 @@ public abstract class OptimisationPhaseManager implements Runnable {
     public static void beforeVirtual(VirtualPhase p) {
         LinkedList<OptimisationRunnable> toRun = tasksBeforeVirtual.get(p);
         log.trace("Started virtual event: {}", p);
-        runTasks(toRun);
+        runTasks(toRun, null); // TODO: Replace `null` with some shiny new toy if required...
     }
 
     public static void afterVirtual(VirtualPhase p) {
         LinkedList<OptimisationRunnable> toRun = tasksAfterVirtual.get(p);
         log.trace("Finished virtual event: {}", p);
-        runTasks(toRun);
+        runTasks(toRun, null);
     }
 
     /**
@@ -81,14 +81,14 @@ public abstract class OptimisationPhaseManager implements Runnable {
             public void finished(TaskEvent taskEvent) {
                 LinkedList<OptimisationRunnable> toRun = tasksAfter.get(taskEvent.getKind());
                 log.trace("finished event: {}", taskEvent);
-                runTasks(toRun);
+                runTasks(toRun, taskEvent);
             }
 
             @Override
             public void started(TaskEvent taskEvent) {
                 LinkedList<OptimisationRunnable> toRun = tasksBefore.get(taskEvent.getKind());
                 log.trace("started event: {}", taskEvent);
-                runTasks(toRun);
+                runTasks(toRun, taskEvent);
 
                 currentPhase = CompilerPhase.fromKind(taskEvent.getKind());
             }
@@ -101,9 +101,10 @@ public abstract class OptimisationPhaseManager implements Runnable {
         compilationTask.addTaskListener(listener);
     }
 
-    public static void runTasks(LinkedList<OptimisationRunnable> runnables) {
+    public static void runTasks(LinkedList<OptimisationRunnable> runnables, TaskEvent taskEvent) {
         for (OptimisationRunnable r : runnables) {
             log.trace("Running {}", r.getClass().getName());
+            r.currentEvent = taskEvent;
             r.run();
         }
     }
