@@ -198,18 +198,6 @@ public class Effects {
         setEffectSet(newEffectSet);
     }
 
-    public void addUnresolvedDependency(Symbol.MethodSymbol target) {
-        if (needsEffectsFrom == null) {
-            needsEffectsFrom = new HashSet<>();
-        }
-
-        needsEffectsFrom.add(target);
-    }
-
-    public boolean hasUnresolvedDependencies() {
-        return needsEffectsFrom != null && !needsEffectsFrom.isEmpty();
-    }
-
     @Override
     public String toString() {
         return "Immediate: " + directPart.toString()+"\nComputed: " + effectSet.toString();
