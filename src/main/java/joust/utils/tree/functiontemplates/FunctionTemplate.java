@@ -91,7 +91,7 @@ public class FunctionTemplate {
                  ExpressionComplexityClassifier classifier = new ExpressionComplexityClassifier();
                  classifier.visitTree(args[i]);
 
-                 if (classifier.getScore() < ARGUMENT_EXTRACTION_THRESHOLD) {
+                 if (classifier.getScore() * refsToArg.size() < ARGUMENT_EXTRACTION_THRESHOLD) {
                      continue;
                  }
             }
@@ -136,7 +136,7 @@ public class FunctionTemplate {
         for (int i = 0; i < substitutionPoints.length; i++) {
             List<AJCExpressionTree> argRefs = substitutionPoints[i];
             for (AJCExpressionTree argRef : argRefs) {
-                AJCExpressionTree argCopy = args[i];
+                AJCExpressionTree argCopy = treeCopier.copy(args[i]);
 
                 argRef.swapFor(argCopy);
                 log.debug("Swapped {} for {}", argRef, argCopy);

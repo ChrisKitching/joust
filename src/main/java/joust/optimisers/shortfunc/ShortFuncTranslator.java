@@ -1,5 +1,6 @@
 package joust.optimisers.shortfunc;
 
+import com.sun.tools.javac.util.List;
 import joust.optimisers.translators.BaseTranslator;
 import joust.tree.annotatedtree.AJCForest;
 import joust.tree.annotatedtree.AJCTree;
@@ -29,11 +30,6 @@ public class ShortFuncTranslator extends BaseTranslator {
     protected void visitMethodDef(AJCMethodDecl that) {
         enclosingMethod = that.getTargetSymbol();
         super.visitMethodDef(that);
-
-        if (mHasMadeAChange) {
-            AJCForest.getInstance().initialAnalysis();
-            log.info("After shortFunc:\n {}", that);
-        }
     }
 
     boolean mayEdit = true;
@@ -56,8 +52,6 @@ public class ShortFuncTranslator extends BaseTranslator {
 
         MethodSymbol targetSym = that.getTargetSymbol();
         FunctionTemplate template = functionTemplates.get(targetSym);
-        log.info("Got {}", targetSym);
-        log.info("Avail: {}", functionTemplates.keySet());
 
         // No template available.
         if (template == null) {
@@ -66,13 +60,51 @@ public class ShortFuncTranslator extends BaseTranslator {
 
         mayEdit = false;
         mHasMadeAChange = true;
-        FunctionTemplateInstance instance = template.instantiateWithTemps(enclosingMethod, that.args.toArray(new AJCExpressionTree[that.args.size()]));
+        FunctionTemplateInstance instance;
+        if (template.isStatic) {
+            instance = template.instantiateWithTemps(enclosingMethod, that.args.toArray(new AJCExpressionTree[that.args.size()]));
+        } else {
+            AJCExpressionTree[] args = new AJCExpressionTree[that.args.size()+1];
+            if (that.meth instanceof AJCFieldAccess) {
+                args[0] = ((AJCFieldAccess) that.meth).selected;
+            }
 
-        log.info("Inserting {} before call {}", instance.startup, that);
+            int i = 1;
+            for (AJCExpressionTree arg : that.args) {
+                args[i] = arg;
+                i++;
+            }
+
+            instance = template.instantiateWithTemps(enclosingMethod, args);
+        }
+
+        List<AJCStatement> startupCopy = List.nil();
+        if (!instance.startup.isEmpty()) {
+            for (AJCStatement st : instance.startup) {
+                startupCopy = startupCopy.prepend(st);
+            }
+
+            AJCStatement enclosingStatement = that.getEnclosingStatement();
+            if (!(enclosingStatement.mParentNode instanceof AJCCase)) {
+                that.getEnclosingBlock().insertBefore(enclosingStatement, instance.startup);
+            } else {
+                ((AJCCase) enclosingStatement.mParentNode).insertBefore(enclosingStatement, instance.startup);
+            }
+        }
+
         log.info("{} -> {}", that, instance.body);
-        that.getEnclosingBlock().insertBefore(that.getEnclosingStatement(), instance.startup);
         that.swapFor(instance.body);
 
-        log.info("Intermediate: \n{}", that.getEnclosingBlock());
+        log.info("After shortfunc: \n{}", that.getEnclosingBlock());
+
+        for (AJCEffectAnnotatedTree t : startupCopy) {
+            log.info("Repeat: {}", t);
+            if (!AJCForest.getInstance().repeatAnalysis(t)) {
+                return;
+            }
+        }
+
+        AJCForest.getInstance().repeatAnalysis(instance.body);
+        log.info("Done.");
     }
 }
