@@ -1,6 +1,7 @@
 package joust.optimisers.translators;
 
 import joust.tree.annotatedtree.AJCComparableExpressionTree;
+import joust.tree.annotatedtree.AJCTree;
 import joust.utils.logging.LogUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
@@ -77,5 +78,48 @@ public class ConstFoldTranslator extends BaseTranslator {
         }
 
         log.info("{} {} {} -> {}", leftOperand, nodeTag, rightOperand, replacement);
+    }
+
+    @Override
+    protected void visitConditional(AJCConditional that) {
+        // Fold the subtrees of the conditional...
+        super.visitConditional(that);
+
+        if (that.cond instanceof AJCLiteral) {
+            AJCLiteral cast = (AJCLiteral) that.cond;
+            Object val = cast.getValue();
+            if (!(val instanceof Boolean)) {
+                log.fatal("Non-boolean boolean literal detected: {}", that.cond);
+                return;
+            }
+
+            boolean realValue = (Boolean) val;
+            if (realValue) {
+                that.swapFor(that.truepart);
+            } else {
+                that.swapFor(that.falsepart);
+            }
+        }
+    }
+
+    @Override
+    protected void visitIf(AJCIf that) {
+        super.visitIf(that);
+
+        if (that.cond instanceof AJCLiteral) {
+            AJCLiteral cast = (AJCLiteral) that.cond;
+            Object val = cast.getValue();
+            if (!(val instanceof Boolean)) {
+                log.fatal("Non-boolean boolean literal detected: {}", that.cond);
+                return;
+            }
+
+            boolean realValue = (Boolean) val;
+            if (realValue) {
+                that.swapFor(that.thenpart);
+            } else {
+                that.swapFor(that.elsepart);
+            }
+        }
     }
 }
