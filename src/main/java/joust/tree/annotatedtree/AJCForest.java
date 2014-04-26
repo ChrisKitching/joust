@@ -15,6 +15,7 @@ import joust.optimisers.unbox.UnboxingTranslator;
 import joust.tree.conversion.TreePreparationTranslator;
 import joust.tree.annotatedtree.treeinfo.TreeInfoManager;
 import joust.utils.logging.LogUtils;
+import joust.utils.tree.CallDetector;
 import joust.utils.tree.JCTreeStructurePrinter;
 import joust.utils.tree.TreeUtils;
 import lombok.experimental.ExtensionMethod;
@@ -188,5 +189,30 @@ public class AJCForest {
         if (currentEnvironment == null) {
             log.fatal("Environment has been nulled for tree {}", tree);
         }
+    }
+
+    public boolean repeatAnalysis(AJCTree tree) {
+        log.info("Repeat analysis for: {}", tree);
+        CallDetector detector = new CallDetector();
+        detector.visitTree(tree);
+
+        if (detector.containsCall) {
+            log.info("Shortcut aborted :(");
+            initialAnalysis();
+            return false;
+        }
+
+        log.info("Shortcut possible!");
+
+        VisitorResultPurger purger = new VisitorResultPurger();
+
+        log.info("Purging...");
+        // Run the initial effect analysis on the tree (It's kept incrementally updated)...
+        purger.visitTree(tree);
+
+        log.info("Effect...");
+        effectVisitor.visitTree(tree);
+
+        return true;
     }
 }
