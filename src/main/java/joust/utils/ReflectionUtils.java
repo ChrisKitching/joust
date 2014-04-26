@@ -25,6 +25,10 @@ public class ReflectionUtils {
         return fds.toArray(new Field[fds.size()]);
     }
 
+    /**
+     * Find a field with the given name on the given class, regardless of if it is declared on the class or
+     * on of its superclasses.
+     */
     public static Field findField(Class<?> pClass, String fieldName) throws NoSuchFieldException {
         Field[] fields = getAllFields(pClass);
         for (int i = 0; i < fields.length; i++) {

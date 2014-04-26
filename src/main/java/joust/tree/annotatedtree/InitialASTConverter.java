@@ -5,6 +5,7 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.List;
 import joust.tree.annotatedtree.AJCTree;
+import joust.utils.ReflectionUtils;
 import joust.utils.logging.LogUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
@@ -132,13 +133,6 @@ public class InitialASTConverter extends TreeScanner {
         Class<? extends AJCTree> destClass = destinationTree.getClass();
         Class<? extends JCTree> sourceClass = sourceTree.getClass();
 
-//        log.debug("Setting fields for {}:{}", sourceTree, sourceTree.getClass().getCanonicalName());
-//        int ii = 0;
-//        for (AJCTree t : results) {
-//            log.debug("{} : {}", ii, t);
-//            ii++;
-//        }
-
         String[] fieldNames = FIELD_MAPPINGS.get(destClass);
         if (fieldNames == null) {
             log.fatal("Unable to find field mappings for class: " + destClass.getCanonicalName());
@@ -148,9 +142,9 @@ public class InitialASTConverter extends TreeScanner {
         for (int i = 0; i < fieldNames.length; i++) {
             String fieldName = fieldNames[i];
             try {
-                Field destField = destClass.getDeclaredField(fieldName);
+                Field destField = ReflectionUtils.findField(destClass, fieldName);
                 destField.setAccessible(true);
-                Field sourceField = sourceClass.getDeclaredField(fieldName);
+                Field sourceField = ReflectionUtils.findField(sourceClass, fieldName);
                 sourceField.setAccessible(true);
 
                 Object o = sourceField.get(sourceTree);
