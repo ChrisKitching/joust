@@ -1,10 +1,12 @@
 package joust.optimisers.translators;
 
+import joust.tree.annotatedtree.AJCComparableExpressionTree;
 import joust.utils.logging.LogUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 import joust.utils.tree.evaluation.Value;
 
+import java.util.NoSuchElementException;
 import java.util.logging.Logger;
 
 import static com.sun.tools.javac.tree.JCTree.Tag;
@@ -38,8 +40,13 @@ public class ConstFoldTranslator extends BaseTranslator {
         // To Values...
         Value operand = Value.of(((AJCLiteral) expr).getValue());
         AJCLiteral replacement = Value.unary(nodeTag, operand).toLiteral();
-        tree.swapFor(replacement);
-        log.info("{}{} -> {}", nodeTag, expr, replacement);
+
+        try {
+            tree.swapFor(replacement);
+        } catch (NoSuchElementException e) {
+            // The way javac constructs literal arrays wil lcause us to get here. No matter.
+        }
+        log.info("{}:{} -> {}:{}", tree, tree.getClass().getCanonicalName(), replacement, replacement.getClass().getCanonicalName());
     }
 
     @Override
@@ -62,7 +69,13 @@ public class ConstFoldTranslator extends BaseTranslator {
         Value rValue = Value.of(((AJCLiteral) rightOperand).getValue());
 
         AJCLiteral replacement = Value.binary(nodeTag, lValue, rValue).toLiteral();
-        tree.swapFor(replacement);
+
+        try {
+            tree.swapFor(replacement);
+        } catch (NoSuchElementException e) {
+            // The way javac constructs literal arrays wil lcause us to get here. No matter.
+        }
+
         log.info("{} {} {} -> {}", leftOperand, nodeTag, rightOperand, replacement);
     }
 }
