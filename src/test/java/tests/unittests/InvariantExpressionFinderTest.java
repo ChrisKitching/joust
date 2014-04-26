@@ -38,7 +38,7 @@ public class InvariantExpressionFinderTest extends BaseAnalyserTest<InvariantExp
     @Test
     @Parameters(method = "invarFinderArgs")
     public void findInvariants(AJCEffectAnnotatedTree inputTree, Set<AJCExpressionTree> expectedInvariants) {
-        SideEffectVisitor effects = new SideEffectVisitor();
+        SideEffectVisitor effects = new SideEffectVisitor(true);
         effects.visitTree(inputTree);
 
         EffectSet loopEffects = inputTree.effects.getEffectSet();

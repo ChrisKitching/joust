@@ -36,7 +36,7 @@ public class UnusedAssignmentStripperTest extends BaseTreeTranslatorTest<UnusedA
     @Test
     @Parameters(method = "unusedArgs")
     public void testUnused(AJCMethodDecl input, AJCMethodDecl expected) {
-        SideEffectVisitor effects = new SideEffectVisitor();
+        SideEffectVisitor effects = new SideEffectVisitor(true);
         effects.visitMethodDef(input);
 
         log.debug("Unused assignment strip for: {}", input);

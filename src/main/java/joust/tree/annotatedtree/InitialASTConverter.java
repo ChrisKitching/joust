@@ -243,11 +243,11 @@ public class InitialASTConverter extends TreeScanner {
                 methodDefs = methodDefs.prepend((AJCMethodDecl) decl);
             } else if (decl instanceof AJCClassDecl) {
                 classDefs = classDefs.prepend((AJCClassDecl) decl);
-            } else {
-                log.fatal("Definition of unknown type: {}:{}", decl, decl.getClass().getCanonicalName());
-                return;
             }
 
+            // Blocks are quietly ignored, passing unchanged into the generate step. We already pilfered blocks that go
+            // into ctors - all that'll be left here are static initialisers, which aren't interestig in our analysis
+            // anyway. (And caused classfile corruption issues when I tried to shunt them into <clinit> myself...
             requiredDefs--;
         }
 

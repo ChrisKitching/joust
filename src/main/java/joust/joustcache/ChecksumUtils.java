@@ -76,7 +76,7 @@ public class ChecksumUtils {
         // The quantity of bytes the last call to read yielded.
         int lastRead = 0;
 
-        log.info("Hash computation for {}", classFile);
+        log.debug("Hash computation for {}", classFile);
         long t = System.currentTimeMillis();
 
         InputStream inputStream;

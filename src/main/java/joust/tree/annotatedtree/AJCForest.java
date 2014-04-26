@@ -2,6 +2,7 @@ package joust.tree.annotatedtree;
 
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.List;
+import joust.analysers.sideeffects.Effects;
 import joust.joustcache.JOUSTCache;
 import joust.optimisers.normalise.TreeNormalisingTranslator;
 import joust.analysers.sideeffects.SideEffectVisitor;
@@ -26,6 +27,8 @@ import static joust.tree.annotatedtree.AJCTree.*;
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class AJCForest {
+    private boolean analysisPerformed;
+
     private static AJCForest instance;
     // TODO: Something something context.
     public static AJCForest getInstance() {
@@ -38,7 +41,7 @@ public class AJCForest {
     // Maps method symbols to their corresponding declaration nodes.
     public final HashMap<MethodSymbol, AJCMethodDecl> methodTable;
 
-    public SideEffectVisitor effectVisitor = new SideEffectVisitor();
+    public SideEffectVisitor effectVisitor = new SideEffectVisitor(analysisPerformed);
 
     /**
      * Init the forest from the given set of root elements.
@@ -131,7 +134,8 @@ public class AJCForest {
         long t = System.currentTimeMillis();
         log.info("Initial side effect analysis started on {} nodes", rootNodes.size());
 
-        effectVisitor.reset();
+        effectVisitor = new SideEffectVisitor(!analysisPerformed);
+        Effects.numCalls = 0;
 
         VisitorResultPurger purger = new VisitorResultPurger();
 
@@ -148,6 +152,10 @@ public class AJCForest {
 
         // So now we've populated the direct effects of each method. Let's resolve all the loose ends...
         effectVisitor.bootstrap();
+
+        analysisPerformed = true;
+        log.info("numCalls: {}", Effects.numCalls);
+
         log.info("Initial side effect analysis completed in {}ms.", System.currentTimeMillis() - t);
     }
 

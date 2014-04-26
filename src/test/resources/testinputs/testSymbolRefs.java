@@ -13,6 +13,10 @@ public class testSymbolRefs extends BaseIntegrationTestCase {
 
     public int aField = 42;
 
+    public int someField;
+    public String aStringField;
+    public byte someByteField;
+
     public int a = 12;
     @Override
     protected void test() {
@@ -22,6 +26,9 @@ public class testSymbolRefs extends BaseIntegrationTestCase {
         testSymbolRefs instance = new testSymbolRefs();
         print(instance.aField);
         print(aField);
+
+        print(someByteField);
+        print(someField);
 
         class cake {
             public int a = 23;

@@ -119,6 +119,8 @@ public class Effects {
         return unionOf(effects);
     }
 
+    public static int numCalls = 0;
+
     /**
      * Set the effect set to the given EffectSet and, if necessary, update the dependent effect sets.
      * @param e
@@ -177,6 +179,7 @@ public class Effects {
         rebuildFromChildrenInternal(new HashSet<Effects>());
     }
     private void rebuildFromChildrenInternal(Set<Effects> visited) {
+        numCalls++;
         if (visited.contains(this)) {
             return;
         }

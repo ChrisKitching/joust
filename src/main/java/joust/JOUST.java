@@ -30,8 +30,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.logging.Handler;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static joust.utils.compiler.OptimisationPhaseManager.PhaseModifier.*;

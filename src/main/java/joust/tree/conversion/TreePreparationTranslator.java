@@ -1,21 +1,24 @@
 package joust.tree.conversion;
 
-import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.jvm.Gen;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.TreeTranslator;
 import com.sun.tools.javac.util.List;
-import joust.utils.data.JavacListUtils;
+import com.sun.tools.javac.util.ListBuffer;
 import joust.utils.logging.LogUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.logging.Logger;
 
+import static com.sun.tools.javac.code.Flags.*;
+import static com.sun.tools.javac.code.Symbol.*;
 import static com.sun.tools.javac.tree.JCTree.*;
 import static joust.utils.compiler.StaticCompilerUtils.*;
 import static joust.utils.compiler.StaticCompilerUtils.gen;
@@ -31,75 +34,142 @@ import static joust.utils.compiler.StaticCompilerUtils.gen;
  * node under consideration. (Instead of iterating a single-element block).
  * If enabled, stripping of assertions. No point converting them just to throw them away...
  * Elimination of the empty blocks that javac puts in instead of inner classes..... (WAT).
- * Apply the Gen phase's tree normalisation (Combines  static initialisers into the <clinit> method, shifts initialisers
- * from fields into the constructors, etc.)
  */
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class TreePreparationTranslator extends TreeTranslator {
-    private Method normaliseMethod;
-    private Field endPosTableField;
-    private Field toplevelField;
-    public TreePreparationTranslator() {
-        // Set up reflective access to some more parts of Javac that need beating with a stick...
-        Class<Gen> genClass = Gen.class;
+    private static Method normalizeMethod;
+    static {
         try {
-            normaliseMethod = genClass.getDeclaredMethod("normalizeDefs", List.class, Symbol.ClassSymbol.class);
-            normaliseMethod.setAccessible(true);
-            endPosTableField = genClass.getDeclaredField("endPosTable");
-            endPosTableField.setAccessible(true);
-            toplevelField = genClass.getDeclaredField("toplevel");
-            toplevelField.setAccessible(true);
-        } catch (NoSuchMethodException | NoSuchFieldException e) {
-            log.fatal("Exception initialising TreePreparationTranslator!", e);
+            normalizeMethod = Gen.class.getDeclaredMethod("normalizeMethod", JCMethodDecl.class, List.class, List.class);
+            normalizeMethod.setAccessible(true);
+        } catch (NoSuchMethodException e) {
+            log.fatal("Unable to get normaliseMethod method from Gen!", e);
         }
     }
 
-    private JCCompilationUnit currentToplevel;
+    /**
+     * Get the default initialiser expression for a given field type.
+     */
+    public static JCExpression getDefaultLiteralValueForType(Type t) {
+        // Object types default to null.
+        if (!t.isPrimitive()) {
+            return javacTreeMaker.Literal(TypeTag.BOT, null).setType(symtab.botType);
+        }
 
-    @Override
-    public void visitTopLevel(JCCompilationUnit tree) {
-        currentToplevel = tree;
-        super.visitTopLevel(tree);
+        // Numerical types default to zero, booleans to false.
+        Type.JCPrimitiveType cast = (Type.JCPrimitiveType) t;
+        switch(cast.getTag()) {
+            case BYTE:
+            case CHAR:
+            case SHORT:
+            case INT:
+                return javacTreeMaker.TypeCast(cast, javacTreeMaker.Literal(0).setType(t));
+            case LONG:
+                return javacTreeMaker.Literal(0L);
+            case FLOAT:
+                return javacTreeMaker.Literal(0.0F);
+            case DOUBLE:
+                return javacTreeMaker.Literal(0.0D);
+            case BOOLEAN:
+                return javacTreeMaker.Literal(false);
+            default:
+                return javacTreeMaker.Literal(TypeTag.BOT, null).setType(symtab.botType);
+        }
     }
 
     @Override
     public void visitClassDef(JCClassDecl jcClassDecl) {
-        List<JCTree> newMethodDefs;
-        try {
-            toplevelField.set(gen, currentToplevel);
-            endPosTableField.set(gen, currentToplevel.endPositions);
-            newMethodDefs = (List<JCTree>) normaliseMethod.invoke(gen, jcClassDecl.defs, jcClassDecl.sym);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            log.fatal("Exception normalising class def!", e);
-            return;
-        }
+        ListBuffer<JCTree> newDefs = new ListBuffer<>();
 
-        int i = 0;
+        ListBuffer<JCStatement> initCode = new ListBuffer<>();
 
-        for (JCTree t : jcClassDecl.defs) {
-            if (t instanceof JCBlock) {
-                JCBlock cast = (JCBlock) t;
-                if (cast.stats.isEmpty()
-                || (cast.flags & Flags.STATIC) != 0) {
-                    jcClassDecl.defs = JavacListUtils.removeAtIndex(jcClassDecl.defs, i);
-                    i--;
-                }
-            } else if (t instanceof JCMethodDecl) {
-                jcClassDecl.defs = JavacListUtils.removeAtIndex(jcClassDecl.defs, i);
-                i--;
+        // Used to find constructors.
+        List<JCMethodDecl> constructorDefs = List.nil();
+
+        // Sort definitions into three listbuffers:
+        //  - initCode for instance initializers
+        //  - clinitCode for class initializers
+        //  - methodDefs for method definitions
+        for (List<JCTree> l = jcClassDecl.defs; l.nonEmpty(); l = l.tail) {
+            JCTree def = l.head;
+            switch (def.getTag()) {
+                case BLOCK:
+                    JCBlock block = (JCBlock)def;
+                    if (block.stats.isEmpty()) {
+                        continue;
+                    }
+
+                    // Add blocks to either the constructor code or the <clinit> code.
+                    if ((block.flags & STATIC) == 0) {
+                        initCode.append(block);
+                    } else {
+                        // Quietly ignore static initialisers.
+                        newDefs.append(block);
+                    }
+                    break;
+                case METHODDEF:
+                    newDefs.append(def);
+
+                    // If this is a ctor, add it to the list of ctors.
+                    JCMethodDecl md = (JCMethodDecl) def;
+
+                    if (TreeInfo.isInitialConstructor(md)) {
+                        log.debug("Found ctor: {}", md);
+                        constructorDefs = constructorDefs.prepend(md);
+                    }
+                    break;
+                case VARDEF:
+                    JCVariableDecl vdef = (JCVariableDecl) def;
+                    VarSymbol sym = vdef.sym;
+
+                    // Leave statics alone...
+                    if ((sym.flags() & STATIC) != 0) {
+                        newDefs.append(def);
+                        continue;
+                    }
+
+                    // So we're going to need to put an initialiser for it somewhere, so let's make it.
+                    JCStatement init;
+
+                    if (vdef.init != null) {
+                        // Create an assignment equivalent to the action of the initialiser of vdef.
+                        init = javacTreeMaker.at(vdef.pos()).Assignment(sym, vdef.init);
+                    } else {
+                        // Create an assignment for this symbol to the appropriate default value.
+                        JCExpression literalValue = getDefaultLiteralValueForType(sym.type);
+                        init = javacTreeMaker.at(vdef.pos()).Assignment(sym, literalValue);
+                    }
+
+                    // Drop the real initialiser to prevent the *actual* normalisation step from processing it.
+                    vdef.init = null;
+
+                    // Add the assignment to the constructor.
+                    initCode.append(init);
+
+                    newDefs.append(def);
+                    break;
+                default:
+                    log.fatal("Unknown JCTree class declaration type: {}", def.getTag());
+                    break;
             }
-            i++;
         }
 
-        jcClassDecl.defs = newMethodDefs.prependList(jcClassDecl.defs);
+        // Insert any instance initializers into all constructors.
+        if (!initCode.isEmpty()) {
+            List<JCStatement> initStats = initCode.toList();
+            for (JCMethodDecl ctor : constructorDefs) {
+                try {
+                    normalizeMethod.invoke(gen, ctor, initStats, List.nil());
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    log.fatal("Exception normalising method: {}\n\n", ctor, e);
+                }
+            }
+        }
+
+        jcClassDecl.defs = newDefs.toList();
 
         super.visitClassDef(jcClassDecl);
-    }
-
-    @Override
-    public void visitMethodDef(JCMethodDecl jcMethodDecl) {
-        super.visitMethodDef(jcMethodDecl);
     }
 
     @Override
@@ -127,13 +197,6 @@ public class TreePreparationTranslator extends TreeTranslator {
         super.visitForLoop(jcForLoop);
         jcForLoop.body = ensureBlock(jcForLoop.body);
         result = javacTreeMaker.Block(0, List.<JCStatement>of(jcForLoop));
-    }
-
-    @Override
-    public void visitForeachLoop(JCEnhancedForLoop jcEnhancedForLoop) {
-        super.visitForeachLoop(jcEnhancedForLoop);
-        jcEnhancedForLoop.body = ensureBlock(jcEnhancedForLoop.body);
-        result = jcEnhancedForLoop;
     }
 
     @Override
@@ -169,10 +232,37 @@ public class TreePreparationTranslator extends TreeTranslator {
         return javacTreeMaker.Block(flags, List.of(tree));
     }
 
+
+    // Visitors for nodes that should no longer exist in the tree. If they do, it indicates something has happened, such
+    // as the compiler being drastically modified, which prevents us from sanely performing our work.
     @Override
-    public void visitLetExpr(LetExpr letExpr) {
-        log.fatal("FOUND A LET EXPRESSION!\n{}", letExpr);
-        super.visitLetExpr(letExpr);
+    public void visitForeachLoop(JCEnhancedForLoop tree) {
+        undigestableNodeType(tree);
+    }
+
+    @Override
+    public void visitTypeParameter(JCTypeParameter tree) {
+        undigestableNodeType(tree);
+    }
+
+    @Override
+    public void visitWildcard(JCWildcard tree) {
+        undigestableNodeType(tree);
+    }
+
+    @Override
+    public void visitTypeBoundKind(TypeBoundKind tree) {
+        undigestableNodeType(tree);
+    }
+
+    @Override
+    public void visitErroneous(JCErroneous tree) {
+        log.error("Erroneous tree encountered - there'll probably be an error from the compiler about that that's more interesting...");
+        undigestableNodeType(tree);
+    }
+
+    private void undigestableNodeType(JCTree tree) {
+        log.fatal("Encountered unexpected tree note type {} of value: {}", tree.getClass().getCanonicalName(), tree);
     }
 
     private static JCStatement ensureBlock(JCStatement tree) {

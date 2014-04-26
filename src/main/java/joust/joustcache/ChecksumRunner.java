@@ -14,6 +14,7 @@ import javax.tools.JavaFileObject;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.logging.Logger;
 
 import static joust.utils.compiler.StaticCompilerUtils.fileManager;
@@ -28,7 +29,6 @@ public class ChecksumRunner extends OptimisationRunnable {
     @Override
     public void run() {
         log.info("ChecksumRunner started.");
-        log.info("Event: {}", currentEvent);
 
         List<String> keysToProcess = List.nil();
 
@@ -42,19 +42,17 @@ public class ChecksumRunner extends OptimisationRunnable {
 
         long s = System.currentTimeMillis();
 
-        for (String className : JOUSTCache.classInfo.keySet()) {
+        Iterator<String> keyIterator = JOUSTCache.classInfo.keySet().iterator();
+        while (keyIterator.hasNext()) {
+            String className = keyIterator.next();
             TransientClassInfo transientInfo = JOUSTCache.transientClassInfo.get(className);
             if (transientInfo.flushed) {
+                log.fatal("Already flushed: {}", className);
                 continue;
             }
 
             try {
                 // Get a reference to the file to which this ClassSymbol was written.
-                log.info("Looking for a file for {}", className);
-                if (transientInfo != null) {
-                    log.info("Transient: {}", transientInfo.getSourceFile());
-                }
-
                 JavaFileObject outFile =
                         fileManager.getJavaFileForOutput(CLASS_OUTPUT,
                         className,
@@ -68,15 +66,17 @@ public class ChecksumRunner extends OptimisationRunnable {
                 }
 
                 final int hash = ChecksumUtils.computeHash(outFile);
-                log.info("Hash for {} is {}", className, hash);
 
                 JOUSTCache.writeSymbolToDisk(className, hash);
                 transientInfo.setFlushed(true);
+                log.info("Flush: {}", className);
             } catch (FileNotFoundException e) {
                 // Probably just called too soon...
             } catch (IOException e) {
                 log.error("Can't find file for: {}", className, e);
             }
+
+            keyIterator.remove();
         }
         long e = System.currentTimeMillis();
         log.info("Done in " + (e - s) + "ms");

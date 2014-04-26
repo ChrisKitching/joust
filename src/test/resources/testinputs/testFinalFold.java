@@ -8,6 +8,7 @@ public class testFinalFold extends BaseIntegrationTestCase {
     public static final double halfPi = Math.PI/2;
     public static final double halfPiEasily = 3.14159265358979D/2;
     public static final String CAN_YOU_CONCAT = "IT'S" + " TOASTER " + "TIME (" + 12 + ")";
+    public static int cake = 3;
 
     @Override
     protected void test() {

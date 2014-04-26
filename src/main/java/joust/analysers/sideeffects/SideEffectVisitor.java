@@ -28,7 +28,7 @@ import static joust.utils.compiler.StaticCompilerUtils.types;
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class SideEffectVisitor extends AJCTreeVisitor {
-    private boolean bootstrapped;
+    private boolean saveResults;
 
     // Track the method calls which depend on incomplete methods so we can go back and fix them up when we complete
     // the method in question. Keyed by MethodSymbol of the incomplete method.
@@ -51,17 +51,8 @@ public class SideEffectVisitor extends AJCTreeVisitor {
 
     private MethodSymbol methodBeingVisited;
 
-    /**
-     * Reset all state, but do not touch the bootstrapped flag.
-     */
-    public void reset() {
-        incompleteCalls.clear();
-        unfinishedMethodEffects.clear();
-        calledMethodsWithoutSource.clear();
-        methodDeps.clear();
-        reverseMethodDeps.clear();
-        possibleInheitors.clear();
-        methodBeingVisited = null;
+    public SideEffectVisitor(boolean shouldSave) {
+        saveResults = shouldSave;
     }
 
     @Override
@@ -162,7 +153,7 @@ public class SideEffectVisitor extends AJCTreeVisitor {
         calledMethodsWithoutSource.removeAll(knownSymbols);
         log.debug("calledCopy: {}", Arrays.toString(calledMethodsWithoutSource.toArray()));
 
-        if (!bootstrapped) {
+        if (saveResults) {
             for (MethodSymbol mSym : calledMethodsWithoutSource) {
                 log.debug("Loading effects for {} from cache... (Owner is {})", mSym, mSym.enclClass());
                 JOUSTCache.loadCachedInfoForClass(mSym.enclClass());
@@ -189,7 +180,6 @@ public class SideEffectVisitor extends AJCTreeVisitor {
         while (resolveMethodsWithoutDeps());
 
         if (methodDeps.keySet().isEmpty()) {
-            bootstrapped = true;
             return;
         }
 
@@ -227,8 +217,6 @@ public class SideEffectVisitor extends AJCTreeVisitor {
             log.debug("After: {}", missingEff);
             methodCompleted(sym, missingEff);
         }
-
-        bootstrapped = true;
     }
 
     /**
@@ -264,7 +252,7 @@ public class SideEffectVisitor extends AJCTreeVisitor {
     private void methodCompleted(MethodSymbol completedSym, Effects effects) {
         log.debug("{}:{} completed with {}", completedSym, completedSym.owner, effects);
         methodDeps.remove(completedSym);
-        TreeInfoManager.registerMethodEffects(completedSym, effects, !bootstrapped);
+        TreeInfoManager.registerMethodEffects(completedSym, effects, saveResults);
         unfinishedMethodEffects.remove(completedSym);
 
         Set<AJCEffectAnnotatedTree> incompleted = incompleteCalls.get(completedSym);

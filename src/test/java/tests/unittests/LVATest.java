@@ -53,7 +53,7 @@ public class LVATest extends BaseAnalyserTest<Live> {
             symbolSets[i] = expected;
         }
 
-        SideEffectVisitor effects = new SideEffectVisitor();
+        SideEffectVisitor effects = new SideEffectVisitor(true);
         effects.visitMethodDef(inputTree);
 
         testVisitNode(inputTree, targetNodes, symbolSets);

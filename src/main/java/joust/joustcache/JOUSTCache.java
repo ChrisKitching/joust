@@ -202,6 +202,7 @@ public class JOUSTCache {
             log.warn("Hash mismatch for: {}\n" +
                     "Classfile hash: {}\n" +
                     "Classinfo hash: {}\n", sym.fullname.toString(), classHash, cInfo.hash);
+            log.warn("For classfile: {}", sym.classfile);
             return;
         }
 
