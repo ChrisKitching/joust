@@ -1,5 +1,6 @@
 package joust.tree.conversion;
 
+import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.jvm.Gen;
 import com.sun.tools.javac.tree.JCTree;
@@ -64,10 +65,11 @@ public class TreePreparationTranslator extends TreeTranslator {
 
     @Override
     public void visitClassDef(JCClassDecl jcClassDecl) {
+        List<JCTree> newMethodDefs;
         try {
             toplevelField.set(gen, currentToplevel);
             endPosTableField.set(gen, currentToplevel.endPositions);
-            jcClassDecl.defs = (List<JCTree>) normaliseMethod.invoke(gen, jcClassDecl.defs, jcClassDecl.sym);
+            newMethodDefs = (List<JCTree>) normaliseMethod.invoke(gen, jcClassDecl.defs, jcClassDecl.sym);
         } catch (IllegalAccessException | InvocationTargetException e) {
             log.fatal("Exception normalising class def!", e);
             return;
@@ -78,13 +80,19 @@ public class TreePreparationTranslator extends TreeTranslator {
         for (JCTree t : jcClassDecl.defs) {
             if (t instanceof JCBlock) {
                 JCBlock cast = (JCBlock) t;
-                if (cast.stats.isEmpty()) {
+                if (cast.stats.isEmpty()
+                || (cast.flags & Flags.STATIC) != 0) {
                     jcClassDecl.defs = JavacListUtils.removeAtIndex(jcClassDecl.defs, i);
+                    i--;
                 }
+            } else if (t instanceof JCMethodDecl) {
+                jcClassDecl.defs = JavacListUtils.removeAtIndex(jcClassDecl.defs, i);
                 i--;
             }
             i++;
         }
+
+        jcClassDecl.defs = newMethodDefs.prependList(jcClassDecl.defs);
 
         super.visitClassDef(jcClassDecl);
     }
