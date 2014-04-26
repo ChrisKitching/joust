@@ -119,28 +119,22 @@ public class Effects {
     }
     private void setEffectSetInternal(EffectSet e, Set<Effects> visited) {
         if (visited.contains(this)) {
-            log.trace("Stopping because a cycle has been encountered: {}", visited);
             return;
         }
         visited.add(this);
 
-        log.trace("Old effects: {}", effectSet);
-        log.trace("New effects: {}", e);
         EffectSet oldEffects = effectSet;
         effectSet = e;
         if (dependantOnThis.isEmpty()) {
-            log.trace("Done - no deps.");
             return;
         }
 
         if (oldEffects.equals(e)) {
-            log.trace("Done - no change in effects.");
             return;
         }
 
         // Determine if this change only *added* effects. If so we can use a simpler routine to update...
         if (e.contains(oldEffects)) {
-            log.trace("Contained - unioning.");
             // Union your way up the tree...
             for (Effects eS : dependantOnThis) {
                 if (eS == this) {
