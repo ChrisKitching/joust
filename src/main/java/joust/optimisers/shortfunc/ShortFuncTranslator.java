@@ -66,7 +66,8 @@ public class ShortFuncTranslator extends BaseTranslator {
         } else {
             AJCExpressionTree[] args = new AJCExpressionTree[that.args.size()+1];
             if (that.meth instanceof AJCFieldAccess) {
-                args[0] = ((AJCFieldAccess) that.meth).selected;
+                // TODO: Urgh.
+                args[0] = (AJCExpressionTree) ((AJCFieldAccess) that.meth).selected;
             }
 
             int i = 1;

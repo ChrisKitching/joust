@@ -603,7 +603,11 @@ public class SideEffectVisitor extends AJCTreeVisitor {
 
         VarSymbol tSym = (VarSymbol) targetSym;
 
-        that.effects = Effects.unionWithDirect(read(tSym), that.selected.effects);
+        if (that.selected instanceof AJCEffectAnnotatedTree) {
+            that.effects = Effects.unionWithDirect(read(tSym), ((AJCEffectAnnotatedTree) that.selected).effects);
+        } else {
+            that.effects = Effects.unionWithDirect(read(tSym));
+        }
     }
 
     @Override
