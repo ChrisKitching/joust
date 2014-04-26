@@ -89,6 +89,32 @@ public class TreeUtils {
     }
 
     /**
+     * Convert a Kind literal to a literal type, if possible.
+     */
+    public static Type kindToType(Kind input) {
+        switch (input) {
+            case INT_LITERAL:
+                return symtab.intType;
+            case LONG_LITERAL:
+                return symtab.longType;
+            case FLOAT_LITERAL:
+                return symtab.floatType;
+            case DOUBLE_LITERAL:
+                return symtab.doubleType;
+            case BOOLEAN_LITERAL:
+                return symtab.booleanType;
+            case CHAR_LITERAL:
+                return symtab.charType;
+            case STRING_LITERAL:
+                return symtab.stringType;
+            case NULL_LITERAL:
+                return symtab.botType;
+            default:
+                throw new UnsupportedOperationException("Unknown primitive type kind encountered: " + input);
+        }
+    }
+
+    /**
      * Given a method call, return the VarSymbol, if any, of the object on which the call is being done.
      * Returns null if the callee is not a VarSymbol.
      */

@@ -15,6 +15,7 @@ import com.sun.tools.javac.util.JCDiagnostic;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 import joust.utils.logging.LogUtils;
+import joust.utils.tree.TreeUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
@@ -395,6 +396,9 @@ public class AJCTreeFactory implements AJCTree.Factory {
         thenpart.mParentNode = ret;
         elsepart.mParentNode = ret;
 
+        // Both arguments need to be the same type, and the return value will also be that type.
+        ret.setType(thenpart.getNodeType());
+
         return ret;
     }
 
@@ -416,6 +420,7 @@ public class AJCTreeFactory implements AJCTree.Factory {
         AJCExpressionStatement ret = new AJCExpressionStatement(javacTreeMaker.Exec(expr.getDecoratedTree()), expr);
 
         expr.mParentNode = ret;
+        ret.setType(expr.getNodeType());
 
         return ret;
     }
@@ -457,6 +462,9 @@ public class AJCTreeFactory implements AJCTree.Factory {
         for (AJCExpressionTree arg : args) {
             arg.mParentNode = ret;
         }
+
+        MethodSymbol calledMethod = fn.getTargetSymbol();
+        ret.setType(calledMethod.getReturnType());
 
         return ret;
     }
@@ -662,7 +670,13 @@ public class AJCTreeFactory implements AJCTree.Factory {
 
         value = AJCLiteral.sanitiseLiteralValue(tag, value);
 
-        return new AJCLiteral(javacTreeMaker.Literal(tag, value));
+        AJCLiteral lit = new AJCLiteral(javacTreeMaker.Literal(tag, value));
+
+        // Since the javacTreeMaker doesn't set the type on the node for us, we'd end up with an untyped literal if we
+        // don't fix this ourselves...
+        lit.setType(TreeUtils.kindToType(tag.getKindLiteral()));
+
+        return lit;
     }
 
     @Override

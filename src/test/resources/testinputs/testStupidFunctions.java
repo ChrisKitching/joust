@@ -21,6 +21,12 @@ public class testStupidFunctions extends BaseIntegrationTestCase {
                 break;
         }
 
+        print(String.valueOf(true));
+        print(String.valueOf(1));
+        print(String.valueOf(1L));
+        print(String.valueOf(1.0F));
+        print(String.valueOf(1.0D));
+
         print(x + ", " + y + ", " + z);
         print("Hello, world".toString());
     }
