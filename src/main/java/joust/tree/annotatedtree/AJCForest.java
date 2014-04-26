@@ -68,10 +68,6 @@ public class AJCForest {
         }
 
         log.info("Starting forest construction.");
-        for (Pair<Env<AttrContext>, JCClassDecl> rootElement : rootElements) {
-            log.info("Processing: {}", rootElement.snd.sym);
-        }
-
         currentEnvironment = null;
 
         long t = System.currentTimeMillis();
@@ -87,6 +83,7 @@ public class AJCForest {
 
         InitialASTConverter.init();
         for (Pair<Env<AttrContext>, JCClassDecl> env : rootElements) {
+            log.info("Processing: {}", env.snd.sym);
             currentEnvironment = env.fst;
             JCClassDecl classTree = env.snd;
             log.trace("Input tree: {}", classTree);
