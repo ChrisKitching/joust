@@ -86,31 +86,31 @@ public class LoopInvarTranslator extends BaseTranslator {
 
     @Override
     public void visitDoWhileLoop(AJCDoWhileLoop doLoop) {
+        super.visitDoWhileLoop(doLoop);
         log.debug("Invar for: {}", doLoop);
 
         Set<AJCExpressionTree> invariantExpressions = getInvariants(doLoop);
         extractInvariants(invariantExpressions, doLoop.body, doLoop);
 
-        super.visitDoWhileLoop(doLoop);
     }
 
     @Override
     public void visitWhileLoop(AJCWhileLoop whileLoop) {
+        super.visitWhileLoop(whileLoop);
         log.debug("Invar for: {}", whileLoop);
 
         Set<AJCExpressionTree> invariantExpressions = getInvariants(whileLoop);
         extractInvariants(invariantExpressions, whileLoop.body, whileLoop);
 
-        super.visitWhileLoop(whileLoop);
     }
 
     @Override
     public void visitForLoop(AJCForLoop forLoop) {
+        super.visitForLoop(forLoop);
         log.debug("Invar for: {}", forLoop);
 
         Set<AJCExpressionTree> invariantExpressions = getInvariants(forLoop);
         extractInvariants(invariantExpressions, forLoop.body, forLoop);
 
-        super.visitForLoop(forLoop);
     }
 }
