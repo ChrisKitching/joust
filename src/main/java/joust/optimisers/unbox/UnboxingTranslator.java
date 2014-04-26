@@ -209,8 +209,12 @@ public class UnboxingTranslator extends BaseTranslator {
     @Override
     protected void visitAssign(AJCAssign that) {
         super.visitAssign(that);
-        log.debug("Assignment: {}", that);
+        log.info("Assignment: {}", that);
         VarSymbol assignee = that.lhs.getTargetSymbol();
+        // Bloody unconventional array accesses.
+        if (assignee == null) {
+            return;
+        }
 
         // If we're assigning to something that isn't a boxed type itself, we're not going to do any harm.
         Type boxedType = types.unboxedType(assignee.type);
