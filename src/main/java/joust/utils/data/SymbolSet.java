@@ -24,6 +24,15 @@ public class SymbolSet extends HashSet<VarSymbol> {
     }
 
     @Override
+    public boolean retainAll(Collection<?> c) {
+        if (c == UNIVERSAL_SET) {
+            return false;
+        }
+
+        return super.retainAll(c);
+    }
+
+    @Override
     public boolean isEmpty() {
         if (this == UNIVERSAL_SET) {
             return false;
