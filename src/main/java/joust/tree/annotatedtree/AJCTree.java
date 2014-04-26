@@ -1122,14 +1122,14 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         @Delegate @Getter private final JCFieldAccess decoratedTree;
 
         // The lhs of the dot... We're selecting <selected>.<name>. So literals...
-        public AJCExpressionTree selected;
+        public AJCTree selected;
 
         protected AJCFieldAccess(JCFieldAccess tree) {
             super(tree);
             decoratedTree = tree;
         }
 
-        protected AJCFieldAccess(JCFieldAccess tree, AJCExpressionTree selected) {
+        protected AJCFieldAccess(JCFieldAccess tree, AJCTree selected) {
             this(tree);
             this.selected = selected;
         }
@@ -1547,7 +1547,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         AJCTypeCast TypeCast(AJCTypeExpression clazz, AJCExpressionTree expr);
         AJCInstanceOf InstanceOf(AJCSymbolRefTree<VarSymbol> expr, AJCSymbolRef<TypeSymbol> clazz);
         AJCArrayAccess ArrayAccess(AJCExpressionTree indexed, AJCExpressionTree index);
-        <T extends Symbol> AJCFieldAccess<T> Select(AJCExpressionTree base, T sym);
+        <T extends Symbol> AJCFieldAccess<T> Select(AJCTree base, T sym);
         <T extends Symbol> AJCIdent<T> Ident(Name idname);
         <T extends Symbol> AJCIdent<T> Ident(T sym);
         AJCLiteral Literal(TypeTag tag, Object value);

@@ -1,6 +1,8 @@
 package joust.optimisers.normalise;
 
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Type;
+import joust.tree.annotatedtree.AJCTree;
 import joust.utils.logging.LogUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
@@ -159,6 +161,8 @@ public class CommutativitySorterComparator implements Comparator<AJCExpressionTr
             return compareCalls((AJCCall) l, (AJCCall) r);
         } else if (l instanceof AJCArrayAccess) {
             return compareArrayAccesses((AJCArrayAccess) l, (AJCArrayAccess) r);
+        } else if (l instanceof AJCTypeCast) {
+            return compareTypeCasts((AJCTypeCast) l, (AJCTypeCast) r);
         } else if (l instanceof AJCEmptyExpression) {
             log.warn("Comparing two empty expressions for {}:{}", l, r);
             return 0;
@@ -166,6 +170,18 @@ public class CommutativitySorterComparator implements Comparator<AJCExpressionTr
             log.fatal("Unexpected expression type: " + l.getClass().getCanonicalName());
             return 0;
         }
+    }
+
+    private int compareTypeCasts(AJCTypeCast l, AJCTypeCast r) {
+        Type tl = l.clazz.getNodeType();
+        Type tr = r.clazz.getNodeType();
+
+        int typeComparism = tl.toString().compareTo(tr.toString());
+        if (typeComparism != 0) {
+            return typeComparism;
+        }
+
+        return compare(l.expr, r.expr);
     }
 
     private int compareArrayAccesses(AJCArrayAccess l, AJCArrayAccess r) {
