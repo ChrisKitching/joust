@@ -133,9 +133,17 @@ public class AJCForest {
 
         effectVisitor.reset();
 
+        VisitorResultPurger purger = new VisitorResultPurger();
+
+        log.info("Purging...");
         // Run the initial effect analysis on the tree (It's kept incrementally updated)...
         for (AJCTree tree : rootNodes) {
-            effectVisitor.visit(tree);
+            purger.visitTree(tree);
+        }
+
+        log.info("Effect...");
+        for (AJCTree tree : rootNodes) {
+            effectVisitor.visitTree(tree);
         }
 
         // So now we've populated the direct effects of each method. Let's resolve all the loose ends...
