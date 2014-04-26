@@ -56,12 +56,23 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
      * Replace this node with the given node, if possible.
      */
     public void swapFor(@NonNull AJCTree replacement) {
+        if (replacement == this) {
+            return;
+        }
+
         if (mParentNode == null) {
             log.fatal("Unable to swap " + this + " for " + replacement + " - parent was null.");
             return;
         }
 
         // TODO: This is EEEVIL.
+        // Reparent the new node.
+        replacement.mParentNode = mParentNode;
+
+        if (this instanceof AJCStatement) {
+            ((AJCStatement) replacement).enclosingBlock = ((AJCStatement) this).enclosingBlock;
+        }
+
 
         // Determine which of the fields on the parent are occupied by this node and make the appropriate swap.
         // It is required that no object is inserted more than once into a particular parent.
@@ -71,12 +82,6 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         for (int i = 0; i < fields.length; i++) {
             fields[i].setAccessible(true);
             try {
-                // Reparent the new node.
-                replacement.mParentNode = mParentNode;
-                if (this instanceof AJCStatement) {
-                    ((AJCStatement) replacement).enclosingBlock = ((AJCStatement) this).enclosingBlock;
-                }
-
                 // For non-list fields, just swap in parent.
                 if(!"com.sun.tools.javac.util.List".equals(fields[i].getType().getCanonicalName())) {
                     if (fields[i].get(mParentNode) == this) {
@@ -185,6 +190,10 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         // Since a statement is always in a block, we can provide a specialised swap function and avoid the evilness.
         @Override
         public void swapFor(@NonNull AJCTree replacement) {
+            if (replacement == this) {
+                return;
+            }
+
             // Except for let expressions, that is.
             if (mParentNode instanceof AJCLetExpr) {
                 super.swapFor(replacement);
@@ -548,6 +557,12 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             setUnderlyingStats();
         }
         public void insert(List<AJCStatement> statements, int index) {
+            // Try to take the easy way out.
+            if (statements.length() == 1) {
+                insert(statements.head, index);
+                return;
+            }
+
             // Compute early since the splicing is destructive.
             List<JCStatement> unwrapped = AJCTree.unwrap(statements);
 
@@ -606,6 +621,10 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
          * Swap the given statement for the other given statement.
          */
         public void swap(AJCStatement target, AJCStatement replacement) {
+            if (target == replacement) {
+                return;
+            }
+
             replacement.mParentNode = this;
             if (type == Type.BLOCK) {
                 replacement.enclosingBlock = (AJCBlock) this;
