@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -156,6 +157,23 @@ public class JOUSTCache {
         return RecordManagerFactory.createRecordManager(databasePath);
     }
 
+    private static ClassInfo loadCachedInfoByName(String name) {
+        byte[] payload = databaseMap.get(name);
+        if (payload == null) {
+            log.info("No cached info for class {} seems to exist.", name);
+            return null;
+        }
+
+        //log.debug("Loaded {} bytes of cached info for class {}", payload.length, name);
+
+        @Cleanup UnsafeInput deserialiserInput = new UnsafeInput(payload);
+        ClassInfo cInfo = serialiser.readObject(deserialiserInput, ClassInfo.class);
+
+        //log.info("Loaded info for {} as:\n{}", name, cInfo);
+
+        return cInfo;
+    }
+
     /**
      * Load the cached analysis results for the given ClassSymbol
      *
@@ -166,26 +184,15 @@ public class JOUSTCache {
             return;
         }
 
-        byte[] payload = databaseMap.get(sym.fullname.toString());
-        if (payload == null) {
-            log.debug("No cached info for class {} seems to exist.", sym.fullname.toString());
-            return;
-        }
-
         if (sym.classfile == null) {
-            log.warn("Unable to load cached info for class {}. No classfile given. Bug?", sym.fullname.toString());
+            log.warn("Unable to load cached info for class {}. No classfile given. Bug?", sym);
             return;
         }
 
-        log.debug("Loaded {} bytes of cached info for class {}", payload.length, sym.fullname.toString());
-
-        @Cleanup UnsafeInput deserialiserInput = new UnsafeInput(payload);
-        ClassInfo cInfo = serialiser.readObject(deserialiserInput, ClassInfo.class);
-
-        log.debug("Loaded info:\n{}", cInfo);
+        ClassInfo cInfo = loadCachedInfoByName(sym.fullname.toString());
 
         if (cInfo == null) {
-            log.warn("Unable to load cached info - got null - for class {}", sym.fullname.toString());
+            log.warn("Unable to load cached info - got null - for class {}", sym);
             return;
         }
 
@@ -266,5 +273,21 @@ public class JOUSTCache {
         }
 
         tcInfo.setSourceFile(((ClassSymbol) sym.owner).sourcefile);
+    }
+
+    public static void dumpKeys() {
+        log.info("Dumping effect keys....");
+        final Set<String> keys = databaseMap.keySet();
+        for (String key : keys) {
+            ClassInfo storedInfo = loadCachedInfoByName(key);
+            if (storedInfo == null) {
+                log.warn("key: {} has null payload!");
+            }
+
+            log.info("Key: {}, nMethods: {}, hash: {}", key, storedInfo.methodInfos.size(), storedInfo.hash);
+            for (MethodInfo methodInfo : storedInfo.methodInfos) {
+                log.info("    Method: {}  Effects: {}", methodInfo.methodHash, methodInfo.effectSet);
+            }
+        }
     }
 }

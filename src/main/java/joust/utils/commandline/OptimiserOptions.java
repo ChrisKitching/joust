@@ -19,6 +19,8 @@ import java.util.logging.Logger;
 public class OptimiserOptions {
     // If true, assertions found in the input program are deleted.
     public static boolean stripAssertions;
+    public static boolean annotatingLibrary;
+    public static boolean dumpingEffectKeys;
 
     public static Level logLevel = Level.INFO;
 
@@ -70,6 +72,8 @@ public class OptimiserOptions {
         }
 
         stripAssertions = args.containsKey("JOUSTStripAssertions");
+        annotatingLibrary = args.containsKey("JOUSTAnnotateLib");
+        dumpingEffectKeys = args.containsKey("JOUSTPrintEffectCacheKeys");
 
         if (args.containsKey("JOUSTMinCSEScore")) {
             CommonSubExpressionTranslator.MINIMUM_CSE_SCORE = Integer.parseInt(args.get("JOUSTMinCSEScore"));

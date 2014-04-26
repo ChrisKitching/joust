@@ -189,6 +189,6 @@ public class Effects {
 
     @Override
     public String toString() {
-        return "Immediate: " + directPart.toString()+"\nComputed: " + effectSet.toString();
+        return "Immediate: " + directPart.toString()+"     Computed: " + effectSet.toString();
     }
 }

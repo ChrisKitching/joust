@@ -2,6 +2,7 @@ package joust.joustcache.data;
 
 import com.sun.tools.javac.code.Symbol;
 import lombok.Data;
+import lombok.NonNull;
 
 import java.util.LinkedList;
 
@@ -10,6 +11,7 @@ import java.util.LinkedList;
  */
 @Data
 public class ClassInfo {
+    @NonNull
     public final LinkedList<MethodInfo> methodInfos = new LinkedList<>();
     public int hash;
 

@@ -4,6 +4,7 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Scope;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 import joust.utils.logging.LogUtils;
@@ -216,5 +217,35 @@ public class TreeUtils {
         }
 
         return resultSym;
+    }
+
+    /**
+     * Get the default initialiser expression for a given field type.
+     */
+    public static JCExpression getDefaultLiteralValueForType(Type t) {
+        // Object types default to null.
+        if (!t.isPrimitive()) {
+            return javacTreeMaker.Literal(TypeTag.BOT, null).setType(symtab.botType);
+        }
+
+        // Numerical types default to zero, booleans to false.
+        Type.JCPrimitiveType cast = (Type.JCPrimitiveType) t;
+        switch(cast.getTag()) {
+            case BYTE:
+            case CHAR:
+            case SHORT:
+            case INT:
+                return javacTreeMaker.TypeCast(cast, javacTreeMaker.Literal(0).setType(t));
+            case LONG:
+                return javacTreeMaker.Literal(0L);
+            case FLOAT:
+                return javacTreeMaker.Literal(0.0F);
+            case DOUBLE:
+                return javacTreeMaker.Literal(0.0D);
+            case BOOLEAN:
+                return javacTreeMaker.Literal(false);
+            default:
+                return javacTreeMaker.Literal(TypeTag.BOT, null).setType(symtab.botType);
+        }
     }
 }

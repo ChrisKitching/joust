@@ -33,6 +33,7 @@ public class ChecksumRunner extends OptimisationRunnable {
 
         long s = System.currentTimeMillis();
 
+        log.info("Keys: {}", Arrays.toString(JOUSTCache.classInfo.keySet().toArray()));
         Iterator<String> keyIterator = JOUSTCache.classInfo.keySet().iterator();
         while (keyIterator.hasNext()) {
             String className = keyIterator.next();
@@ -53,6 +54,7 @@ public class ChecksumRunner extends OptimisationRunnable {
                 // Due to the operation of the BY_TODO compile policy, this runner gets called many
                 // times. Not always are all results available.
                 if (outFile == null) {
+                    log.warn("Cannot flush {} because no outfile available!", className);
                     continue;
                 }
 

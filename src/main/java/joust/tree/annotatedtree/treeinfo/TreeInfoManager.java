@@ -33,8 +33,9 @@ public final class TreeInfoManager {
     public static void registerMethodEffects(MethodSymbol sym, Effects effects, boolean shouldSave) {
         methodEffectMap.put(MethodInfo.getHashForMethod(sym), effects);
 
-        // Don't safe the set of all effects. No point.
+        // Don't save the set of all effects. No point.
         if (effects.getEffectSet().contains(EffectSet.ALL_EFFECTS)) {
+            log.info("Declining to save all-effects set for {}", sym);
             return;
         }
 

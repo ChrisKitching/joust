@@ -61,7 +61,6 @@ public class UnboxingTranslator extends BaseTranslator {
 
         log.debug("Unbox scan finished for:\n{}", that);
         log.debug("Found: {}", Arrays.toString(fixableUsages.keySet().toArray()));
-        log.info("Found: {}", fixableUsages.keySet().size());
 
         boolean changedMethod = false;
 

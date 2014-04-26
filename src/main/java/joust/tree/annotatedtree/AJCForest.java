@@ -67,6 +67,11 @@ public class AJCForest {
             throw new UnsupportedOperationException("Attempt to reassign AJCForest!");
         }
 
+        log.info("Starting forest construction.");
+        for (Pair<Env<AttrContext>, JCClassDecl> rootElement : rootElements) {
+            log.info("Processing: {}", rootElement.snd.sym);
+        }
+
         currentEnvironment = null;
 
         long t = System.currentTimeMillis();

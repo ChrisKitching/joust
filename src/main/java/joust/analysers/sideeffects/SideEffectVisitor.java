@@ -154,6 +154,7 @@ public class SideEffectVisitor extends AJCTreeVisitor {
         calledMethodsWithoutSource.removeAll(knownSymbols);
         log.debug("calledCopy: {}", Arrays.toString(calledMethodsWithoutSource.toArray()));
 
+        // Only load from the cache the first time we run the analyser in a particular session.
         if (saveResults) {
             for (MethodSymbol mSym : calledMethodsWithoutSource) {
                 log.debug("Loading effects for {} from cache... (Owner is {})", mSym, mSym.enclClass());

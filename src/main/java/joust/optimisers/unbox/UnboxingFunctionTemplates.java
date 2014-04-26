@@ -134,8 +134,6 @@ public final class UnboxingFunctionTemplates {
         functionTemplates.put(findMethod("hashCode", BooleanClass), new FunctionTemplate(boolHashCode,false,  symtab.booleanType));
         functionTemplates.put(findMethod("toString", BooleanClass), new FunctionTemplate(boolToString, false, symtab.booleanType));
         functionTemplates.put(findMethod("booleanValue", BooleanClass), new FunctionTemplate(booleanValue, false, symtab.booleanType));
-
-        log.info("Available: {}", Arrays.toString(functionTemplates.keySet().toArray()));
     }
 
     @SuppressWarnings("unchecked")

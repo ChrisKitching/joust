@@ -48,36 +48,6 @@ public class TreePreparationTranslator extends TreeTranslator {
         }
     }
 
-    /**
-     * Get the default initialiser expression for a given field type.
-     */
-    public static JCExpression getDefaultLiteralValueForType(Type t) {
-        // Object types default to null.
-        if (!t.isPrimitive()) {
-            return javacTreeMaker.Literal(TypeTag.BOT, null).setType(symtab.botType);
-        }
-
-        // Numerical types default to zero, booleans to false.
-        Type.JCPrimitiveType cast = (Type.JCPrimitiveType) t;
-        switch(cast.getTag()) {
-            case BYTE:
-            case CHAR:
-            case SHORT:
-            case INT:
-                return javacTreeMaker.TypeCast(cast, javacTreeMaker.Literal(0).setType(t));
-            case LONG:
-                return javacTreeMaker.Literal(0L);
-            case FLOAT:
-                return javacTreeMaker.Literal(0.0F);
-            case DOUBLE:
-                return javacTreeMaker.Literal(0.0D);
-            case BOOLEAN:
-                return javacTreeMaker.Literal(false);
-            default:
-                return javacTreeMaker.Literal(TypeTag.BOT, null).setType(symtab.botType);
-        }
-    }
-
     @Override
     public void visitClassDef(JCClassDecl jcClassDecl) {
         ClassSymbol classSym = jcClassDecl.sym;

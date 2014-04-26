@@ -55,15 +55,15 @@ public class SymbolSetSerialiser extends Serializer<SymbolSet> {
 
         for (int i = 0; i < len; i++) {
             String symbolHash = input.readString();
-            log.info("Got symbol hash: {}", symbolHash);
+            //log.info("Got symbol hash: {}", symbolHash);
 
             // Determine if this is a symbol we care about...
             if (JOUSTCache.varSymbolTable.containsKey(symbolHash)) {
                 VarSymbol symGot = JOUSTCache.varSymbolTable.get(symbolHash);
-                log.info("Obtained concrete symbol: {}", symGot);
+               // log.info("Obtained concrete symbol: {}", symGot);
                 ret.add(symGot);
             } else {
-                log.info("Discarded.");
+                //log.info("Discarded.");
             }
         }
 
