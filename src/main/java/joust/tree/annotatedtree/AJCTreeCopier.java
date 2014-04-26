@@ -363,7 +363,7 @@ public class AJCTreeCopier {
 
     
     public AJCAssignOp copyAssignop(AJCAssignOp that) {
-        AJCAssignOp node = treeMaker.Assignop(that.getTag(), copy(that.lhs), copy(that.rhs));
+        AJCAssignOp node = treeMaker.Assignop(that.getTag(), copy(that.lhs), copy(that.rhs), false);
 
         node.getDecoratedTree().type = that.getDecoratedTree().type;
         node.getDecoratedTree().operator = that.getDecoratedTree().operator;
@@ -372,7 +372,7 @@ public class AJCTreeCopier {
 
     
     public AJCUnary copyUnary(AJCUnary that) {
-        AJCUnary node = treeMaker.Unary(that.getTag(), copy(that.arg));
+        AJCUnary node = treeMaker.Unary(that.getTag(), copy(that.arg), false);
 
         node.getDecoratedTree().type = that.getDecoratedTree().type;
         node.getDecoratedTree().operator = that.getDecoratedTree().operator;
@@ -381,7 +381,7 @@ public class AJCTreeCopier {
 
     
     public AJCUnaryAsg copyUnaryAsg(AJCUnaryAsg that) {
-        AJCUnaryAsg node = treeMaker.UnaryAsg(that.getTag(), copy(that.arg));
+        AJCUnaryAsg node = treeMaker.UnaryAsg(that.getTag(), copy(that.arg), false);
 
         node.getDecoratedTree().type = that.getDecoratedTree().type;
         node.getDecoratedTree().operator = that.getDecoratedTree().operator;
@@ -390,7 +390,7 @@ public class AJCTreeCopier {
 
     
     public AJCBinary copyBinary(AJCBinary that) {
-        AJCBinary node = treeMaker.Binary(that.getTag(), copy(that.lhs), copy(that.rhs));
+        AJCBinary node = treeMaker.Binary(that.getTag(), copy(that.lhs), copy(that.rhs), false);
 
         node.getDecoratedTree().type = that.getDecoratedTree().type;
         node.getDecoratedTree().operator = that.getDecoratedTree().operator;

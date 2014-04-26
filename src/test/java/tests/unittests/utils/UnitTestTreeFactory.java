@@ -30,19 +30,23 @@ public final class UnitTestTreeFactory implements Factory {
     }
 
     private interface Excludes {
+        AJCUnary Unary(JCTree.Tag opcode, AJCExpressionTree arg, boolean resolveOperator);
+        AJCUnaryAsg UnaryAsg(JCTree.Tag opcode, AJCSymbolRefTree<VarSymbol> arg, boolean resolveOperator);
+        AJCBinary Binary(JCTree.Tag opcode, AJCExpressionTree lhs, AJCExpressionTree rhs, boolean resolveOperator);
+        AJCAssignOp Assignop(JCTree.Tag opcode, AJCSymbolRefTree<VarSymbol> lhs, AJCExpressionTree rhs, boolean resolveOperator);
         AJCUnary Unary(JCTree.Tag opcode, AJCExpressionTree arg);
         AJCUnaryAsg UnaryAsg(JCTree.Tag opcode, AJCSymbolRefTree<VarSymbol> arg);
         AJCBinary Binary(JCTree.Tag opcode, AJCExpressionTree lhs, AJCExpressionTree rhs);
+        AJCAssignOp Assignop(JCTree.Tag opcode, AJCSymbolRefTree<VarSymbol> lhs, AJCExpressionTree rhs);
         <T extends Symbol> AJCIdent Ident(T sym);
         AJCErroneous Erroneous(List<? extends AJCTree> errs);
-        AJCAssignOp Assignop(JCTree.Tag opcode, AJCSymbolRefTree<VarSymbol> lhs, AJCExpressionTree rhs);
     }
 
     // Override the factory methods for the operator expressions, as operator inference is impossible without a javac
     // environment.
 
     @Override
-    public AJCUnary Unary(JCTree.Tag opcode, AJCExpressionTree arg) {
+    public AJCUnary Unary(JCTree.Tag opcode, AJCExpressionTree arg, boolean resolveOperator) {
         AJCUnary ret = new AJCUnary(javacTreeMaker.Unary(opcode, arg.getDecoratedTree()), arg);
 
         arg.mParentNode = ret;
@@ -51,7 +55,7 @@ public final class UnitTestTreeFactory implements Factory {
     }
 
     @Override
-    public AJCUnaryAsg UnaryAsg(JCTree.Tag opcode, AJCSymbolRefTree<VarSymbol> arg) {
+    public AJCUnaryAsg UnaryAsg(JCTree.Tag opcode, AJCSymbolRefTree<VarSymbol> arg, boolean resolveOperator) {
         if (opcode == JCTree.Tag.PREINC
                 || opcode == JCTree.Tag.PREDEC
                 || opcode == JCTree.Tag.POSTINC
@@ -66,7 +70,7 @@ public final class UnitTestTreeFactory implements Factory {
     }
 
     @Override
-    public AJCBinary Binary(JCTree.Tag opcode, AJCExpressionTree lhs, AJCExpressionTree rhs) {
+    public AJCBinary Binary(JCTree.Tag opcode, AJCExpressionTree lhs, AJCExpressionTree rhs, boolean resolveOperator) {
         AJCBinary ret = new AJCBinary(javacTreeMaker.Binary(opcode, lhs.getDecoratedTree(), rhs.getDecoratedTree()),
                 lhs, rhs);
 
@@ -77,7 +81,7 @@ public final class UnitTestTreeFactory implements Factory {
     }
 
     @Override
-    public AJCAssignOp Assignop(JCTree.Tag opcode, AJCSymbolRefTree<VarSymbol> lhs, AJCExpressionTree rhs) {
+    public AJCAssignOp Assignop(JCTree.Tag opcode, AJCSymbolRefTree<VarSymbol> lhs, AJCExpressionTree rhs, boolean resolveOperator) {
         AJCAssignOp ret = new AJCAssignOp(javacTreeMaker.Assignop(opcode, lhs.getDecoratedTree(), rhs.getDecoratedTree()), lhs, rhs);
 
         lhs.mParentNode = ret;
@@ -86,6 +90,25 @@ public final class UnitTestTreeFactory implements Factory {
         return ret;
     }
 
+    @Override
+    public AJCAssignOp Assignop(JCTree.Tag opcode, AJCSymbolRefTree<VarSymbol> lhs, AJCExpressionTree rhs) {
+        return Assignop(opcode, lhs, rhs, true);
+    }
+
+    @Override
+    public AJCUnary Unary(JCTree.Tag opcode, AJCExpressionTree arg) {
+        return Unary(opcode, arg, true);
+    }
+
+    @Override
+    public AJCUnaryAsg UnaryAsg(JCTree.Tag opcode, AJCSymbolRefTree<VarSymbol> arg) {
+        return UnaryAsg(opcode, arg, true);
+    }
+
+    @Override
+    public AJCBinary Binary(JCTree.Tag opcode, AJCExpressionTree lhs, AJCExpressionTree rhs) {
+        return Binary(opcode, lhs, rhs, true);
+    }
 
 
     public AJCVariableDecl VarDef(AJCModifiers mods, Name name, AJCPrimitiveTypeTree vartype, AJCExpressionTree init) {

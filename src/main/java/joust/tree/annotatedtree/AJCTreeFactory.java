@@ -505,34 +505,38 @@ public class AJCTreeFactory implements AJCTree.Factory {
     }
 
     @Override
-    public AJCAssignOp Assignop(Tag opcode, AJCSymbolRefTree<VarSymbol> lhs, AJCExpressionTree rhs) {
+    public AJCAssignOp Assignop(Tag opcode, AJCSymbolRefTree<VarSymbol> lhs, AJCExpressionTree rhs, boolean resolveOperator) {
         AJCAssignOp ret = new AJCAssignOp(javacTreeMaker.Assignop(opcode, lhs.getDecoratedTree(), rhs.getDecoratedTree()), lhs, rhs);
 
         lhs.mParentNode = ret;
         rhs.mParentNode = ret;
 
-        ret.getDecoratedTree().operator = resolveBinaryOperator(
-                ret.getDecoratedTree().pos(), opcode, AJCForest.currentEnvironment, lhs.getNodeType(), rhs.getNodeType());
-        ret.setType(ret.getDecoratedTree().operator.type.getReturnType());
+        if (resolveOperator) {
+            ret.getDecoratedTree().operator = resolveBinaryOperator(
+                    ret.getDecoratedTree().pos(), opcode, AJCForest.currentEnvironment, lhs.getNodeType(), rhs.getNodeType());
+            ret.setType(ret.getDecoratedTree().operator.type.getReturnType());
+        }
 
         return ret;
     }
 
     @Override
-    public AJCUnary Unary(Tag opcode, AJCExpressionTree arg) {
+    public AJCUnary Unary(Tag opcode, AJCExpressionTree arg, boolean resolveOperator) {
         AJCUnary ret = new AJCUnary(javacTreeMaker.Unary(opcode, arg.getDecoratedTree()), arg);
 
         arg.mParentNode = ret;
 
-        ret.getDecoratedTree().operator = resolveUnaryOperator(
-                ret.getDecoratedTree().pos(), opcode, AJCForest.currentEnvironment, arg.getNodeType());
-        ret.setType(ret.getDecoratedTree().operator.type.getReturnType());
+        if (resolveOperator) {
+            ret.getDecoratedTree().operator = resolveUnaryOperator(
+                    ret.getDecoratedTree().pos(), opcode, AJCForest.currentEnvironment, arg.getNodeType());
+            ret.setType(ret.getDecoratedTree().operator.type.getReturnType());
+        }
 
         return ret;
     }
 
     @Override
-    public AJCUnaryAsg UnaryAsg(Tag opcode, AJCSymbolRefTree<VarSymbol> arg) {
+    public AJCUnaryAsg UnaryAsg(Tag opcode, AJCSymbolRefTree<VarSymbol> arg, boolean resolveOperator) {
         if (opcode == Tag.PREINC
          || opcode == Tag.PREDEC
          || opcode == Tag.POSTINC
@@ -541,9 +545,11 @@ public class AJCTreeFactory implements AJCTree.Factory {
 
             arg.mParentNode = ret;
 
-            ret.getDecoratedTree().operator = resolveUnaryOperator(
-                    ret.getDecoratedTree().pos(), opcode, AJCForest.currentEnvironment, arg.getNodeType());
-            ret.setType(ret.getDecoratedTree().operator.type.getReturnType());
+            if (resolveOperator) {
+                ret.getDecoratedTree().operator = resolveUnaryOperator(
+                        ret.getDecoratedTree().pos(), opcode, AJCForest.currentEnvironment, arg.getNodeType());
+                ret.setType(ret.getDecoratedTree().operator.type.getReturnType());
+            }
 
             return ret;
         }
@@ -552,22 +558,44 @@ public class AJCTreeFactory implements AJCTree.Factory {
     }
 
     @Override
-    public AJCBinary Binary(Tag opcode, AJCExpressionTree lhs, AJCExpressionTree rhs) {
+    public AJCBinary Binary(Tag opcode, AJCExpressionTree lhs, AJCExpressionTree rhs, boolean resolveOperator) {
         AJCBinary ret = new AJCBinary(javacTreeMaker.Binary(opcode, lhs.getDecoratedTree(), rhs.getDecoratedTree()),
                 lhs, rhs);
 
         lhs.mParentNode = ret;
         rhs.mParentNode = ret;
 
-        ret.getDecoratedTree().operator = resolveBinaryOperator(
-                ret.getDecoratedTree().pos(),
-                opcode,
-                AJCForest.currentEnvironment,
-                lhs.getNodeType(),
-                rhs.getNodeType());
-        ret.setType(ret.getDecoratedTree().operator.type.getReturnType());
+        if (resolveOperator) {
+            ret.getDecoratedTree().operator = resolveBinaryOperator(
+                    ret.getDecoratedTree().pos(),
+                    opcode,
+                    AJCForest.currentEnvironment,
+                    lhs.getNodeType(),
+                    rhs.getNodeType());
+            ret.setType(ret.getDecoratedTree().operator.type.getReturnType());
+        }
 
         return ret;
+    }
+
+    @Override
+    public AJCAssignOp Assignop(Tag opcode, AJCSymbolRefTree<VarSymbol> lhs, AJCExpressionTree rhs) {
+        return Assignop(opcode, lhs, rhs, true);
+    }
+
+    @Override
+    public AJCUnary Unary(Tag opcode, AJCExpressionTree arg) {
+        return Unary(opcode, arg, true);
+    }
+
+    @Override
+    public AJCUnaryAsg UnaryAsg(Tag opcode, AJCSymbolRefTree<VarSymbol> arg) {
+        return UnaryAsg(opcode, arg, true);
+    }
+
+    @Override
+    public AJCBinary Binary(Tag opcode, AJCExpressionTree lhs, AJCExpressionTree rhs) {
+        return Binary(opcode, lhs, rhs, true);
     }
 
     @Override
