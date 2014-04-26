@@ -477,22 +477,49 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         }
     }
 
-    public static class AJCBlock extends AJCStatement implements BlockTree {
-        @Delegate @Getter private final JCBlock decoratedTree;
+    /**
+     * Base class for statements that contain lists of other statements (case statements and blocks).
+     */
+    public abstract static class AJCStatementHoldingStatement extends AJCStatement {
+        public enum Type {
+            BLOCK,
+            CASE
+        }
+        private final Type type;
+
+        // The list of contained statements.
+        public List<AJCStatement> stats;
+
+        // The value of the "stats" field of the underlying JCTree node.
+        private List<JCStatement> underlyingStats;
 
         // The method in which this block resides.
         public AJCMethodDecl enclosingMethod;
 
-        public List<AJCStatement> stats;
-
-        protected AJCBlock(JCBlock tree) {
+        protected AJCStatementHoldingStatement(JCBlock tree) {
             super(tree);
-            decoratedTree = tree;
+            type = Type.BLOCK;
+            underlyingStats = tree.stats;
         }
 
-        protected AJCBlock(JCBlock tree, List<AJCStatement> statements) {
-            this(tree);
-            stats = statements;
+        protected AJCStatementHoldingStatement(JCCase tree) {
+            super(tree);
+            type = Type.CASE;
+            underlyingStats = tree.stats;
+        }
+
+        /**
+         * Push changes to the underlyingStats value down to the JCTree.
+         */
+        private void setUnderlyingStats() {
+            switch (type) {
+                case BLOCK:
+                    ((JCBlock) getDecoratedTree()).stats = underlyingStats;
+                    break;
+                case CASE:
+                    ((JCCase) getDecoratedTree()).stats = underlyingStats;
+                    break;
+            }
         }
 
         /**
@@ -500,21 +527,25 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
          */
         public void remove(AJCStatement statement) {
             stats = JavacListUtils.removeElement(stats, statement);
-            decoratedTree.stats = JavacListUtils.removeElement(decoratedTree.stats, statement.decoratedTree);
+            underlyingStats = JavacListUtils.removeElement(underlyingStats, statement.decoratedTree);
+            setUnderlyingStats();
         }
 
         /**
          * Add the given statement at the specified index in the block, reflecting the update in underlying decorated block.
          */
         public void insert(AJCStatement statement, int index) {
-            statement.enclosingBlock = this;
+            if (type == Type.BLOCK) {
+                statement.enclosingBlock = (AJCBlock) this;
+            }
             statement.mParentNode = this;
             if (statement instanceof AJCBlock) {
                 ((AJCBlock) statement).enclosingMethod = enclosingMethod;
             }
 
             stats = JavacListUtils.addAtIndex(stats, index, statement);
-            decoratedTree.stats = JavacListUtils.addAtIndex(decoratedTree.stats, index, statement.decoratedTree);
+            underlyingStats = JavacListUtils.addAtIndex(underlyingStats, index, statement.decoratedTree);
+            setUnderlyingStats();
         }
         public void insert(List<AJCStatement> statements, int index) {
             // Compute early since the splicing is destructive.
@@ -522,14 +553,17 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
 
             stats = JavacListUtils.addAtIndex(stats, index, statements);
             for (AJCStatement st : stats) {
-                st.enclosingBlock = this;
+                if (type == Type.BLOCK) {
+                    st.enclosingBlock = (AJCBlock) this;
+                }
                 st.mParentNode = this;
                 if (st instanceof AJCBlock) {
                     ((AJCBlock) st).enclosingMethod = enclosingMethod;
                 }
             }
 
-            decoratedTree.stats = JavacListUtils.addAtIndex(decoratedTree.stats, index, unwrapped);
+            underlyingStats = JavacListUtils.addAtIndex(underlyingStats, index, unwrapped);
+            setUnderlyingStats();
         }
 
         private int indexOfOrFail(AJCStatement node) {
@@ -573,9 +607,26 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
          */
         public void swap(AJCStatement target, AJCStatement replacement) {
             replacement.mParentNode = this;
-            replacement.enclosingBlock = this;
+            if (type == Type.BLOCK) {
+                replacement.enclosingBlock = (AJCBlock) this;
+            }
             stats = JavacListUtils.replace(stats, target, replacement);
-            decoratedTree.stats = JavacListUtils.replace(decoratedTree.stats, target.decoratedTree, replacement.decoratedTree);
+            underlyingStats = JavacListUtils.replace(underlyingStats, target.decoratedTree, replacement.decoratedTree);
+            setUnderlyingStats();
+        }
+    }
+
+    public static class AJCBlock extends AJCStatementHoldingStatement implements BlockTree {
+        @Delegate @Getter private final JCBlock decoratedTree;
+
+        protected AJCBlock(JCBlock tree) {
+            super(tree);
+            decoratedTree = tree;
+        }
+
+        protected AJCBlock(JCBlock tree, List<AJCStatement> statements) {
+            this(tree);
+            stats = statements;
         }
     }
 
@@ -672,12 +723,11 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         }
     }
 
-    public static class AJCCase extends AJCStatement implements CaseTree {
+    public static class AJCCase extends AJCStatementHoldingStatement implements CaseTree {
         @Delegate @Getter private final JCCase decoratedTree;
 
         // The empty expression here represents the default case.
         public AJCExpressionTree pat = new AJCEmptyExpression();
-        public List<AJCStatement> stats;
 
         protected AJCCase(JCCase tree) {
             super(tree);
@@ -1467,6 +1517,10 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         AJCNewClass NewClass(AJCSymbolRefTree<ClassSymbol> clazz, List<AJCExpressionTree> args, AJCClassDecl def);
         AJCNewArray NewArray(AJCTypeExpression elemtype, List<AJCExpressionTree> dims, List<AJCExpressionTree> elems);
         AJCAssign Assign(AJCSymbolRefTree<VarSymbol> lhs, AJCExpressionTree rhs);
+        AJCAssignOp Assignop(Tag opcode, AJCSymbolRefTree<VarSymbol> lhs, AJCExpressionTree rhs, boolean resolveOperator);
+        AJCUnary Unary(Tag opcode, AJCExpressionTree arg, boolean resolveOperator);
+        AJCUnaryAsg UnaryAsg(Tag opcode, AJCSymbolRefTree<VarSymbol> arg, boolean resolveOperator);
+        AJCBinary Binary(Tag opcode, AJCExpressionTree lhs, AJCExpressionTree rhs, boolean resolveOperator);
         AJCAssignOp Assignop(Tag opcode, AJCSymbolRefTree<VarSymbol> lhs, AJCExpressionTree rhs);
         AJCUnary Unary(Tag opcode, AJCExpressionTree arg);
         AJCUnaryAsg UnaryAsg(Tag opcode, AJCSymbolRefTree<VarSymbol> arg);
