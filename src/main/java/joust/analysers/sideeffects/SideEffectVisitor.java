@@ -663,7 +663,7 @@ public class SideEffectVisitor extends AJCTreeVisitor {
         super.visitVariableDecl(that);
 
         VarSymbol sym = that.getTargetSymbol();
-        JOUSTCache.varSymbolTable.put(ClassInfo.getHashForVariable(that.getTargetSymbol()), that.getTargetSymbol());
+        JOUSTCache.varSymbolTable.put(ClassInfo.getHashForVariable(sym), sym);
 
         that.effects = Effects.unionWithDirect(write(that.getTargetSymbol()), that.getInit().effects);
     }
