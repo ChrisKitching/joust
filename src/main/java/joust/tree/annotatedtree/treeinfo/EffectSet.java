@@ -216,26 +216,26 @@ public class EffectSet {
         StringBuilder str = new StringBuilder(Integer.toString(effectTypes, 2));
         if (!readInternal.isEmpty()) {
             str.append(":RI(")
-               .append(readInternal.toString())
-               .append(")");
+               .append(readInternal)
+               .append(')');
         }
 
         if (!readEscaping.isEmpty()) {
             str.append(":RE(")
-               .append(readEscaping.toString())
-               .append(")");
+               .append(readEscaping)
+               .append(')');
         }
 
         if (!writeInternal.isEmpty()) {
             str.append(":WI(")
-               .append(writeInternal.toString())
-               .append(")");
+               .append(writeInternal)
+               .append(')');
         }
 
         if (!writeEscaping.isEmpty()) {
             str.append(":WE(")
-               .append(writeEscaping.toString())
-               .append(")");
+               .append(writeEscaping)
+               .append(')');
         }
 
         return str.toString();
