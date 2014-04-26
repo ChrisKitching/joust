@@ -248,6 +248,7 @@ public class ITCompilationUnitOutput {
         optionList.add("1.7");
         optionList.add("-target");
         optionList.add("1.7");
+        optionList.add("-AJOUSTLogLevel=FINEST");
 
         // The compilation targets...
         optionList.add("-d");
