@@ -78,22 +78,30 @@ public class JOUST extends AbstractProcessor {
         LogUtils.init(processingEnv);
 
         OptimisationPhaseManager.init();
-        OptimisationPhaseManager.register(new AssertionStrip(), AFTER_ANNOTATION_PROCESSING);
+        if (OptimiserOptions.stripAssertions) {
+            OptimisationPhaseManager.register(new AssertionStrip(), AFTER_ANNOTATION_PROCESSING);
+        }
+
         OptimisationPhaseManager.register(new JavacBrutaliser(), AFTER_ANNOTATION_PROCESSING);
+        OptimisationPhaseManager.register(new TreeConverter(), AFTER_DESUGAR);
 
         // As it happens, almost all our phases operate in the AFTER_DESUGAR phase (as this turns out to be
         // very much more convenient than working on the actual tree if you don't care about the desugared things.)
-        OptimisationPhaseManager.register(new TreeConverter(), AFTER_DESUGAR);
-        OptimisationPhaseManager.register(new FinalFolder(), AFTER_DESUGAR);
-        OptimisationPhaseManager.register(new ConstFold(), AFTER_DESUGAR);
-        OptimisationPhaseManager.register(new ShortFunc(), AFTER_DESUGAR);
-        OptimisationPhaseManager.register(new Unbox(), AFTER_DESUGAR);
 
-        // TODO: Repair and re-enable this.
-        // OptimisationPhaseManager.register(new AssignmentStrip(), AFTER, DESUGAR);
-        OptimisationPhaseManager.register(new LoopInvar(), AFTER_DESUGAR);
-        OptimisationPhaseManager.register(new Unroll(), AFTER_DESUGAR);
-        OptimisationPhaseManager.register(new CSE(), AFTER_DESUGAR);
+        // Don't optimise in library annotation mode - we just need one pass of the SideEffectVisitor (via TreeConverter)
+        // and we're done,
+        if (!OptimiserOptions.annotatingLibrary) {
+            OptimisationPhaseManager.register(new FinalFolder(), AFTER_DESUGAR);
+            OptimisationPhaseManager.register(new ConstFold(), AFTER_DESUGAR);
+            OptimisationPhaseManager.register(new ShortFunc(), AFTER_DESUGAR);
+            OptimisationPhaseManager.register(new Unbox(), AFTER_DESUGAR);
+
+            // TODO: Repair and re-enable this.
+            // OptimisationPhaseManager.register(new AssignmentStrip(), AFTER, DESUGAR);
+            OptimisationPhaseManager.register(new LoopInvar(), AFTER_DESUGAR);
+            OptimisationPhaseManager.register(new Unroll(), AFTER_DESUGAR);
+            OptimisationPhaseManager.register(new CSE(), AFTER_DESUGAR);
+        }
 
         // The post-compilation pass to populate the disk cache with the results of classes processed
         // during this job. Needs to happen here so we can compute a checksum over the bytecode and
