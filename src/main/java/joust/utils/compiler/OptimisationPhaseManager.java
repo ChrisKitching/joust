@@ -32,14 +32,14 @@ import static com.sun.source.util.TaskEvent.Kind;
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public abstract class OptimisationPhaseManager implements Runnable {
-    private static final Map<Kind, LinkedList<OptimisationRunnable>> tasksBefore = new EnumMap<>(Kind.class);
-    private static final Map<Kind, LinkedList<OptimisationRunnable>> tasksAfter = new EnumMap<>(Kind.class);
+    private static final Map<Kind, LinkedList<OptimisationRunnable>> tasksBefore = new EnumMap<Kind, LinkedList<OptimisationRunnable>>(Kind.class);
+    private static final Map<Kind, LinkedList<OptimisationRunnable>> tasksAfter = new EnumMap<Kind, LinkedList<OptimisationRunnable>>(Kind.class);
     // Records which trees are yet to have completed which events. We delay the dispatch of the "after" event until all
     // trees have processed that event.
-    private static final Map<Kind, Set<CompilationUnitTree>> todo = new EnumMap<>(Kind.class);
+    private static final Map<Kind, Set<CompilationUnitTree>> todo = new EnumMap<Kind, Set<CompilationUnitTree>>(Kind.class);
 
-    private static final Map<VirtualPhase, LinkedList<OptimisationRunnable>> tasksBeforeVirtual = new EnumMap<>(VirtualPhase.class);
-    private static final Map<VirtualPhase, LinkedList<OptimisationRunnable>> tasksAfterVirtual = new EnumMap<>(VirtualPhase.class);
+    private static final Map<VirtualPhase, LinkedList<OptimisationRunnable>> tasksBeforeVirtual = new EnumMap<VirtualPhase, LinkedList<OptimisationRunnable>>(VirtualPhase.class);
+    private static final Map<VirtualPhase, LinkedList<OptimisationRunnable>> tasksAfterVirtual = new EnumMap<VirtualPhase, LinkedList<OptimisationRunnable>>(VirtualPhase.class);
 
     public static CompilerPhase currentPhase = CompilerPhase.fromKind(Kind.ANNOTATION_PROCESSING);
 
@@ -119,7 +119,7 @@ public abstract class OptimisationPhaseManager implements Runnable {
                         return;
                     }
 
-                    HashSet<CompilationUnitTree> trees = new HashSet<>();
+                    HashSet<CompilationUnitTree> trees = new HashSet<CompilationUnitTree>();
                     for (Env<AttrContext> env : AJCForest.getInstance().rootEnvironments.values()) {
                         trees.add(env.toplevel);
                     }

@@ -36,7 +36,7 @@ public class SetHashMap<K, V> extends LinkedHashMap<K, Set<V>> {
 
         // Initialise the list if this is the first element.
         if (values == null) {
-            values = new LinkedHashSet<>();
+            values = new LinkedHashSet<V>();
             put(key, values);
         }
 

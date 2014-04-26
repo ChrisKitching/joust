@@ -52,10 +52,10 @@ public class TreePreparationTranslator extends TreeTranslator {
     public void visitClassDef(JCClassDecl jcClassDecl) {
         ClassSymbol classSym = jcClassDecl.sym;
 
-        ListBuffer<JCTree> newDefs = new ListBuffer<>();
+        ListBuffer<JCTree> newDefs = new ListBuffer<JCTree>();
 
-        ListBuffer<JCStatement> initCode = new ListBuffer<>();
-        ListBuffer<JCStatement> clinitCode = new ListBuffer<>();
+        ListBuffer<JCStatement> initCode = new ListBuffer<JCStatement>();
+        ListBuffer<JCStatement> clinitCode = new ListBuffer<JCStatement>();
 
         // Used to find constructors.
         List<JCMethodDecl> constructorDefs = List.nil();
@@ -129,7 +129,9 @@ public class TreePreparationTranslator extends TreeTranslator {
             for (JCMethodDecl ctor : constructorDefs) {
                 try {
                     normalizeMethod.invoke(gen, ctor, initStats, List.nil());
-                } catch (IllegalAccessException | InvocationTargetException e) {
+                } catch (IllegalAccessException e) {
+                    log.fatal("Exception normalising method: {}\n\n", ctor, e);
+                } catch (InvocationTargetException e) {
                     log.fatal("Exception normalising method: {}\n\n", ctor, e);
                 }
             }

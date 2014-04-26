@@ -102,7 +102,9 @@ public final class JavacBrutaliser extends OptimisationRunnable {
             generateMethod.invoke(javaCompiler, desugared);
 
             log.info("Complete.");
-        } catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException e) {
+            log.fatal(FAILED_TO_BRUTALISE_COMPILER, e);
+        } catch (InvocationTargetException e) {
             log.fatal(FAILED_TO_BRUTALISE_COMPILER, e);
         }
     }
@@ -146,7 +148,16 @@ public final class JavacBrutaliser extends OptimisationRunnable {
             log.debug("Old value: {} New value:{}", policyField.get(javaCompiler), compilePolicy);
             policyField.set(javaCompiler, compilePolicy);
 
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | NoSuchFieldException e) {
+        } catch (NoSuchMethodException e) {
+            log.fatal("Failed to hack javac's compile policy:\n {}", e);
+            return false;
+        } catch (InvocationTargetException e) {
+            log.fatal("Failed to hack javac's compile policy:\n {}", e);
+            return false;
+        } catch (IllegalAccessException e) {
+            log.fatal("Failed to hack javac's compile policy:\n {}", e);
+            return false;
+        } catch (NoSuchFieldException e) {
             log.fatal("Failed to hack javac's compile policy:\n {}", e);
             return false;
         }

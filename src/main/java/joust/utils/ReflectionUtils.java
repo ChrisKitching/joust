@@ -10,7 +10,7 @@ public class ReflectionUtils {
      * @return An array of Field objects representing every field in the given class.
      */
     public static Field[] getAllFields(Class<?> pClass) {
-        ArrayList<Field> fds = new ArrayList<>();
+        ArrayList<Field> fds = new ArrayList<Field>();
         // Collect *all* the fields;
         Class<?> clazz = pClass;
         while (clazz != null) {

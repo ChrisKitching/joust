@@ -17,7 +17,7 @@ import static org.junit.Assert.*;
 public class StackMapTest {
     @Test
     public void testInsertion() {
-        StackMap<Integer, String> map = new StackMap<>();
+        StackMap<Integer, String> map = new StackMap<Integer, String>();
         map.pushMap();
         map.put(1, "a");
         map.put(5, "e");
@@ -40,7 +40,7 @@ public class StackMapTest {
 
     @Test
     public void testComplexInsertion() {
-        StackMap<Integer, String> map = new StackMap<>();
+        StackMap<Integer, String> map = new StackMap<Integer, String>();
         map.pushMap();
         map.put(1, "a");
         map.put(5, "e");
@@ -68,7 +68,7 @@ public class StackMapTest {
 
     @Test
     public void testPopping() {
-        StackMap<Integer, String> map = new StackMap<>();
+        StackMap<Integer, String> map = new StackMap<Integer, String>();
         map.pushMap();
         map.put(1, "a");
         map.put(5, "e");

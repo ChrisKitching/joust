@@ -26,7 +26,7 @@ public class ShortFuncFunctionTemplates {
     public static Map<MethodSymbol, FunctionTemplate> functionTemplates;
 
     public static void init() {
-        functionTemplates = new HashMap<>();
+        functionTemplates = new HashMap<MethodSymbol, FunctionTemplate>();
 
         ClassSymbol langMath = reader.enterClass(names.fromString("java.lang.Math"));
         // Math.min

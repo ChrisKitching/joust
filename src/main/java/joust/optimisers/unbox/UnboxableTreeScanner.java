@@ -12,7 +12,7 @@ import static joust.tree.annotatedtree.AJCTree.*;
 import static joust.utils.compiler.StaticCompilerUtils.*;
 
 public class UnboxableTreeScanner extends AJCTreeVisitor {
-    public Set<VarSymbol> toucheBoxingSymbols = new HashSet<>();
+    public Set<VarSymbol> toucheBoxingSymbols = new HashSet<VarSymbol>();
 
     @Override
     protected void visitAssign(AJCAssign that) {

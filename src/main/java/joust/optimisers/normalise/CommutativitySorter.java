@@ -30,7 +30,7 @@ public class CommutativitySorter extends AJCTreeVisitor {
     private final AJCBinary targetTree;
 
     // The list of elements combined by the commutative subtree of interest.
-    private final ArrayList<AJCExpressionTree> combinedElements = new ArrayList<>();
+    private final ArrayList<AJCExpressionTree> combinedElements = new ArrayList<AJCExpressionTree>();
 
     public CommutativitySorter(AJCBinary tree) {
         currentSubtreeTag = tree.getTag();

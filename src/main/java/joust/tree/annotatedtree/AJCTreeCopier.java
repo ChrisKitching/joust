@@ -8,7 +8,7 @@ import static joust.tree.annotatedtree.AJCTree.*;
 import static joust.utils.compiler.StaticCompilerUtils.*;
 
 public class AJCTreeCopier {
-    protected static final Context.Key<AJCTreeCopier> AJCTreeCopierKey = new Context.Key<>();
+    protected static final Context.Key<AJCTreeCopier> AJCTreeCopierKey = new Context.Key<AJCTreeCopier>();
 
     public static AJCTreeCopier instance(Context context) {
         AJCTreeCopier instance = context.get(AJCTreeCopierKey);

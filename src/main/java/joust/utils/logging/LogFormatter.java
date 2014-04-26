@@ -29,21 +29,21 @@ public class LogFormatter extends AnsiFormatter {
     }
 
     private static Ansi ansiForLevel(Level level) {
-        switch (level.getName()) {
-            case "SEVERE":
-                return SEVERE;
-            case "WARNING":
-                return WARNING;
-            case "INFO":
-                return INFO;
-            case "CONFIG":
-                return CONFIG;
-            case "FINEST":
-                return FINEST;
-            case "FINER":
-                return FINER;
-            case "FINE":
-                return FINE;
+        String s = level.getName();
+        if ("SEVERE".equals(s)) {
+            return SEVERE;
+        } else if ("WARNING".equals(s)) {
+            return WARNING;
+        } else if ("INFO".equals(s)) {
+            return INFO;
+        } else if ("CONFIG".equals(s)) {
+            return CONFIG;
+        } else if ("FINEST".equals(s)) {
+            return FINEST;
+        } else if ("FINER".equals(s)) {
+            return FINER;
+        } else if ("FINE".equals(s)) {
+            return FINE;
         }
 
         return SEVERE;

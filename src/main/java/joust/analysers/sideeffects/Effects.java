@@ -25,10 +25,10 @@ public class Effects {
     EffectSet effectSet;
 
     // Effects depending on this one.
-    public Set<Effects> dependantOnThis = new HashSet<>();
+    public Set<Effects> dependantOnThis = new HashSet<Effects>();
 
     // Effects on which this one depends.
-    public Set<Effects> deps = new HashSet<>();
+    public Set<Effects> deps = new HashSet<Effects>();
 
 
     public Effects(EffectSet computed, EffectSet direct) {

@@ -44,7 +44,16 @@ public abstract class BaseTreeVisitorTest<T extends AJCTreeVisitor> extends Tree
 
         try {
             visitorInstance = visitorClass.getConstructor(argTypes).newInstance(constructorArgs);
-        } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+        } catch (InstantiationException e) {
+            log.error("Error instantiating visitor.", e);
+            fail();
+        } catch (NoSuchMethodException e) {
+            log.error("Error instantiating visitor.", e);
+            fail();
+        } catch (InvocationTargetException e) {
+            log.error("Error instantiating visitor.", e);
+            fail();
+        } catch (IllegalAccessException e) {
             log.error("Error instantiating visitor.", e);
             fail();
         }
@@ -72,7 +81,7 @@ public abstract class BaseTreeVisitorTest<T extends AJCTreeVisitor> extends Tree
         AJCForest.uninit();
         TreeInfoManager.init();
 
-        HashMap<Symbol.MethodSymbol, AJCTree.AJCMethodDecl> methodTable = new HashMap<>();
+        HashMap<Symbol.MethodSymbol, AJCTree.AJCMethodDecl> methodTable = new HashMap<Symbol.MethodSymbol, AJCTree.AJCMethodDecl>();
         if (input instanceof AJCTree.AJCMethodDecl) {
             AJCTree.AJCMethodDecl cast = (AJCTree.AJCMethodDecl) input;
             methodTable.put(cast.getTargetSymbol(), cast);

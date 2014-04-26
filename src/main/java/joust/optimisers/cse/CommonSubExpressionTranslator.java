@@ -39,11 +39,11 @@ public class CommonSubExpressionTranslator extends BaseTranslator {
     public static int MINIMUM_CSE_SCORE = 4;
 
     // A stack of maps for available expressions. Maps are pushed and popped as we enter/leave scopes.
-    StackMap<AJCComparableExpressionTree, AvailableExpression> availableExpressions = new StackMap<>();
+    StackMap<AJCComparableExpressionTree, AvailableExpression> availableExpressions = new StackMap<AJCComparableExpressionTree, AvailableExpression>();
 
     // The set of AvailableExpressions ever live in this method - we look here when deciding what needs transforming
     // after completing our traversal of the method.
-    List<AvailableExpression> everAvailInMethod = new ArrayList<>();
+    List<AvailableExpression> everAvailInMethod = new ArrayList<AvailableExpression>();
 
     private void enterScope() {
         availableExpressions.pushMap();
@@ -53,7 +53,7 @@ public class CommonSubExpressionTranslator extends BaseTranslator {
         Map<AJCComparableExpressionTree, AvailableExpression> popped = availableExpressions.popMap();
 
         // Finalise the popped expressions...
-        Set<AJCComparableExpressionTree> keysCopy = new HashSet<>(popped.keySet());
+        Set<AJCComparableExpressionTree> keysCopy = new HashSet<AJCComparableExpressionTree>(popped.keySet());
         for (AJCComparableExpressionTree t : keysCopy) {
             log.debug("Key: {}", t);
             finaliseAvailableExpression(popped.get(t));
@@ -179,7 +179,7 @@ public class CommonSubExpressionTranslator extends BaseTranslator {
 
         // If this tree writes anything that is read by an availableExpression, it has to go.
         // TODO: Make this more efficient.
-        Set<AJCComparableExpressionTree> keysCopy = new HashSet<>(availableExpressions.keySet());
+        Set<AJCComparableExpressionTree> keysCopy = new HashSet<AJCComparableExpressionTree>(availableExpressions.keySet());
         for (AJCComparableExpressionTree t : keysCopy) {
             if (t.wrappedNode instanceof AJCEffectAnnotatedTree) {
                 AJCEffectAnnotatedTree effectTree = (AJCEffectAnnotatedTree) t.wrappedNode;

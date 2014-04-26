@@ -102,7 +102,7 @@ public class InitialASTConverter extends TreeScanner {
     private AJCBlock enclosingBlock;
 
     // Intermediate results...
-    private final Stack<AJCTree> results = new Stack<>();
+    private final Stack<AJCTree> results = new Stack<AJCTree>();
 
     /**
      * Extract the final result from the converter after all processing has been completed.

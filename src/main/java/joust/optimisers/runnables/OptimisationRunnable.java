@@ -43,7 +43,13 @@ public abstract class OptimisationRunnable implements Runnable {
         public SingleTranslatorInstance(Class<? extends BaseTranslator> clazz) {
             try {
                 translatorInstance = clazz.getConstructor().newInstance();
-            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            } catch (InstantiationException e) {
+                log.fatal("Exception thrown from OneShot while instantiating translator: ", e);
+            } catch (IllegalAccessException e) {
+                log.fatal("Exception thrown from OneShot while instantiating translator: ", e);
+            } catch (NoSuchMethodException e) {
+                log.fatal("Exception thrown from OneShot while instantiating translator: ", e);
+            } catch (InvocationTargetException e) {
                 log.fatal("Exception thrown from OneShot while instantiating translator: ", e);
             }
         }
@@ -96,7 +102,13 @@ public abstract class OptimisationRunnable implements Runnable {
 
             try {
                 secondaryTranslatorInstance = secondary.getConstructor().newInstance();
-            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            } catch (InstantiationException e) {
+                log.fatal("Exception thrown from OneTwo while instantiating secondaryTranslatorInstance translator: ", e);
+            } catch (IllegalAccessException e) {
+                log.fatal("Exception thrown from OneTwo while instantiating secondaryTranslatorInstance translator: ", e);
+            } catch (NoSuchMethodException e) {
+                log.fatal("Exception thrown from OneTwo while instantiating secondaryTranslatorInstance translator: ", e);
+            } catch (InvocationTargetException e) {
                 log.fatal("Exception thrown from OneTwo while instantiating secondaryTranslatorInstance translator: ", e);
             }
         }

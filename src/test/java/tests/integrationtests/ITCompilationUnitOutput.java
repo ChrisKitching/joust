@@ -58,7 +58,7 @@ public class ITCompilationUnitOutput {
         // Create a File array of all *.java files in the shared classes directory.
         URL sharedClasses = ITCompilationUnitOutput.class.getResource(TEST_SHARED_CLASSES_DIR);
         File[] files = new File(sharedClasses.getFile()).listFiles();
-        ArrayList<File> desiredFiles = new ArrayList<>();
+        ArrayList<File> desiredFiles = new ArrayList<File>();
         for (File f : files) {
             if (f.getName().endsWith(".java")) {
                 desiredFiles.add(f);
@@ -75,7 +75,7 @@ public class ITCompilationUnitOutput {
         File[] testCases = testInputs.listFiles();
         System.out.println(Arrays.toString(testCases));
 
-        LinkedList<Object[]> ret = new LinkedList<>();
+        LinkedList<Object[]> ret = new LinkedList<Object[]>();
         for (int i = 0; i < testCases.length; i++) {
             ret.add(new Object[] {testCases[i], optOutDir, noOptOutdir});
         }
@@ -203,7 +203,13 @@ public class ITCompilationUnitOutput {
 
         try {
             t = targetClass.getConstructor().newInstance();
-        } catch (IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
             e.printStackTrace();
         }
 
@@ -220,7 +226,7 @@ public class ITCompilationUnitOutput {
     private boolean compileTarget(boolean optimise) {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
-        DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
+        DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
 
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null);
 
@@ -234,7 +240,7 @@ public class ITCompilationUnitOutput {
 
         Iterable<? extends JavaFileObject> compilationTarget = fileManager.getJavaFileObjects(targetFiles);
 
-        List<String> optionList = new ArrayList<>();
+        List<String> optionList = new ArrayList<String>();
         if (!optimise) {
             optionList.add("-proc:none");
         }

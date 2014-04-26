@@ -51,7 +51,9 @@ public class ChecksumUtils {
             getPrefixedEntryName.setAccessible(true);
             zipName = zClass.getDeclaredField("zipName");
             zipName.setAccessible(true);
-        } catch (NoSuchMethodException | NoSuchFieldException e) {
+        } catch (NoSuchMethodException e) {
+            log.fatal("Error starting ChecksumUtils - did javac update?", e);
+        } catch (NoSuchFieldException e) {
             log.fatal("Error starting ChecksumUtils - did javac update?", e);
         }
     }
@@ -94,7 +96,10 @@ public class ChecksumUtils {
             try {
                 entryName = (String) getPrefixedEntryName.invoke(classFile);
                 zipFile = new ZipFile((File) zipName.get(classFile));
-            } catch (IllegalAccessException | InvocationTargetException e) {
+            } catch (IllegalAccessException e) {
+                log.fatal("Reflective error from ChecksumUtils - did javac update?", e);
+                return -1;
+            } catch (InvocationTargetException e) {
                 log.fatal("Reflective error from ChecksumUtils - did javac update?", e);
                 return -1;
             }

@@ -23,7 +23,7 @@ import static com.sun.tools.javac.code.Symbol.*;
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public
 class EvaluationContext {
-    @Getter HashMap<VarSymbol, Value> currentAssignments = new HashMap<>();
+    @Getter HashMap<VarSymbol, Value> currentAssignments = new HashMap<VarSymbol, Value>();
 
     // An immutable map that relates the assignop opcodes to their non-assigning equivalents.
     private static final Map<Tag, Tag> OPASG_TO_OP;

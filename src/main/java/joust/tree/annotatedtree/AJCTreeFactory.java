@@ -36,7 +36,7 @@ import static joust.utils.compiler.StaticCompilerUtils.*;
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class AJCTreeFactory implements AJCTree.Factory {
-    protected static final Context.Key<AJCTreeFactory> AJCTreeMakerKey = new Context.Key<>();
+    protected static final Context.Key<AJCTreeFactory> AJCTreeMakerKey = new Context.Key<AJCTreeFactory>();
 
     private static Method unopResolveMethod;
     private static Method binopResolveMethod;
@@ -57,7 +57,9 @@ public class AJCTreeFactory implements AJCTree.Factory {
         log.debug("Resolving unary operator: {}, {}, {}, {}", pos, optag, env, arg);
         try {
             return (Symbol) unopResolveMethod.invoke(resolver, pos, optag, env, arg);
-        } catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException e) {
+            log.fatal("Unable to call resolveUnaryOperator!", e);
+        } catch (InvocationTargetException e) {
             log.fatal("Unable to call resolveUnaryOperator!", e);
         }
 
@@ -69,7 +71,9 @@ public class AJCTreeFactory implements AJCTree.Factory {
 
         try {
             return (Symbol) binopResolveMethod.invoke(resolver, pos, optag, env, left, right);
-        } catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException e) {
+            log.fatal("Unable to call resolveBinaryOperator!", e);
+        } catch (InvocationTargetException e) {
             log.fatal("Unable to call resolveBinaryOperator!", e);
         }
 
@@ -107,7 +111,10 @@ public class AJCTreeFactory implements AJCTree.Factory {
 
         try {
             ret = isUnqualifiable.invoke(javacTreeMaker, sym);
-        } catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException e) {
+            log.fatal("Unable to call isUnqualifiable method on javacTreeMaker.", e);
+            return false;
+        } catch (InvocationTargetException e) {
             log.fatal("Unable to call isUnqualifiable method on javacTreeMaker.", e);
             return false;
         }
@@ -647,7 +654,7 @@ public class AJCTreeFactory implements AJCTree.Factory {
 
     @Override
     public <T extends Symbol> AJCFieldAccess<T> Select(AJCExpressionTree base, T sym) {
-        AJCFieldAccess<T> ret = new AJCFieldAccess<>((JCFieldAccess) javacTreeMaker.Select(base.getDecoratedTree(), sym), base);
+        AJCFieldAccess<T> ret = new AJCFieldAccess<T>((JCFieldAccess) javacTreeMaker.Select(base.getDecoratedTree(), sym), base);
 
         base.mParentNode = ret;
 
@@ -656,12 +663,12 @@ public class AJCTreeFactory implements AJCTree.Factory {
 
     @Override
     public <T extends Symbol> AJCIdent<T> Ident(Name idname) {
-        return new AJCIdent<>(javacTreeMaker.Ident(idname));
+        return new AJCIdent<T>(javacTreeMaker.Ident(idname));
     }
 
     @Override
     public <T extends Symbol> AJCIdent<T> Ident(T sym) {
-        return new AJCIdent<>(javacTreeMaker.Ident(sym));
+        return new AJCIdent<T>(javacTreeMaker.Ident(sym));
     }
 
     @Override

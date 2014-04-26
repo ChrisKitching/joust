@@ -39,9 +39,9 @@ public final class UnboxingFunctionTemplates {
      * Create the function templates that will be necessary to eliminate calls to methods of boxing classes.
      */
     public static void init() {
-        unboxedValueFunctions = new HashMap<>();
-        functionTemplatesNeedingArgCheck = new HashSet<>();
-        functionTemplates = new HashMap<>();
+        unboxedValueFunctions = new HashMap<Type, MethodSymbol>();
+        functionTemplatesNeedingArgCheck = new HashSet<FunctionTemplate>();
+        functionTemplates = new HashMap<MethodSymbol, FunctionTemplate>();
 
         // In each case, the 0th param is taken to be the unboxed object.
 

@@ -14,7 +14,7 @@ import java.util.Set;
  */
 public class StackMap<K, V> extends AbstractMap<K, V> {
     // The stack of associated maps.
-    private final Deque<Map<K, V>> mapStack = new LinkedList<>();
+    private final Deque<Map<K, V>> mapStack = new LinkedList<Map<K, V>>();
 
     /**
      * Get the value for the given key from the map, exploring down the chain of maps as needed.
@@ -89,7 +89,7 @@ public class StackMap<K, V> extends AbstractMap<K, V> {
 
     @Override
     public Set<K> keySet() {
-        Set<K> keys = new HashSet<>();
+        Set<K> keys = new HashSet<K>();
 
         for (Map<K, V> map : mapStack) {
             keys.addAll(map.keySet());

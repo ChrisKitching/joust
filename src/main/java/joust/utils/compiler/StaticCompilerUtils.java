@@ -97,7 +97,7 @@ public final class StaticCompilerUtils {
         treeMaker = AJCTreeFactory.instance(con);
         treeCopier = AJCTreeCopier.instance(con);
         gen = Gen.instance(con);
-        javacTreeCopier = new NonStupidJCTreeCopier<>(javacTreeMaker);
+        javacTreeCopier = new NonStupidJCTreeCopier<Void>(javacTreeMaker);
         names = Names.instance(con);
         types = Types.instance(con);
         symtab = Symtab.instance(con);

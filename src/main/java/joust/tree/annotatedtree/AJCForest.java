@@ -77,13 +77,13 @@ public class AJCForest {
         long t = System.currentTimeMillis();
 
         List<AJCTree> prospectiveRootNodes = List.nil();
-        HashMap<AJCTree, Env<AttrContext>> environMap = new HashMap<>();
+        HashMap<AJCTree, Env<AttrContext>> environMap = new HashMap<AJCTree, Env<AttrContext>>();
 
         // Since it's stateless...
         final TreePreparationTranslator sanity = new TreePreparationTranslator();
         final TreeNormalisingTranslator normaliser = new TreeNormalisingTranslator();
 
-        HashMap<MethodSymbol, AJCMethodDecl> prospectiveMethodTable = new HashMap<>();
+        HashMap<MethodSymbol, AJCMethodDecl> prospectiveMethodTable = new HashMap<MethodSymbol, AJCMethodDecl>();
 
         InitialASTConverter.init();
         for (Pair<Env<AttrContext>, JCClassDecl> env : rootElements) {

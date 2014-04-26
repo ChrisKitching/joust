@@ -45,7 +45,7 @@ import static joust.utils.compiler.StaticCompilerUtils.javaElements;
 
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedAnnotationTypes("*")
 @SupportedOptions({"JOUSTLogLevel", "JOUSTStripAssertions", "JOUSTMinCSEScore", "JOUSTHelp", "JOUSTAnnotateLib", "JOUSTPrintEffectCacheKeys"})
 public class JOUST extends AbstractProcessor {
@@ -62,7 +62,7 @@ public class JOUST extends AbstractProcessor {
         AJCForest.uninit();
 
         environ = (JavacProcessingEnvironment) env;
-        conventionalTrees = new HashSet<>();
+        conventionalTrees = new HashSet<JCCompilationUnit>();
 
         // Parse command line options.
         if (!OptimiserOptions.configureFromProcessingEnvironment(env)) {

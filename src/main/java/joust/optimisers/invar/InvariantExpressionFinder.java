@@ -19,7 +19,7 @@ import static joust.tree.annotatedtree.AJCTree.*;
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 @RequiredArgsConstructor
 public class InvariantExpressionFinder extends AJCTreeVisitor {
-    public final Set<AJCExpressionTree> invariantExpressions = new HashSet<>();
+    public final Set<AJCExpressionTree> invariantExpressions = new HashSet<AJCExpressionTree>();
 
     // Symbols invalidated in the loop of interest - passed by the caller.
     @NonNull private final SymbolSet writtenInLoop;

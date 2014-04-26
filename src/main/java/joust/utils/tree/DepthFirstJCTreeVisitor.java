@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class DepthFirstJCTreeVisitor extends Visitor {
-    protected HashSet<JCTree> mMarked = new HashSet<>();
+    protected HashSet<JCTree> mMarked = new HashSet<JCTree>();
 
     protected void visit(List<? extends JCTree> trees) {
         if (trees == null) {

@@ -31,18 +31,18 @@ public class Live extends BackwardsFlowVisitor {
     Set<VarSymbol> currentlyLive = new SymbolSet();
 
     // Every symbol that has ever been live.
-    HashSet<VarSymbol> everLive = new HashSet<>();
+    HashSet<VarSymbol> everLive = new HashSet<VarSymbol>();
 
     HashSet<VarSymbol> recentlyKilled;
     LinkedList<HashSet<VarSymbol>> recentlyKilledList = new LinkedList<HashSet<VarSymbol>>() {
         {
-            recentlyKilled = new HashSet<>();
+            recentlyKilled = new HashSet<VarSymbol>();
             push(recentlyKilled);
         }
     };
 
     private void enterBlock() {
-        recentlyKilled = new HashSet<>();
+        recentlyKilled = new HashSet<VarSymbol>();
         recentlyKilledList.push(recentlyKilled);
     }
 
@@ -74,7 +74,7 @@ public class Live extends BackwardsFlowVisitor {
         }
 
         // Drop those that aren't currently live...
-        Set<VarSymbol> copy = new HashSet<>(syms);
+        Set<VarSymbol> copy = new HashSet<VarSymbol>(syms);
         copy.retainAll(currentlyLive);
 
         // And remove it from the in-progress killed set.
@@ -144,7 +144,7 @@ public class Live extends BackwardsFlowVisitor {
         Set<VarSymbol> syms = touch.touched;
 
         if (syms != null) {
-            Set<VarSymbol> symCopy = new HashSet<>(syms);
+            Set<VarSymbol> symCopy = new HashSet<VarSymbol>(syms);
             symCopy.removeAll(symbolWhitelist);
 
             currentlyLive.addAll(symCopy);
@@ -202,7 +202,7 @@ public class Live extends BackwardsFlowVisitor {
                 // everywhere only).
                 if (killedEverywhere == null) {
                     // First time we set it to the kill set from the first branch.
-                    killedEverywhere = new HashSet<>(recentlyKilled);
+                    killedEverywhere = new HashSet<VarSymbol>(recentlyKilled);
                 } else {
                     // Every other time we throw away everything this new branch didn't kill.
                     killedEverywhere.retainAll(recentlyKilled);
@@ -225,7 +225,7 @@ public class Live extends BackwardsFlowVisitor {
         // If there's a finaliser, the analysis of everything else takes place in series with it.
         enterBlock();
         visit(jcTry.finalizer);
-        HashSet<VarSymbol> finaliserDeaths = new HashSet<>(recentlyKilled);
+        HashSet<VarSymbol> finaliserDeaths = new HashSet<VarSymbol>(recentlyKilled);
         leaveBlock();
 
         finaliserDeaths.retainAll(currentlyLive);
@@ -242,7 +242,7 @@ public class Live extends BackwardsFlowVisitor {
 
             // Track everything that is killed in every catcher.
             if (catcherDeaths == null) {
-                catcherDeaths = new HashSet<>(recentlyKilled);
+                catcherDeaths = new HashSet<VarSymbol>(recentlyKilled);
             } else {
                 catcherDeaths.retainAll(recentlyKilled);
             }
@@ -253,7 +253,7 @@ public class Live extends BackwardsFlowVisitor {
 
         enterBlock();
         visit(jcTry.body);
-        HashSet<VarSymbol> bodyDeaths = new HashSet<>(recentlyKilled);
+        HashSet<VarSymbol> bodyDeaths = new HashSet<VarSymbol>(recentlyKilled);
 
         leaveBlock();
 
@@ -272,7 +272,7 @@ public class Live extends BackwardsFlowVisitor {
     // Stuff should start being live if it's live *anywhere* and stop being live if it stops *everywhere*.
     @Override
     public void visitMethodDef(AJCMethodDecl jcMethodDecl) {
-        everLive = new HashSet<>();
+        everLive = new HashSet<VarSymbol>();
 
         super.visitMethodDef(jcMethodDecl);
 

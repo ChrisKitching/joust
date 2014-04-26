@@ -29,7 +29,7 @@ public class AvailableExpression {
     }
 
     // Each use of this expression that could potentially be replaced with a temporary if we apply CSE.
-    private final List<AJCComparableExpressionTree> usagesInternal = new ArrayList<>();
+    private final List<AJCComparableExpressionTree> usagesInternal = new ArrayList<AJCComparableExpressionTree>();
     public final List<AJCComparableExpressionTree> usages = Collections.unmodifiableList(usagesInternal);
 
     public void addUsage(AJCComparableExpressionTree tree) {

@@ -10,7 +10,7 @@ import static com.sun.tools.javac.code.Symbol.*;
 import static joust.tree.annotatedtree.AJCTree.*;
 
 public class TouchedSymbolLocator extends AJCTreeVisitor {
-    public Set<VarSymbol> touched = new HashSet<>();
+    public Set<VarSymbol> touched = new HashSet<VarSymbol>();
 
     @Override
     protected void visitAssign(AJCAssign that) {

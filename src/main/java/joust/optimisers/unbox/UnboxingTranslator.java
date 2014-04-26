@@ -33,17 +33,17 @@ public class UnboxingTranslator extends BaseTranslator {
     // The usages of each boxed VarSymbol that we can safely handle if it weren't boxed.
     // If empty when the symbol is dropped, no action is taken. Otherwise, these are fixed up
     // and the boxed variable declared at a later point (if necessary).
-    SetHashMap<VarSymbol, AJCTree> fixableUsages = new SetHashMap<>();
+    SetHashMap<VarSymbol, AJCTree> fixableUsages = new SetHashMap<VarSymbol, AJCTree>();
 
     // Maps VarSymbols to the VarSymbols that they depend upon.
-    SetHashMap<VarSymbol, VarSymbol> deps = new SetHashMap<>();
+    SetHashMap<VarSymbol, VarSymbol> deps = new SetHashMap<VarSymbol, VarSymbol>();
 
-    Set<AJCLetExpr> letExpressions = new HashSet<>();
+    Set<AJCLetExpr> letExpressions = new HashSet<AJCLetExpr>();
 
     private boolean scanningArgs;
 
     // The target of the assignment nodes being explored.
-    private Stack<VarSymbol> assignmentStack = new Stack<>();
+    private Stack<VarSymbol> assignmentStack = new Stack<VarSymbol>();
     private VarSymbol currentAssignmentTarget;
 
     private void pushAssignment(VarSymbol sym) {
@@ -128,10 +128,10 @@ public class UnboxingTranslator extends BaseTranslator {
         }
 
 
-        fixableUsages = new SetHashMap<>();
-        deps = new SetHashMap<>();
-        letExpressions = new HashSet<>();
-        assignmentStack = new Stack<>();
+        fixableUsages = new SetHashMap<VarSymbol, AJCTree>();
+        deps = new SetHashMap<VarSymbol, VarSymbol>();
+        letExpressions = new HashSet<AJCLetExpr>();
+        assignmentStack = new Stack<VarSymbol>();
         currentAssignmentTarget = null;
         scanningArgs = false;
 

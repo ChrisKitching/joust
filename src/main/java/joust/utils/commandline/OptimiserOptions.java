@@ -38,36 +38,26 @@ public class OptimiserOptions {
         String loggingLevel = args.get("JOUSTLogLevel");
         log.error("Got log level: {}", loggingLevel);
         if (loggingLevel != null) {
-            switch (loggingLevel) {
-                case "SEVERE":
-                    logLevel = Level.SEVERE;
-                    break;
-                case "WARNING":
-                    logLevel = Level.WARNING;
-                    break;
-                case "INFO":
-                    logLevel = Level.INFO;
-                    break;
-                case "CONFIG":
-                    logLevel = Level.CONFIG;
-                    break;
-                case "FINE":
-                    logLevel = Level.FINE;
-                    break;
-                case "FINER":
-                    logLevel = Level.FINER;
-                    break;
-                case "FINEST":
-                    logLevel = Level.FINEST;
-                    break;
-                case "ALL":
-                    logLevel = Level.ALL;
-                    break;
-                case "OFF":
-                    logLevel = Level.OFF;
-                    break;
-                default:
-                    return false;
+            if ("SEVERE".equals(loggingLevel)) {
+                logLevel = Level.SEVERE;
+            } else if ("WARNING".equals(loggingLevel)) {
+                logLevel = Level.WARNING;
+            } else if ("INFO".equals(loggingLevel)) {
+                logLevel = Level.INFO;
+            } else if ("CONFIG".equals(loggingLevel)) {
+                logLevel = Level.CONFIG;
+            } else if ("FINE".equals(loggingLevel)) {
+                logLevel = Level.FINE;
+            } else if ("FINER".equals(loggingLevel)) {
+                logLevel = Level.FINER;
+            } else if ("FINEST".equals(loggingLevel)) {
+                logLevel = Level.FINEST;
+            } else if ("ALL".equals(loggingLevel)) {
+                logLevel = Level.ALL;
+            } else if ("OFF".equals(loggingLevel)) {
+                logLevel = Level.OFF;
+            } else {
+                return false;
             }
         }
 

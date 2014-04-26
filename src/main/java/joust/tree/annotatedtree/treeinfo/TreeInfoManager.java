@@ -24,7 +24,7 @@ public final class TreeInfoManager {
     private static HashMap<String, Effects> methodEffectMap;
 
     public static void init() {
-        methodEffectMap = new HashMap<>();
+        methodEffectMap = new HashMap<String, Effects>();
     }
 
     /**

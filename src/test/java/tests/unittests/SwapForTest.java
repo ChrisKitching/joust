@@ -81,7 +81,10 @@ public class SwapForTest extends TreeFabricatingTest {
             }
 
             assertTrue(value == newTree);
-        } catch (IllegalAccessException | NoSuchFieldException e) {
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            fail(e.toString());
+        } catch (NoSuchFieldException e) {
             e.printStackTrace();
             fail(e.toString());
         }

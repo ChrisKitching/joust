@@ -36,7 +36,9 @@ public class TreeUtils {
             Field sentinelField = scopeClass.getDeclaredField("sentinel");
             sentinelField.setAccessible(true);
             SENTINEL = (Scope.Entry) sentinelField.get(null);
-        } catch (IllegalAccessException | NoSuchFieldException e) {
+        } catch (IllegalAccessException e) {
+            log.fatal("Unable to initialise SENTINEL field!", e);
+        } catch (NoSuchFieldException e) {
             log.fatal("Unable to initialise SENTINEL field!", e);
         }
     }

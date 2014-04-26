@@ -22,7 +22,7 @@ public class CompilerPhase {
     private Kind javacKind;
 
     // Cache of CompilerPhase objects...
-    private static HashMap<Kind, CompilerPhase> objectCache = new HashMap<>();
+    private static HashMap<Kind, CompilerPhase> objectCache = new HashMap<Kind, CompilerPhase>();
 
     /**
      * Get an object representing the given javac TaskEvent.Kind.

@@ -241,7 +241,7 @@ public class InvariantExpressionFinderTest extends BaseAnalyserTest<InvariantExp
     }
 
     public static Set<AJCExpressionTree> $s(AJCExpressionTree... trees) {
-        Set<AJCExpressionTree> ts = new HashSet<>();
+        Set<AJCExpressionTree> ts = new HashSet<AJCExpressionTree>();
         for (int i = 0; i < trees.length; i++) {
             ts.add(trees[i]);
         }

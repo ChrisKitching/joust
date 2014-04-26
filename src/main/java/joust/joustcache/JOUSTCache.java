@@ -49,12 +49,12 @@ public class JOUSTCache {
     private static String databasePath;
     private static RecordManager databaseRecordManager;
 
-    static HashMap<String, ClassInfo> classInfo = new HashMap<>();
-    static HashMap<String, TransientClassInfo> transientClassInfo = new HashMap<>();
+    static HashMap<String, ClassInfo> classInfo = new HashMap<String, ClassInfo>();
+    static HashMap<String, TransientClassInfo> transientClassInfo = new HashMap<String, TransientClassInfo>();
 
     // Used to provide a deserialisation target for Symbols.
-    public static final HashMap<String, VarSymbol> varSymbolTable = new HashMap<>();
-    public static final HashMap<String, MethodSymbol> methodSymbolTable = new HashMap<>();
+    public static final HashMap<String, VarSymbol> varSymbolTable = new HashMap<String, VarSymbol>();
+    public static final HashMap<String, MethodSymbol> methodSymbolTable = new HashMap<String, MethodSymbol>();
 
     public static void init() {
         log.info("Init JOUSTCache!");

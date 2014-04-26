@@ -17,7 +17,7 @@ import static com.sun.tools.javac.code.Symbol.*;
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class FinalValueFinder extends AJCTreeVisitor {
-    public HashMap<VarSymbol, Value> values = new HashMap<>();
+    public HashMap<VarSymbol, Value> values = new HashMap<VarSymbol, Value>();
 
     @Override
     protected void visitClassDef(AJCClassDecl that) {

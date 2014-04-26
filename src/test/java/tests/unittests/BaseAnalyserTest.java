@@ -54,7 +54,10 @@ public abstract class BaseAnalyserTest<T extends AJCTreeVisitor> extends BaseTre
                 Field rField = resultClass.getField(resultField);
                 rField.setAccessible(true);
                 resultObject = rField.get(resultNode);
-            } catch (NoSuchFieldException | IllegalAccessException e) {
+            } catch (NoSuchFieldException e) {
+                log.error("Unable to find result field!", e);
+                assertTrue(false);
+            } catch (IllegalAccessException e) {
                 log.error("Unable to find result field!", e);
                 assertTrue(false);
             }
@@ -89,7 +92,11 @@ public abstract class BaseAnalyserTest<T extends AJCTreeVisitor> extends BaseTre
             Field rField = ReflectionUtils.findField(visitorClass, resultField);
             rField.setAccessible(true);
             actualResult = rField.get(visitorInstance);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
+        } catch (NoSuchFieldException e) {
+            log.error("Error during test!", e);
+            fail();
+            return;
+        } catch (IllegalAccessException e) {
             log.error("Error during test!", e);
             fail();
             return;

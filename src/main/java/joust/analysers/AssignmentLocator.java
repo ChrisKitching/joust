@@ -11,7 +11,7 @@ import static joust.tree.annotatedtree.AJCTree.*;
  * Visitor that fetches the list of VarSymbols declared in the given tree.
  */
 public class AssignmentLocator extends AJCTreeVisitor {
-    Set<VarSymbol> declarations = new HashSet<>();
+    Set<VarSymbol> declarations = new HashSet<VarSymbol>();
 
     @Override
     protected void visitVariableDecl(AJCVariableDecl that) {

@@ -12,7 +12,7 @@ import java.util.LinkedList;
 @Data
 public class ClassInfo {
     @NonNull
-    public final LinkedList<MethodInfo> methodInfos = new LinkedList<>();
+    public final LinkedList<MethodInfo> methodInfos = new LinkedList<MethodInfo>();
     public int hash;
 
     public static String getHashForVariable(Symbol.VarSymbol sym) {

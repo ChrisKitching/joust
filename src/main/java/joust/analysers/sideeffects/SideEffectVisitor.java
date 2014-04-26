@@ -33,22 +33,22 @@ public class SideEffectVisitor extends AJCTreeVisitor {
 
     // Track the method calls which depend on incomplete methods so we can go back and fix them up when we complete
     // the method in question. Keyed by MethodSymbol of the incomplete method.
-    private final SetHashMap<MethodSymbol, AJCEffectAnnotatedTree> incompleteCalls = new SetHashMap<>();
+    private final SetHashMap<MethodSymbol, AJCEffectAnnotatedTree> incompleteCalls = new SetHashMap<MethodSymbol, AJCEffectAnnotatedTree>();
 
     // The incomplete Effects objects for methods that have unresolved deps.
-    private final HashMap<MethodSymbol, Effects> unfinishedMethodEffects = new HashMap<>();
+    private final HashMap<MethodSymbol, Effects> unfinishedMethodEffects = new HashMap<MethodSymbol, Effects>();
 
-    private final HashSet<MethodSymbol> calledMethodsWithoutSource = new HashSet<>();
+    private final HashSet<MethodSymbol> calledMethodsWithoutSource = new HashSet<MethodSymbol>();
 
     // The set of methods each method depends upon.
-    private final SetHashMap<MethodSymbol, MethodSymbol> methodDeps = new SetHashMap<>();
+    private final SetHashMap<MethodSymbol, MethodSymbol> methodDeps = new SetHashMap<MethodSymbol, MethodSymbol>();
 
     // The set of methods depended on by each method.
-    private final SetHashMap<MethodSymbol, MethodSymbol> reverseMethodDeps = new SetHashMap<>();
+    private final SetHashMap<MethodSymbol, MethodSymbol> reverseMethodDeps = new SetHashMap<MethodSymbol, MethodSymbol>();
 
     // The set of methods with a particular name - the set we check to see if an inheritance exists whenever
     // we see a new symbol.
-    private final SetHashMap<String, MethodSymbol> possibleInheitors = new SetHashMap<>();
+    private final SetHashMap<String, MethodSymbol> possibleInheitors = new SetHashMap<String, MethodSymbol>();
 
     private MethodSymbol methodBeingVisited;
 
@@ -203,7 +203,7 @@ public class SideEffectVisitor extends AJCTreeVisitor {
             }
         }
 
-        Set<MethodSymbol> missing = new HashSet<>(methodDeps.keySet());
+        Set<MethodSymbol> missing = new HashSet<MethodSymbol>(methodDeps.keySet());
 
         // Resolve cycles!
         for (MethodSymbol sym : missing) {
@@ -228,7 +228,7 @@ public class SideEffectVisitor extends AJCTreeVisitor {
     private boolean resolveMethodsWithoutDeps() {
         boolean success = false;
 
-        Set<MethodSymbol> keyCopy = new HashSet<>(methodDeps.keySet());
+        Set<MethodSymbol> keyCopy = new HashSet<MethodSymbol>(methodDeps.keySet());
 
         for (MethodSymbol sym : keyCopy) {
             // Concurrent modification may occur...
