@@ -73,6 +73,8 @@ public class ChecksumRunner extends OptimisationRunnable {
             keyIterator.remove();
         }
         long e = System.currentTimeMillis();
+
+        JOUSTCache.closeDatabase();
         log.info("Done in " + (e - s) + "ms");
     }
 }

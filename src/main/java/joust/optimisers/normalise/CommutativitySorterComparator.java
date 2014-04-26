@@ -188,9 +188,20 @@ public class CommutativitySorterComparator implements Comparator<AJCExpressionTr
         VarSymbol a1 = l.getTargetSymbol();
         VarSymbol a2 = r.getTargetSymbol();
 
-        int symComp = a1.name.toString().compareTo(a2.name.toString());
-        if (symComp != 0) {
-            return symComp;
+        // Due to unconventional array access limitations....
+        if (a1 == null && a2 != null) {
+            return 1;
+        }
+
+        if (a2 == null && a1 != null) {
+            return -1;
+        }
+
+        if (a1 != null) {
+            int symComp = a1.name.toString().compareTo(a2.name.toString());
+            if (symComp != 0) {
+                return symComp;
+            }
         }
 
         int indComp = compare(l.index, r.index);

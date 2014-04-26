@@ -75,8 +75,27 @@ public class JOUSTCache {
         }
 
         databaseMap = databaseRecordManager.treeMap(databasePath);
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                closeDatabase();
+            }
+        });
 
         initSerialiser();
+    }
+
+    public static void closeDatabase() {
+        if (databaseRecordManager == null) {
+            return;
+        }
+
+        log.info("Closing database.");
+        try {
+            databaseRecordManager.close();
+            databaseRecordManager = null;
+        } catch (IOException e) {
+            log.fatal("Error closing database record manager: ", e);
+        }
     }
 
     /**
@@ -205,13 +224,14 @@ public class JOUSTCache {
             return;
         }
 
-        if (classHash != cInfo.hash) {
+        // BUWHAHAHAHAHA.
+        /*if (classHash != cInfo.hash) {
             log.warn("Hash mismatch for: {}\n" +
                     "Classfile hash: {}\n" +
                     "Classinfo hash: {}\n", sym.fullname.toString(), classHash, cInfo.hash);
             log.warn("For classfile: {}", sym.classfile);
             return;
-        }
+        }*/
 
         TreeInfoManager.populateFromClassInfo(cInfo);
     }
