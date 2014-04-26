@@ -6,6 +6,7 @@ import joust.joustcache.ChecksumRunner;
 import joust.optimisers.runnables.AssertionStrip;
 import joust.optimisers.runnables.CSE;
 import joust.optimisers.runnables.ConstFold;
+import joust.optimisers.runnables.FinalFolder;
 import joust.optimisers.runnables.LoopInvar;
 import joust.optimisers.runnables.Unroll;
 import joust.tree.annotatedtree.AJCForest;
@@ -75,6 +76,7 @@ public class JOUST extends AbstractProcessor {
         // As it happens, almost all our phases operate on the virtual AFTER DESUGAR phase (as this turns out to be
         // very much more convenient than working on the actual tree if you don't care about the desugared things.)
         OptimisationPhaseManager.register(new TreeConverter(), AFTER, DESUGAR);
+        OptimisationPhaseManager.register(new FinalFolder(), AFTER, DESUGAR);
         OptimisationPhaseManager.register(new ConstFold(), AFTER, DESUGAR);
 
         // TODO: Repair and re-enable this.

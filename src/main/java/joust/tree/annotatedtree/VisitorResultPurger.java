@@ -1,4 +1,4 @@
-package tests.unittests.utils;
+package joust.tree.annotatedtree;
 
 import joust.analysers.sideeffects.Effects;
 import joust.tree.annotatedtree.AJCTree;
@@ -15,7 +15,6 @@ public class VisitorResultPurger extends AJCTreeVisitor {
     public void visit(AJCTree that) {
         if (that instanceof AJCEffectAnnotatedTree) {
             AJCEffectAnnotatedTree cast = (AJCEffectAnnotatedTree) that;
-            cast.liveVariables = null;
             cast.effects = new Effects(EffectSet.ALL_EFFECTS);
         }
 

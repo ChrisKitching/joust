@@ -1,6 +1,7 @@
 package joust.optimisers.unroll;
 
 import com.sun.tools.javac.code.Symbol;
+import joust.tree.annotatedtree.AJCTree;
 import joust.utils.tree.evaluation.Value;
 import joust.optimisers.translators.BaseTranslator;
 import joust.tree.annotatedtree.AJCForest;
@@ -10,6 +11,7 @@ import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
 import java.util.HashMap;
+import java.util.NoSuchElementException;
 import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
@@ -25,10 +27,7 @@ import static com.sun.tools.javac.code.Symbol.*;
 public class ContextInliningTranslator extends BaseTranslator {
     HashMap<VarSymbol, Value> currentAssignments;
 
-    @Override
-    public void visitIdent(AJCIdent tree) {
-        super.visitIdent(tree);
-
+    private void visitSymbolRefTree(AJCSymbolRefTree tree) {
         Symbol sym = tree.getTargetSymbol();
         if (!(sym instanceof VarSymbol)) {
             return;
@@ -40,7 +39,27 @@ public class ContextInliningTranslator extends BaseTranslator {
         }
 
         AJCLiteral result = knownValue.toLiteral();
-        tree.swapFor(result);
-        log.debug("Replacing {} with {}", tree, result);
+        mHasMadeAChange = true;
+        log.info("Replacing {} with {}", tree, result);
+
+        try {
+            tree.swapFor(result);
+        } catch (NoSuchElementException e) {
+            // The way javac constructs literal arrays wil lcause us to get here. No matter.
+        }
+    }
+
+    @Override
+    public void visitIdent(AJCIdent tree) {
+        super.visitIdent(tree);
+
+        visitSymbolRefTree(tree);
+    }
+
+    @Override
+    protected void visitFieldAccess(AJCFieldAccess tree) {
+        super.visitFieldAccess(tree);
+
+        visitSymbolRefTree(tree);
     }
 }
