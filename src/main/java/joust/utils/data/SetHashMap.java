@@ -1,7 +1,7 @@
 package joust.utils.data;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -10,11 +10,22 @@ import java.util.Set;
  * @param <K> The type of the keys into the HashMap.
  * @param <V> The type of the values in the lists related to keys.
  */
-public class SetHashMap<K, V> extends HashMap<K, Set<V>> {
+public class SetHashMap<K, V> extends LinkedHashMap<K, Set<V>> {
     public void ensure(K key) {
         if (get(key) == null) {
-            put(key, new HashSet<V>());
+            put(key, new LinkedHashSet<V>());
         }
+    }
+
+    @Override
+    public boolean containsValue(Object value) {
+        for (Set<V> vs : values()) {
+            if (vs.contains(value)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -25,7 +36,7 @@ public class SetHashMap<K, V> extends HashMap<K, Set<V>> {
 
         // Initialise the list if this is the first element.
         if (values == null) {
-            values = new HashSet<>();
+            values = new LinkedHashSet<>();
             put(key, values);
         }
 

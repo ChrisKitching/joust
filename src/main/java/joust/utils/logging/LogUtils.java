@@ -1,6 +1,7 @@
 package joust.utils.logging;
 
 import joust.utils.commandline.OptimiserOptions;
+import joust.utils.compiler.OptimisationPhaseManager;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
@@ -143,18 +144,21 @@ public class LogUtils {
         }
 
         public static void fatal(Logger logger, String msg, Object... objects) {
+            OptimisationPhaseManager.abort();
             String subd = doSubstitutions(msg, objects);
             logger.severe(subd);
             raiseCompilerError(subd);
         }
 
         public static void fatal(Logger logger, String msg, Throwable thrown) {
+            OptimisationPhaseManager.abort();
             msg = msg + '\n' + msgFromThrowable(thrown);
             logger.log(Level.SEVERE, msg, thrown);
             raiseCompilerError(msg);
         }
 
         public static void fatal(Logger logger, Object o) {
+            OptimisationPhaseManager.abort();
             String oString = nullSafeToString(o);
             logger.severe(oString);
             raiseCompilerError(oString);

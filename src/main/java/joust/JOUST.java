@@ -4,10 +4,12 @@ import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import joust.joustcache.ChecksumRunner;
 import joust.optimisers.runnables.AssertionStrip;
+import joust.optimisers.runnables.AssignmentStrip;
 import joust.optimisers.runnables.CSE;
 import joust.optimisers.runnables.ConstFold;
 import joust.optimisers.runnables.FinalFolder;
 import joust.optimisers.runnables.LoopInvar;
+import joust.optimisers.runnables.Unbox;
 import joust.optimisers.runnables.Unroll;
 import joust.tree.annotatedtree.AJCForest;
 import joust.tree.conversion.TreeConverter;
@@ -76,6 +78,7 @@ public class JOUST extends AbstractProcessor {
         OptimisationPhaseManager.register(new TreeConverter(), AFTER, DESUGAR);
         OptimisationPhaseManager.register(new FinalFolder(), AFTER, DESUGAR);
         OptimisationPhaseManager.register(new ConstFold(), AFTER, DESUGAR);
+        OptimisationPhaseManager.register(new Unbox(), AFTER, DESUGAR);
 
         // TODO: Repair and re-enable this.
         // OptimisationPhaseManager.register(new AssignmentStrip(), AFTER, DESUGAR);

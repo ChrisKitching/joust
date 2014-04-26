@@ -67,4 +67,40 @@ public class TreeUtils {
                 throw new UnsupportedOperationException("Unknown primitive type kind encountered: " + kind);
         }
     }
+
+    /**
+     * Given a method call, return the VarSymbol, if any, of the object on which the call is being done.
+     * Returns null if the callee is not a VarSymbol.
+     */
+    public static VarSymbol getCalledObjectForCall(AJCCall call) {
+        if (!(call.meth instanceof AJCFieldAccess)) {
+            return null;
+        }
+        AJCFieldAccess<MethodSymbol> cast = (AJCFieldAccess<MethodSymbol>) call.meth;
+
+        // Make sure we're not selecting on a literal or something stupid...
+        if (!(cast.selected instanceof AJCSymbolRef)) {
+            return null;
+        }
+
+        AJCSymbolRef selected = (AJCSymbolRef) cast.selected;
+        Symbol sym = selected.getTargetSymbol();
+
+        if (sym instanceof VarSymbol) {
+            return (VarSymbol) sym;
+        }
+
+        return null;
+    }
+
+    public static AJCExpressionTree removeCast(AJCTypeCast tree) {
+        return removeCast(tree.expr);
+    }
+    public static AJCExpressionTree removeCast(AJCExpressionTree tree) {
+        if (tree instanceof AJCTypeCast) {
+            return removeCast(((AJCTypeCast) tree).expr);
+        }
+
+        return tree;
+    }
 }

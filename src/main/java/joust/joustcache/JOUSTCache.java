@@ -177,12 +177,12 @@ public class JOUSTCache {
             return;
         }
 
-        log.info("Loaded {} bytes of cached info for class {}", payload.length, sym.fullname.toString());
+        log.debug("Loaded {} bytes of cached info for class {}", payload.length, sym.fullname.toString());
 
         @Cleanup UnsafeInput deserialiserInput = new UnsafeInput(payload);
         ClassInfo cInfo = serialiser.readObject(deserialiserInput, ClassInfo.class);
 
-        log.info("Loaded info:\n{}", cInfo);
+        log.debug("Loaded info:\n{}", cInfo);
 
         if (cInfo == null) {
             log.warn("Unable to load cached info - got null - for class {}", sym.fullname.toString());

@@ -16,6 +16,7 @@ import joust.utils.ReflectionUtils;
 import joust.utils.tree.TreeUtils;
 import lombok.Delegate;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 import java.lang.reflect.Field;
@@ -54,7 +55,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
     /**
      * Replace this node with the given node, if possible.
      */
-    public void swapFor(AJCTree replacement) {
+    public void swapFor(@NonNull AJCTree replacement) {
         if (mParentNode == null) {
             log.fatal("Unable to swap " + this + " for " + replacement + " - parent was null.");
             return;
@@ -185,7 +186,13 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
 
         // Since a statement is always in a block, we can provide a specialised swap function and avoid the evilness.
         @Override
-        public void swapFor(AJCTree replacement) {
+        public void swapFor(@NonNull AJCTree replacement) {
+            // Except for let expressions, that is.
+            if (mParentNode instanceof AJCLetExpr) {
+                super.swapFor(replacement);
+                return;
+            }
+
             if (replacement instanceof AJCStatement) {
                 // Swap in the enclosing block. Simplez!
                 enclosingBlock.swap(this, (AJCStatement) replacement);
@@ -1469,8 +1476,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         AJCTypeCast TypeCast(AJCTypeExpression clazz, AJCExpressionTree expr);
         AJCInstanceOf InstanceOf(AJCSymbolRefTree<VarSymbol> expr, AJCSymbolRef<TypeSymbol> clazz);
         AJCArrayAccess ArrayAccess(AJCExpressionTree indexed, AJCExpressionTree index);
-        AJCFieldAccess Select(AJCExpressionTree selected, Name selector);
-        <T extends Symbol> AJCFieldAccess<T> Select(AJCSymbolRefTree<? extends Symbol> base, T sym);
+        <T extends Symbol> AJCFieldAccess<T> Select(AJCExpressionTree base, T sym);
         <T extends Symbol> AJCIdent<T> Ident(Name idname);
         <T extends Symbol> AJCIdent<T> Ident(T sym);
         AJCLiteral Literal(TypeTag tag, Object value);

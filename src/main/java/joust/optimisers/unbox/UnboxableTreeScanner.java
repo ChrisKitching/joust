@@ -1,16 +1,18 @@
-package joust.analysers;
+package joust.optimisers.unbox;
 
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.code.Type;
 import joust.tree.annotatedtree.AJCTreeVisitor;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.sun.tools.javac.code.Symbol.*;
 import static joust.tree.annotatedtree.AJCTree.*;
+import static joust.utils.compiler.StaticCompilerUtils.*;
 
-public class TouchedSymbolLocator extends AJCTreeVisitor {
-    public Set<VarSymbol> touched = new HashSet<>();
+public class UnboxableTreeScanner extends AJCTreeVisitor {
+    public Set<VarSymbol> toucheBoxingSymbols = new HashSet<>();
 
     @Override
     protected void visitAssign(AJCAssign that) {
@@ -29,11 +31,17 @@ public class TouchedSymbolLocator extends AJCTreeVisitor {
         processRef(that);
     }
 
-    private void processRef(AJCSymbolRefTree that) {
 
+
+    /**
+     * If a reference is to a symbol of a boxing type, add it to the toucheBoxingSymbols set.
+     */
+    private void processRef(AJCSymbolRefTree that) {
         Symbol target = that.getTargetSymbol();
         if (target instanceof VarSymbol) {
-            touched.add((VarSymbol) target);
+            if (types.unboxedType(target.type) != Type.noType) {
+                toucheBoxingSymbols.add((VarSymbol) target);
+            }
         }
     }
 }

@@ -423,7 +423,7 @@ public class AJCTreeCopier {
 
     
     public AJCFieldAccess copyFieldAccess(AJCFieldAccess that) {
-        AJCFieldAccess node = treeMaker.Select(copy(that.selected), that.getDecoratedTree().getIdentifier());
+        AJCFieldAccess node = treeMaker.Select(copy(that.selected), that.getTargetSymbol());
 
         node.getDecoratedTree().type = that.getDecoratedTree().type;
         node.getDecoratedTree().sym = that.getDecoratedTree().sym;

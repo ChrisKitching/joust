@@ -30,7 +30,6 @@ public class FinalValueFinder extends AJCTreeVisitor {
 
             if ((vSym.flags() & Flags.STATIC) != 0
              && (vSym.flags() & Flags.FINAL) != 0) {
-                log.info("Static final found: {}", varDef);
 
                 // Try to evaluate the initialiser expression now.
                 // If the index is something we can evaluate at compile-time, we're okay.
@@ -38,7 +37,6 @@ public class FinalValueFinder extends AJCTreeVisitor {
                 Value index = context.evaluate(varDef.getInit());
 
                 if (index != Value.UNKNOWN) {
-                    log.info("Found to be of value: {}", index.getValue());
                     values.put(vSym, index);
                 }
             }

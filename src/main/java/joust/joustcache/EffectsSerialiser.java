@@ -53,8 +53,6 @@ public class EffectsSerialiser extends Serializer<Effects> {
 
     @Override
     public void write(Kryo kryo, Output output, Effects effects) {
-        log.info("Doing things!");
-
         EffectSet directPart;
         EffectSet computedPart;
         Set<Effects> backwardDeps;

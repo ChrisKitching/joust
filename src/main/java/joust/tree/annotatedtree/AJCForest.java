@@ -6,9 +6,12 @@ import joust.analysers.sideeffects.Effects;
 import joust.joustcache.JOUSTCache;
 import joust.optimisers.normalise.TreeNormalisingTranslator;
 import joust.analysers.sideeffects.SideEffectVisitor;
+import joust.optimisers.unbox.UnboxingFunctionTemplates;
+import joust.optimisers.unbox.UnboxingTranslator;
 import joust.tree.conversion.TreePreparationTranslator;
 import joust.tree.annotatedtree.treeinfo.TreeInfoManager;
 import joust.utils.logging.LogUtils;
+import joust.utils.tree.JCTreeStructurePrinter;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
@@ -111,6 +114,7 @@ public class AJCForest {
         // Effect handler utils...
         TreeInfoManager.init();
         JOUSTCache.init();
+        UnboxingFunctionTemplates.init();
 
         AJCForest ret = new AJCForest(trees, mTable);
 

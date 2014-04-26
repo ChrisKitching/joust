@@ -539,16 +539,7 @@ public class AJCTreeFactory implements AJCTree.Factory {
     }
 
     @Override
-    public AJCFieldAccess Select(AJCExpressionTree selected, Name selector) {
-        AJCFieldAccess ret = new AJCFieldAccess<>(javacTreeMaker.Select(selected.getDecoratedTree(), selector), selected);
-
-        selected.mParentNode = ret;
-
-        return ret;
-    }
-
-    @Override
-    public <T extends Symbol> AJCFieldAccess<T> Select(AJCSymbolRefTree<? extends Symbol> base, T sym) {
+    public <T extends Symbol> AJCFieldAccess<T> Select(AJCExpressionTree base, T sym) {
         AJCFieldAccess<T> ret = new AJCFieldAccess<>((JCFieldAccess) javacTreeMaker.Select(base.getDecoratedTree(), sym), base);
 
         base.mParentNode = ret;

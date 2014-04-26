@@ -31,6 +31,8 @@ public abstract class OptimisationPhaseManager implements Runnable {
 
     public static CompilerPhase currentPhase = CompilerPhase.fromKind(Kind.ANNOTATION_PROCESSING);
 
+    public static boolean isAborting;
+
     public enum PhaseModifier {
         BEFORE,
         AFTER
@@ -62,6 +64,8 @@ public abstract class OptimisationPhaseManager implements Runnable {
      * @param env The ProcessingEnvironment to which the listeners should associate.
      */
     public static void init(final ProcessingEnvironment env) {
+        isAborting = false;
+
         tasksBefore.clear();
         tasksAfter.clear();
 
@@ -103,6 +107,10 @@ public abstract class OptimisationPhaseManager implements Runnable {
 
     public static void runTasks(LinkedList<OptimisationRunnable> runnables, TaskEvent taskEvent) {
         for (OptimisationRunnable r : runnables) {
+            if (isAborting) {
+                return;
+            }
+
             log.trace("Running {}", r.getClass().getName());
             r.currentEvent = taskEvent;
             r.run();
@@ -121,5 +129,17 @@ public abstract class OptimisationPhaseManager implements Runnable {
     public static void register(OptimisationRunnable task, PhaseModifier modifier, VirtualPhase runWhen) {
         Map<VirtualPhase, LinkedList<OptimisationRunnable>> tasks = modifier == PhaseModifier.BEFORE ? tasksBeforeVirtual : tasksAfterVirtual;
         tasks.get(runWhen).add(task);
+    }
+
+    /**
+     * Prevent all further optimisation phases from running. Called in the event of a fatal error.
+     */
+    public static void abort() {
+        isAborting = true;
+
+        tasksBefore.clear();
+        tasksAfter.clear();
+        tasksBeforeVirtual.clear();
+        tasksAfterVirtual.clear();
     }
 }
