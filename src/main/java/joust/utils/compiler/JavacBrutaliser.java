@@ -5,7 +5,6 @@ import com.sun.tools.javac.comp.CompileStates;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.comp.Todo;
 import com.sun.tools.javac.main.JavaCompiler;
-import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Pair;
@@ -23,7 +22,7 @@ import java.util.logging.Logger;
 
 import static com.sun.tools.javac.tree.JCTree.*;
 import static joust.utils.compiler.StaticCompilerUtils.javaCompiler;
-import static joust.utils.compiler.OptimisationPhaseManager.VirtualPhase.*;
+import static joust.utils.compiler.OptimisationPhaseManager.EventType.*;
 
 /**
  * The class we don't like to talk about. Nothing to see here.
@@ -83,23 +82,25 @@ public final class JavacBrutaliser extends OptimisationRunnable {
         try {
             log.info("Attribution.");
             Object attributed = attributeMethod.invoke(javaCompiler, todoValue);
+            OptimisationPhaseManager.dispatchEvent(AFTER_ATTRIBUTION);
+
             log.info("Flow.");
             Object flowed = flowMethod.invoke(javaCompiler, attributed);
+            OptimisationPhaseManager.dispatchEvent(AFTER_FLOW);
 
             log.info("Desugar.");
-            OptimisationPhaseManager.beforeVirtual(DESUGAR);
-
             Object desugared = desugarMethod.invoke(javaCompiler, flowed);
             JOUST.environmentsToProcess = (Queue<Pair<Env<AttrContext>, JCClassDecl>>) desugared;
 
             log.info("PARTY.");
             long t = System.currentTimeMillis();
-            OptimisationPhaseManager.afterVirtual(DESUGAR);
+            OptimisationPhaseManager.dispatchEvent(AFTER_DESUGAR);
             log.info("JOUST took {}ms", System.currentTimeMillis() - t);
 
             // Finish up..
             log.info("Generate.");
             generateMethod.invoke(javaCompiler, desugared);
+            OptimisationPhaseManager.dispatchEvent(AFTER_GENERATE);
 
             log.info("Complete.");
         } catch (IllegalAccessException e) {

@@ -38,9 +38,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import static com.sun.tools.javac.tree.JCTree.*;
-import static joust.utils.compiler.OptimisationPhaseManager.PhaseModifier.*;
-import static joust.utils.compiler.OptimisationPhaseManager.VirtualPhase.*;
-import static com.sun.source.util.TaskEvent.Kind.*;
+import static joust.utils.compiler.OptimisationPhaseManager.EventType.*;
 import static joust.utils.compiler.StaticCompilerUtils.javaElements;
 
 @Log
@@ -73,34 +71,38 @@ public class JOUST extends AbstractProcessor {
         // So we can log those fatal errors...
         LogUtils.init(processingEnv);
 
-        OptimisationPhaseManager.init(env);
-        OptimisationPhaseManager.register(new AssertionStrip(), AFTER, ANNOTATION_PROCESSING);
-        OptimisationPhaseManager.register(new JavacBrutaliser(), AFTER, ANNOTATION_PROCESSING);
+        OptimisationPhaseManager.init();
+        OptimisationPhaseManager.register(new AssertionStrip(), AFTER_ANNOTATION_PROCESSING);
+        OptimisationPhaseManager.register(new JavacBrutaliser(), AFTER_ANNOTATION_PROCESSING);
 
-        // As it happens, almost all our phases operate on the virtual AFTER DESUGAR phase (as this turns out to be
+        // As it happens, almost all our phases operate in the AFTER_DESUGAR phase (as this turns out to be
         // very much more convenient than working on the actual tree if you don't care about the desugared things.)
-        OptimisationPhaseManager.register(new TreeConverter(), AFTER, DESUGAR);
-        OptimisationPhaseManager.register(new FinalFolder(), AFTER, DESUGAR);
-        OptimisationPhaseManager.register(new ConstFold(), AFTER, DESUGAR);
-        OptimisationPhaseManager.register(new ShortFunc(), AFTER, DESUGAR);
-        OptimisationPhaseManager.register(new Unbox(), AFTER, DESUGAR);
+        OptimisationPhaseManager.register(new TreeConverter(), AFTER_DESUGAR);
+        OptimisationPhaseManager.register(new FinalFolder(), AFTER_DESUGAR);
+        OptimisationPhaseManager.register(new ConstFold(), AFTER_DESUGAR);
+        OptimisationPhaseManager.register(new ShortFunc(), AFTER_DESUGAR);
+        OptimisationPhaseManager.register(new Unbox(), AFTER_DESUGAR);
 
         // TODO: Repair and re-enable this.
         // OptimisationPhaseManager.register(new AssignmentStrip(), AFTER, DESUGAR);
-        OptimisationPhaseManager.register(new LoopInvar(), AFTER, DESUGAR);
-        OptimisationPhaseManager.register(new Unroll(), AFTER, DESUGAR);
-        OptimisationPhaseManager.register(new CSE(), AFTER, DESUGAR);
+        OptimisationPhaseManager.register(new LoopInvar(), AFTER_DESUGAR);
+        OptimisationPhaseManager.register(new Unroll(), AFTER_DESUGAR);
+        OptimisationPhaseManager.register(new CSE(), AFTER_DESUGAR);
 
         // The post-compilation pass to populate the disk cache with the results of classes processed
         // during this job. Needs to happen here so we can compute a checksum over the bytecode and
         // spot when things get sneakily changed when we weren't looking.
-        OptimisationPhaseManager.register(new ChecksumRunner(), AFTER, GENERATE);
+        OptimisationPhaseManager.register(new ChecksumRunner(), AFTER_GENERATE);
 
         StaticCompilerUtils.init(env);
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> typeElements, RoundEnvironment roundEnvironment) {
+        if (!roundEnvironment.processingOver()) {
+            return false;
+        }
+
         for (Element element : roundEnvironment.getRootElements()) {
             // Stash the root elements for later use...
             JCCompilationUnit unit = javaElements.getTreeAndTopLevel(element, null, null).snd;
@@ -108,6 +110,10 @@ public class JOUST extends AbstractProcessor {
             conventionalTrees.add(unit);
         }
 
-        return false;
+        // Launch the brutaliser!
+        OptimisationPhaseManager.dispatchEvent(AFTER_ANNOTATION_PROCESSING);
+
+        // Stop other annotation processors from causing problems by running later.
+        return true;
     }
 }

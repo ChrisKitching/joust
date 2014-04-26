@@ -1,6 +1,5 @@
 package joust.optimisers.runnables;
 
-import com.sun.source.util.TaskEvent;
 import joust.optimisers.translators.BaseTranslator;
 import joust.tree.annotatedtree.AJCForest;
 import joust.tree.annotatedtree.AJCTree;
