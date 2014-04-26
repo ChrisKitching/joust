@@ -9,6 +9,7 @@ import joust.tree.annotatedtree.AJCForest;
 import joust.tree.annotatedtree.AJCTreeVisitor;
 import joust.tree.annotatedtree.treeinfo.EffectSet;
 import joust.tree.annotatedtree.treeinfo.TreeInfoManager;
+import joust.utils.data.SymbolSet;
 import joust.utils.logging.LogUtils;
 import joust.utils.data.SetHashMap;
 import lombok.experimental.ExtensionMethod;
@@ -285,7 +286,7 @@ public class SideEffectVisitor extends AJCTreeVisitor {
                 thingsRequiredByT.remove(completedSym);
 
                 if (thingsRequiredByT.isEmpty()) {
-                    log.debug("Cascading completion of: {}:{}", t, t.owner);
+                    log.debug("Cascading completion of: {}", t, t.owner);
                     methodCompleted(t, unfinishedMethodEffects.get(t));
                     methodDeps.remove(t);
                 }
@@ -489,7 +490,33 @@ public class SideEffectVisitor extends AJCTreeVisitor {
     public void visitAssign(AJCAssign that) {
         super.visitAssign(that);
 
-        that.effects = Effects.unionWithDirect(write(that.getTargetSymbol()), that.rhs.effects);
+        // The direct part of an assignment will be a subset of writes to all of the symbols read by the lhs.
+        // *usually* we can narrow it down a lot more than that, but not always. Bridge methods are particularly
+        // troublesome in this regard, yeilding constructs like f()[x] = y;, which defy attempts to resolve them to
+        // an underlying VarSymbol.
+
+        // Firstly, try the simple way out.
+        VarSymbol directSymbol = that.getTargetSymbol();
+        if (directSymbol != null) {
+            that.effects = Effects.unionWithDirect(write(directSymbol), that.rhs.effects);
+            return;
+        }
+
+        log.trace("Entering special assignment effects routine for {}", that);
+        // TODO: This routine is almost comically inefficient.
+        // Construct an EffectSet for "Writes everything read by the lhs".
+        EffectSet lhsEffects = that.lhs.effects.getEffectSet();
+
+        SymbolSet readEscaping = lhsEffects.readEscaping == SymbolSet.UNIVERSAL_SET ? SymbolSet.UNIVERSAL_SET : new SymbolSet(lhsEffects.readEscaping);
+        SymbolSet readInternal = lhsEffects.readInternal == SymbolSet.UNIVERSAL_SET ? SymbolSet.UNIVERSAL_SET : new SymbolSet(lhsEffects.readInternal);
+
+        EffectSet newEffects = new EffectSet((readEscaping.isEmpty() ? 0 : EffectType.WRITE_ESCAPING.maskValue)
+                                           | (readInternal.isEmpty() ? 0 : EffectType.WRITE_INTERNAL.maskValue));
+
+        newEffects.writeEscaping = readEscaping;
+        newEffects.writeInternal = readInternal;
+
+        that.effects = Effects.unionWithDirect(newEffects, that.rhs.effects);
     }
 
     @Override
@@ -497,7 +524,34 @@ public class SideEffectVisitor extends AJCTreeVisitor {
         super.visitAssignop(that);
 
         VarSymbol varSym = that.getTargetSymbol();
-        that.effects = Effects.unionWithDirect(EffectSet.write(varSym).union(read(varSym)), that.rhs.effects);
+
+        if (varSym != null) {
+            that.effects = Effects.unionWithDirect(EffectSet.write(varSym).union(read(varSym)), that.rhs.effects);
+            return;
+        }
+
+
+        log.trace("Entering special assignment effects routine for {}", that);
+        // TODO: This routine is almost comically inefficient.
+        // Similar to assign, but we also immediately *read* everything, too.
+        EffectSet lhsEffects = that.lhs.effects.getEffectSet();
+
+        SymbolSet readEscaping = lhsEffects.readEscaping == SymbolSet.UNIVERSAL_SET ? SymbolSet.UNIVERSAL_SET : new SymbolSet(lhsEffects.readEscaping);
+        SymbolSet writeEscaping = lhsEffects.readEscaping == SymbolSet.UNIVERSAL_SET ? SymbolSet.UNIVERSAL_SET : new SymbolSet(lhsEffects.readEscaping);
+        SymbolSet readInternal = lhsEffects.readInternal == SymbolSet.UNIVERSAL_SET ? SymbolSet.UNIVERSAL_SET : new SymbolSet(lhsEffects.readInternal);
+        SymbolSet writeInternal = lhsEffects.readInternal == SymbolSet.UNIVERSAL_SET ? SymbolSet.UNIVERSAL_SET : new SymbolSet(lhsEffects.readInternal);
+
+        EffectSet newEffects = new EffectSet((readEscaping.isEmpty() ? 0 : EffectType.WRITE_ESCAPING.maskValue
+                                                                         | EffectType.READ_ESCAPING.maskValue)
+                                           | (readInternal.isEmpty() ? 0 : EffectType.WRITE_INTERNAL.maskValue
+                                                                         | EffectType.READ_INTERNAL.maskValue));
+
+        newEffects.writeEscaping = writeEscaping;
+        newEffects.writeInternal = writeInternal;
+        newEffects.readEscaping = readEscaping;
+        newEffects.readInternal = readInternal;
+
+        that.effects = Effects.unionWithDirect(newEffects, that.rhs.effects);
     }
 
     @Override
@@ -526,13 +580,10 @@ public class SideEffectVisitor extends AJCTreeVisitor {
     public void visitArrayAccess(AJCArrayAccess that) {
         super.visitArrayAccess(that);
 
-        VarSymbol tSym = that.getTargetSymbol();
-        if (tSym != null) {
-            that.effects = Effects.unionWithDirect(read(tSym), that.index.effects);
-        } else {
-            // Unconventional array acces, a la f()[3];
-            that.effects = Effects.unionWithDirect(NO_EFFECTS, that.index.effects);
-        }
+        log.trace("Visiting array access: {}", that);
+        // The read effect on the underlying array will be brought in by the ident in indexed.
+        // If it's a call or some other crazy thing being used to refer to the array, this also catches that.
+        that.effects = Effects.unionTrees(that.indexed, that.index);
     }
 
     @Override

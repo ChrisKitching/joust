@@ -80,9 +80,12 @@ public class TreePreparationTranslator extends TreeTranslator {
 
     @Override
     public void visitClassDef(JCClassDecl jcClassDecl) {
+        ClassSymbol classSym = jcClassDecl.sym;
+
         ListBuffer<JCTree> newDefs = new ListBuffer<>();
 
         ListBuffer<JCStatement> initCode = new ListBuffer<>();
+        ListBuffer<JCStatement> clinitCode = new ListBuffer<>();
 
         // Used to find constructors.
         List<JCMethodDecl> constructorDefs = List.nil();
@@ -104,8 +107,7 @@ public class TreePreparationTranslator extends TreeTranslator {
                     if ((block.flags & STATIC) == 0) {
                         initCode.append(block);
                     } else {
-                        // Quietly ignore static initialisers.
-                        newDefs.append(block);
+                        clinitCode.append(block);
                     }
                     break;
                 case METHODDEF:
@@ -121,28 +123,29 @@ public class TreePreparationTranslator extends TreeTranslator {
                     break;
                 case VARDEF:
                     JCVariableDecl vdef = (JCVariableDecl) def;
-                    VarSymbol sym = vdef.sym;
-
-                    // Leave statics alone...
-                    if ((sym.flags() & STATIC) != 0) {
-                        newDefs.append(def);
-                        continue;
-                    }
+                    newDefs.append(def);
 
                     if (vdef.init == null) {
                         continue;
                     }
 
+                    VarSymbol sym = vdef.sym;
+
+                    // Leave statics alone...
+
                     // Create an assignment equivalent to the action of the initialiser of vdef.
-                    JCStatement init = javacTreeMaker.at(vdef.pos()).Assignment(sym, vdef.init);
+                    JCStatement newInit = javacTreeMaker.at(vdef.pos()).Assignment(sym, vdef.init);
 
                     // Drop the real initialiser to prevent the *actual* normalisation step from processing it.
                     vdef.init = null;
 
                     // Add the assignment to the constructor.
-                    initCode.append(init);
+                    if ((sym.flags() & STATIC) == 0) {
+                        initCode.append(newInit);
+                    } else {
+                        clinitCode.append(newInit);
+                    }
 
-                    newDefs.append(def);
                     break;
                 default:
                     log.fatal("Unknown JCTree class declaration type: {}", def.getTag());
@@ -160,6 +163,21 @@ public class TreePreparationTranslator extends TreeTranslator {
                     log.fatal("Exception normalising method: {}\n\n", ctor, e);
                 }
             }
+        }
+
+        // Build the <clinit> method.
+        if (!clinitCode.isEmpty()) {
+            MethodSymbol clinit = new MethodSymbol(
+                    STATIC | (classSym.flags() & STRICTFP),
+                    names.clinit,
+                    new Type.MethodType(
+                            List.<Type>nil(), symtab.voidType,
+                            List.<Type>nil(), symtab.methodClass),
+                    classSym);
+            classSym.members().enter(clinit);
+            List<JCStatement> clinitStats = clinitCode.toList();
+            JCBlock block = javacTreeMaker.Block(0, clinitStats);
+            newDefs.append(javacTreeMaker.MethodDef(clinit, block));
         }
 
         jcClassDecl.defs = newDefs.toList();
