@@ -1067,11 +1067,10 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         }
     }
 
-    public static class AJCInstanceOf extends AJCExpressionTree implements InstanceOfTree, AJCSymbolRef<VarSymbol> {
+    public static class AJCInstanceOf extends AJCExpressionTree implements InstanceOfTree {
         @Delegate @Getter private final JCInstanceOf decoratedTree;
 
-        @Delegate
-        public AJCSymbolRefTree<VarSymbol> expr;
+        public AJCExpressionTree expr;
         public AJCSymbolRef<TypeSymbol> clazz;
 
         protected AJCInstanceOf(JCInstanceOf tree) {
@@ -1079,7 +1078,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             decoratedTree = tree;
         }
 
-        protected AJCInstanceOf(JCInstanceOf tree, AJCSymbolRefTree<VarSymbol> expr, AJCSymbolRef<TypeSymbol> clazz) {
+        protected AJCInstanceOf(JCInstanceOf tree, AJCExpressionTree expr, AJCSymbolRef<TypeSymbol> clazz) {
             this(tree);
             this.expr = expr;
             this.clazz = clazz;
@@ -1545,7 +1544,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         AJCUnaryAsg UnaryAsg(Tag opcode, AJCSymbolRefTree<VarSymbol> arg);
         AJCBinary Binary(Tag opcode, AJCExpressionTree lhs, AJCExpressionTree rhs);
         AJCTypeCast TypeCast(AJCTypeExpression clazz, AJCExpressionTree expr);
-        AJCInstanceOf InstanceOf(AJCSymbolRefTree<VarSymbol> expr, AJCSymbolRef<TypeSymbol> clazz);
+        AJCInstanceOf InstanceOf(AJCExpressionTree expr, AJCSymbolRef<TypeSymbol> clazz);
         AJCArrayAccess ArrayAccess(AJCExpressionTree indexed, AJCExpressionTree index);
         <T extends Symbol> AJCFieldAccess<T> Select(AJCTree base, T sym);
         <T extends Symbol> AJCIdent<T> Ident(Name idname);

@@ -285,14 +285,6 @@ public class CommutativitySorterComparator implements Comparator<AJCExpressionTr
     }
 
     private int compareInstanceOfs(AJCInstanceOf l, AJCInstanceOf r) {
-        VarSymbol lSym = l.getTargetSymbol();
-        VarSymbol rSym = r.getTargetSymbol();
-
-        int check = lSym.name.toString().compareTo(rSym.name.toString());
-        if (check != 0) {
-            return check;
-        }
-
         TypeSymbol lClazz = l.clazz.getTargetSymbol();
         TypeSymbol rClazz = r.clazz.getTargetSymbol();
 
@@ -301,9 +293,7 @@ public class CommutativitySorterComparator implements Comparator<AJCExpressionTr
             return clazzCheck;
         }
 
-        // TODO: Compare class names... Something to get the ClassSymbol from whatever node type that is?
-        log.warn("Failing to compare {} and {}\nlClass: {} of type: {}\nrClass: {} of type: {}", l, r, l.clazz, l.clazz.getClass().getSimpleName(), r.clazz, r.clazz.getClass().getSimpleName());
-        return 0;
+        return compare(l.expr, r.expr);
     }
 
     private int compareFieldAccesses(AJCFieldAccess l, AJCFieldAccess r) {

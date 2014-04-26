@@ -631,7 +631,7 @@ public class AJCTreeFactory implements AJCTree.Factory {
     }
 
     @Override
-    public AJCInstanceOf InstanceOf(AJCSymbolRefTree<VarSymbol> expr, AJCSymbolRef<TypeSymbol> clazz) {
+    public AJCInstanceOf InstanceOf(AJCExpressionTree expr, AJCSymbolRef<TypeSymbol> clazz) {
         AJCInstanceOf ret = new AJCInstanceOf(javacTreeMaker.TypeTest(expr.getDecoratedTree(), ((AJCTree) clazz).getDecoratedTree()), expr, clazz);
 
         expr.mParentNode = ret;

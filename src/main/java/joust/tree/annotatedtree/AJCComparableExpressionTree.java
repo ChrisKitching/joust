@@ -297,7 +297,7 @@ public class AJCComparableExpressionTree<T extends AJCTree & AJCExpression> {
             }
 
             ComparableAJCInstanceOf cast = (ComparableAJCInstanceOf) obj;
-            return wrappedNode.expr.getTargetSymbol().equals(cast.wrappedNode.expr.getTargetSymbol())
+            return wrap(wrappedNode.expr).equals(wrap(cast.wrappedNode.expr))
                 && wrappedNode.clazz.getTargetSymbol().equals(cast.wrappedNode.clazz.getTargetSymbol());
         }
     }
