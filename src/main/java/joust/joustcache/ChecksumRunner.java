@@ -65,6 +65,7 @@ public class ChecksumRunner extends OptimisationRunnable {
                 log.info("Flush: {}", className);
             } catch (FileNotFoundException e) {
                 // Probably just called too soon...
+                log.error("Can't find file for: {}", className, e);
             } catch (IOException e) {
                 log.error("Can't find file for: {}", className, e);
             }
