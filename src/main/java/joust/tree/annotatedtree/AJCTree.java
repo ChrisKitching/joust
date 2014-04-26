@@ -71,8 +71,6 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         for (int i = 0; i < fields.length; i++) {
             fields[i].setAccessible(true);
             try {
-                log.debug("Class: {}",fields[i].getType().getCanonicalName());
-
                 // Reparent the new node.
                 replacement.mParentNode = mParentNode;
                 if (this instanceof AJCStatement) {
@@ -921,7 +919,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             decoratedTree = tree;
         }
 
-        protected AJCAssignOp(JCAssignOp tree, AJCSymbolRefTree<VarSymbol> lhs, AJCExpressionTree rhs) {
+        public AJCAssignOp(JCAssignOp tree, AJCSymbolRefTree<VarSymbol> lhs, AJCExpressionTree rhs) {
             this(tree);
             this.lhs = lhs;
             this.rhs = rhs;
@@ -938,7 +936,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             decoratedTree = tree;
         }
 
-        protected AJCUnary(JCUnary tree, AJCExpressionTree arg) {
+        public AJCUnary(JCUnary tree, AJCExpressionTree arg) {
             this(tree);
             this.arg = arg;
         }
@@ -958,7 +956,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             decoratedTree = tree;
         }
 
-        protected AJCUnaryAsg(JCUnary tree, AJCSymbolRefTree<VarSymbol> arg) {
+        public AJCUnaryAsg(JCUnary tree, AJCSymbolRefTree<VarSymbol> arg) {
             this(tree);
             this.arg = arg;
         }
@@ -975,7 +973,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
             decoratedTree = tree;
         }
 
-        protected AJCBinary(JCBinary tree, AJCExpressionTree lhs, AJCExpressionTree rhs) {
+        public AJCBinary(JCBinary tree, AJCExpressionTree lhs, AJCExpressionTree rhs) {
             this(tree);
             this.lhs = lhs;
             this.rhs = rhs;

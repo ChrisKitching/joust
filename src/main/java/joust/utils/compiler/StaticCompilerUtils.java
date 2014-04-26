@@ -3,13 +3,16 @@ package joust.utils.compiler;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Types;
+import com.sun.tools.javac.comp.Resolve;
 import com.sun.tools.javac.file.JavacFileManager;
+import com.sun.tools.javac.jvm.ClassReader;
 import com.sun.tools.javac.jvm.Gen;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
+import joust.tree.annotatedtree.AJCTree;
 import joust.tree.annotatedtree.AJCTreeCopier;
 import joust.utils.tree.NonStupidJCTreeCopier;
 import joust.tree.annotatedtree.AJCTreeFactory;
@@ -29,7 +32,7 @@ public final class StaticCompilerUtils {
     public static TreeMaker javacTreeMaker;
 
     // Factory class for my tree representation.
-    public static AJCTreeFactory treeMaker;
+    public static AJCTree.Factory treeMaker;
 
     // The compiler's name table.
     public static Names names;
@@ -38,6 +41,11 @@ public final class StaticCompilerUtils {
 
     // The compiler's symbol table.
     public static Symtab symtab;
+
+    // The class reader.
+    public static ClassReader reader;
+
+    public static Resolve resolver;
 
     // The compiler's bytecode generator.
     public static Gen gen;
@@ -93,6 +101,8 @@ public final class StaticCompilerUtils {
         names = Names.instance(con);
         types = Types.instance(con);
         symtab = Symtab.instance(con);
+        reader = ClassReader.instance(con);
+        resolver = Resolve.instance(context);
     }
 
     public static boolean isInitialised() {
@@ -111,7 +121,9 @@ public final class StaticCompilerUtils {
         javacTreeCopier = null;
         names = null;
         symtab = null;
+        reader = null;
         trees = null;
         gen = null;
+        resolver = null;
     }
 }

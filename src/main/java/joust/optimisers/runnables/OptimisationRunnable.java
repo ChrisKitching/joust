@@ -27,6 +27,7 @@ public abstract class OptimisationRunnable implements Runnable {
         public void run() {
             log.info("Applying to {} nodes", AJCForest.getInstance().rootNodes.size());
             for (AJCTree tree : AJCForest.getInstance().rootNodes) {
+                AJCForest.getInstance().setEnvironment(tree);
                 processRootNode(tree);
             }
         }

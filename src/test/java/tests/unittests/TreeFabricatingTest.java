@@ -7,6 +7,7 @@ import joust.utils.compiler.StaticCompilerUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 import org.junit.BeforeClass;
+import tests.unittests.utils.UnitTestTreeFactory;
 
 import java.util.logging.Logger;
 
@@ -18,6 +19,8 @@ import static joust.utils.compiler.StaticCompilerUtils.treeCopier;
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public abstract class TreeFabricatingTest {
+    static UnitTestTreeFactory f;
+
     @BeforeClass
     public static void init() {
         if (StaticCompilerUtils.isInitialised()) {
@@ -28,6 +31,9 @@ public abstract class TreeFabricatingTest {
         Context context = new Context();
         StaticCompilerUtils.initWithContext(context);
         LogUtils.init(null);
+
+        f = new UnitTestTreeFactory(StaticCompilerUtils.treeMaker);
+        StaticCompilerUtils.treeMaker = f;
     }
 
     /**

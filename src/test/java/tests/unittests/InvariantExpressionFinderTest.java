@@ -23,9 +23,7 @@ import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 import static junitparams.JUnitParamsRunner.$;
-import static tests.unittests.utils.ShorthandExpressionFactory.*;
 import static com.sun.tools.javac.code.Symbol.*;
-import static tests.unittests.utils.UnitTestTreeFactory.*;
 
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
@@ -106,12 +104,12 @@ public class InvariantExpressionFinderTest extends BaseAnalyserTest<InvariantExp
         Name eName = NameFactory.getName();
         Name fName = NameFactory.getName();
 
-        AJCVariableDecl aDecl = local(aName, Int(), l(1));
-        AJCVariableDecl bDecl = local(bName, Int(), l(2));
-        AJCVariableDecl cDecl = local(cName, Int(), l(3));
-        AJCVariableDecl dDecl = local(dName, Int(), l(4));
-        AJCVariableDecl eDecl = local(eName, Int(), l(5));
-        AJCVariableDecl fDecl = local(fName, Int(), l(6));
+        AJCVariableDecl aDecl = f.local(aName, f.Int(), f.l(1));
+        AJCVariableDecl bDecl = f.local(bName, f.Int(), f.l(2));
+        AJCVariableDecl cDecl = f.local(cName, f.Int(), f.l(3));
+        AJCVariableDecl dDecl = f.local(dName, f.Int(), f.l(4));
+        AJCVariableDecl eDecl = f.local(eName, f.Int(), f.l(5));
+        AJCVariableDecl fDecl = f.local(fName, f.Int(), f.l(6));
 
         VarSymbol aSym = aDecl.getTargetSymbol();
         VarSymbol bSym = bDecl.getTargetSymbol();
@@ -121,12 +119,12 @@ public class InvariantExpressionFinderTest extends BaseAnalyserTest<InvariantExp
         VarSymbol fSym = fDecl.getTargetSymbol();
 
         // Idents for the temporary variables...
-        AJCIdent aIdent = Ident(aSym);
-        AJCIdent bIdent = Ident(bSym);
-        AJCIdent cIdent = Ident(cSym);
-        AJCIdent dIdent = Ident(dSym);
-        AJCIdent eIdent = Ident(eSym);
-        AJCIdent fIdent = Ident(fSym);
+        AJCIdent aIdent = f.Ident(aSym);
+        AJCIdent bIdent = f.Ident(bSym);
+        AJCIdent cIdent = f.Ident(cSym);
+        AJCIdent dIdent = f.Ident(dSym);
+        AJCIdent eIdent = f.Ident(eSym);
+        AJCIdent fIdent = f.Ident(fSym);
 
         /*
         while (a < e) {
@@ -136,15 +134,15 @@ public class InvariantExpressionFinderTest extends BaseAnalyserTest<InvariantExp
         }
          */
 
-        AJCBinary aLTe = lt($t(aIdent), $t(eIdent));  // a < e
-        AJCBinary bPlusc = plus($t(bIdent), $t(cIdent));  // b + c
+        AJCBinary aLTe = f.lt($t(aIdent), $t(eIdent));  // a < e
+        AJCBinary bPlusc = f.plus($t(bIdent), $t(cIdent));  // b + c
         AJCBinary bPlusc2 = $t(bPlusc);  // b + c
 
-        AJCAssign dAsgBPlusc = Assign($t(dIdent), bPlusc);  // d = b + c
-        AJCAssign fAsgBPlusc = Assign($t(fIdent), bPlusc2);  // f = b + c
-        AJCUnaryAsg aPlusPlus = postInc(aIdent);   // a++
+        AJCAssign dAsgBPlusc = f.Assign($t(dIdent), bPlusc);  // d = b + c
+        AJCAssign fAsgBPlusc = f.Assign($t(fIdent), bPlusc2);  // f = b + c
+        AJCUnaryAsg aPlusPlus = f.postInc(aIdent);   // a++
 
-        AJCWhileLoop whileAE = WhileLoop(aLTe, Block(dAsgBPlusc, fAsgBPlusc, aPlusPlus));
+        AJCWhileLoop whileAE = f.WhileLoop(aLTe, f.Block(dAsgBPlusc, fAsgBPlusc, aPlusPlus));
 
         /*
         for (int i = 0; i < 10; i++) {
@@ -153,18 +151,18 @@ public class InvariantExpressionFinderTest extends BaseAnalyserTest<InvariantExp
         }
          */
 
-        AJCVariableDecl iDecl = local(NameFactory.getName(), Int(), l(0));  // int i = 0
-        AJCIdent iIdent = Ident(iDecl.getTargetSymbol());
-        AJCBinary iLT10 = lt($t(iIdent), l(10));
-        AJCExpressionStatement iPlusPlus = Exec(postInc($t(iIdent)));
+        AJCVariableDecl iDecl = f.local(NameFactory.getName(), f.Int(), f.l(0));  // int i = 0
+        AJCIdent iIdent = f.Ident(iDecl.getTargetSymbol());
+        AJCBinary iLT10 = f.lt($t(iIdent), f.l(10));
+        AJCExpressionStatement iPlusPlus = f.Exec(f.postInc($t(iIdent)));
 
         AJCBinary bPlusC3 = $t(bPlusc);
         AJCBinary bPlusC4 = $t(bPlusc);
 
-        AJCBinary bPluscTimesa = mul(bPlusC3, $t(aIdent)); // b + c * a;
-        AJCBinary bPluscTimesa2 = mul(bPlusC4, $t(aIdent)); // b + c * a;
+        AJCBinary bPluscTimesa = f.mul(bPlusC3, $t(aIdent)); // b + c * a;
+        AJCBinary bPluscTimesa2 = f.mul(bPlusC4, $t(aIdent)); // b + c * a;
 
-        AJCForLoop forBCAI = ForLoop(List.<AJCStatement>of(iDecl), iLT10, List.of(iPlusPlus), Block(bPluscTimesa, bPluscTimesa2));
+        AJCForLoop forBCAI = f.ForLoop(List.<AJCStatement>of(iDecl), iLT10, List.of(iPlusPlus), f.Block(bPluscTimesa, bPluscTimesa2));
 
         /*
         int[] ints = new int[3];
@@ -185,32 +183,32 @@ public class InvariantExpressionFinderTest extends BaseAnalyserTest<InvariantExp
         }
          */
 
-        AJCVariableDecl intsDecl = local(NameFactory.getName(), Array(Int()), NewArray(Array(Int()), List.<AJCExpressionTree>of(l(3)), List.<AJCExpressionTree>nil()));
+        AJCVariableDecl intsDecl = f.local(NameFactory.getName(), f.Array(f.Int()), f.NewArray(f.Array(f.Int()), List.<AJCExpressionTree>of(f.l(3)), List.<AJCExpressionTree>nil()));
         VarSymbol intsSym = intsDecl.getTargetSymbol();
-        AJCIdent intsIdent = Ident(intsSym);
+        AJCIdent intsIdent = f.Ident(intsSym);
 
-        AJCBinary iLT3 = lt($t(iIdent), l(3));
+        AJCBinary iLT3 = f.lt($t(iIdent), f.l(3));
         AJCVariableDecl iDeclOne = $t(iDecl);  // int i = 1;
-        iDeclOne.setInit(l(1));
+        iDeclOne.setInit(f.l(1));
 
-        AJCArrayAccess intsI = ArrayAccess($t(intsIdent), $t(iIdent));
-        AJCArrayAccess intsImm = ArrayAccess($t(intsIdent), minus($t(iIdent), l(1)));
+        AJCArrayAccess intsI = f.ArrayAccess($t(intsIdent), $t(iIdent));
+        AJCArrayAccess intsImm = f.ArrayAccess($t(intsIdent), f.minus($t(iIdent), f.l(1)));
 
-        AJCArrayAccess ints1 = ArrayAccess($t(intsIdent), l(1));
-        AJCArrayAccess ints2 = ArrayAccess($t(intsIdent), l(2));
-        AJCBinary intsSum = plus(ints1, ints2);
-        AJCBinary intsRelSum = plus(intsImm, $t(intsI));
+        AJCArrayAccess ints1 = f.ArrayAccess($t(intsIdent), f.l(1));
+        AJCArrayAccess ints2 = f.ArrayAccess($t(intsIdent), f.l(2));
+        AJCBinary intsSum = f.plus(ints1, ints2);
+        AJCBinary intsRelSum = f.plus(intsImm, $t(intsI));
 
 
-        AJCBlock bodyOne = Block(Assign($t(intsI), $t(iIdent)));
-        AJCBlock bodyTwo = Block(Assign($t(intsI), intsSum));
-        AJCBlock bodyThree = Block(Assign($t(intsI), intsRelSum));
-        AJCBlock bodyFour = Block(Assignop(JCTree.Tag.PLUS_ASG, $t(fIdent), $t(intsI)));
+        AJCBlock bodyOne = f.Block(f.Assign($t(intsI), $t(iIdent)));
+        AJCBlock bodyTwo = f.Block(f.Assign($t(intsI), intsSum));
+        AJCBlock bodyThree = f.Block(f.Assign($t(intsI), intsRelSum));
+        AJCBlock bodyFour = f.Block(f.Assignop(JCTree.Tag.PLUS_ASG, $t(fIdent), $t(intsI)));
 
-        AJCForLoop forOne = ForLoop(List.<AJCStatement>of($t(iDecl)), $t(iLT3), List.of($t(iPlusPlus)), bodyOne);
-        AJCForLoop forTwo = ForLoop(List.<AJCStatement>of($t(iDecl)), $t(iLT3), List.of($t(iPlusPlus)), bodyTwo);
-        AJCForLoop forThree = ForLoop(List.<AJCStatement>of($t(iDeclOne)), $t(iLT3), List.of($t(iPlusPlus)), bodyThree);
-        AJCForLoop forFour = ForLoop(List.<AJCStatement>of($t(iDeclOne)), $t(iLT3), List.of($t(iPlusPlus)), bodyFour);
+        AJCForLoop forOne = f.ForLoop(List.<AJCStatement>of($t(iDecl)), $t(iLT3), List.of($t(iPlusPlus)), bodyOne);
+        AJCForLoop forTwo = f.ForLoop(List.<AJCStatement>of($t(iDecl)), $t(iLT3), List.of($t(iPlusPlus)), bodyTwo);
+        AJCForLoop forThree = f.ForLoop(List.<AJCStatement>of($t(iDeclOne)), $t(iLT3), List.of($t(iPlusPlus)), bodyThree);
+        AJCForLoop forFour = f.ForLoop(List.<AJCStatement>of($t(iDeclOne)), $t(iLT3), List.of($t(iPlusPlus)), bodyFour);
 
 
         return $(

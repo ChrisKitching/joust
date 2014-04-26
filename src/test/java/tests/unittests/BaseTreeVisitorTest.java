@@ -1,6 +1,8 @@
 package tests.unittests;
 
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.comp.AttrContext;
+import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.util.List;
 import joust.tree.annotatedtree.AJCForest;
 import joust.tree.annotatedtree.AJCTree;
@@ -76,7 +78,7 @@ public abstract class BaseTreeVisitorTest<T extends AJCTreeVisitor> extends Tree
             methodTable.put(cast.getTargetSymbol(), cast);
         }
 
-        AJCForest.initDirect(List.of(input), methodTable);
+        AJCForest.initDirect(List.of(input), methodTable, new HashMap<AJCTree, Env<AttrContext>>());
 
         AJCForest.getInstance().effectVisitor.visitTree(expected);
     }

@@ -4,9 +4,14 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Types;
+import com.sun.tools.javac.comp.AttrContext;
+import com.sun.tools.javac.comp.Env;
+import com.sun.tools.javac.comp.Resolve;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.Tag;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.JCDiagnostic;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 import joust.utils.logging.LogUtils;
@@ -20,8 +25,8 @@ import java.util.logging.Logger;
 import static com.sun.tools.javac.code.TypeTag.*;
 import static joust.tree.annotatedtree.AJCTree.*;
 import static com.sun.tools.javac.tree.JCTree.*;
-import static joust.utils.compiler.StaticCompilerUtils.javacTreeMaker;
 import static com.sun.tools.javac.code.Symbol.*;
+import static joust.utils.compiler.StaticCompilerUtils.*;
 
 /**
  * A factory for creating tree nodes.
@@ -31,6 +36,44 @@ import static com.sun.tools.javac.code.Symbol.*;
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class AJCTreeFactory implements AJCTree.Factory {
     protected static final Context.Key<AJCTreeFactory> AJCTreeMakerKey = new Context.Key<>();
+
+    private static Method unopResolveMethod;
+    private static Method binopResolveMethod;
+    public static void init() {
+        Class<Resolve> rClass = Resolve.class;
+        try {
+            unopResolveMethod = rClass.getDeclaredMethod("resolveUnaryOperator", JCDiagnostic.DiagnosticPosition.class, Tag.class, Env.class, Type.class);
+            binopResolveMethod = rClass.getDeclaredMethod("resolveBinaryOperator", JCDiagnostic.DiagnosticPosition.class, Tag.class, Env.class, Type.class, Type.class);
+
+            unopResolveMethod.setAccessible(true);
+            binopResolveMethod.setAccessible(true);
+        } catch (NoSuchMethodException e) {
+            log.fatal("Unable to initialise operator lookup methods!", e);
+        }
+    }
+
+    private static Symbol resolveUnaryOperator(JCDiagnostic.DiagnosticPosition pos, Tag optag, Env<AttrContext> env, Type arg) {
+        log.debug("Resolving unary operator: {}, {}, {}, {}", pos, optag, env, arg);
+        try {
+            return (Symbol) unopResolveMethod.invoke(resolver, pos, optag, env, arg);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            log.fatal("Unable to call resolveUnaryOperator!", e);
+        }
+
+        return null;
+    }
+
+    private static Symbol resolveBinaryOperator(JCDiagnostic.DiagnosticPosition pos, Tag optag, Env<AttrContext> env, Type left, Type right) {
+        log.debug("Resolving binary operator: {}, {}, {}, {}, {}", pos, optag, env, left, right);
+
+        try {
+            return (Symbol) binopResolveMethod.invoke(resolver, pos, optag, env, left, right);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            log.fatal("Unable to call resolveBinaryOperator!", e);
+        }
+
+        return null;
+    }
 
     Types types;
 
@@ -348,6 +391,7 @@ public class AJCTreeFactory implements AJCTree.Factory {
         AJCConditional ret = new AJCConditional(javacTreeMaker.Conditional(cond.getDecoratedTree(), thenpart.getDecoratedTree(), elsepart.getDecoratedTree()), cond, thenpart, elsepart);
 
         cond.mParentNode = ret;
+        cond.setType(symtab.booleanType);
         thenpart.mParentNode = ret;
         elsepart.mParentNode = ret;
 
@@ -360,6 +404,7 @@ public class AJCTreeFactory implements AJCTree.Factory {
                 cond, thenpart, elsepart);
 
         cond.mParentNode = ret;
+        cond.setType(symtab.booleanType);
         thenpart.mParentNode = ret;
         elsepart.mParentNode = ret;
 
@@ -454,6 +499,8 @@ public class AJCTreeFactory implements AJCTree.Factory {
         lhs.mParentNode = ret;
         rhs.mParentNode = ret;
 
+        ret.setType(lhs.getNodeType());
+
         return ret;
     }
 
@@ -464,6 +511,10 @@ public class AJCTreeFactory implements AJCTree.Factory {
         lhs.mParentNode = ret;
         rhs.mParentNode = ret;
 
+        ret.getDecoratedTree().operator = resolveBinaryOperator(
+                ret.getDecoratedTree().pos(), opcode, AJCForest.getInstance().currentEnvironment, lhs.getNodeType(), rhs.getNodeType());
+        ret.setType(ret.getDecoratedTree().operator.type.getReturnType());
+
         return ret;
     }
 
@@ -472,6 +523,10 @@ public class AJCTreeFactory implements AJCTree.Factory {
         AJCUnary ret = new AJCUnary(javacTreeMaker.Unary(opcode, arg.getDecoratedTree()), arg);
 
         arg.mParentNode = ret;
+
+        ret.getDecoratedTree().operator = resolveUnaryOperator(
+                ret.getDecoratedTree().pos(), opcode, AJCForest.getInstance().currentEnvironment, arg.getNodeType());
+        ret.setType(ret.getDecoratedTree().operator.type.getReturnType());
 
         return ret;
     }
@@ -486,6 +541,10 @@ public class AJCTreeFactory implements AJCTree.Factory {
 
             arg.mParentNode = ret;
 
+            ret.getDecoratedTree().operator = resolveUnaryOperator(
+                    ret.getDecoratedTree().pos(), opcode, AJCForest.getInstance().currentEnvironment, arg.getNodeType());
+            ret.setType(ret.getDecoratedTree().operator.type.getReturnType());
+
             return ret;
         }
         log.fatal("Attempt to make UnaryAsg with invalid opcode!");
@@ -499,6 +558,10 @@ public class AJCTreeFactory implements AJCTree.Factory {
 
         lhs.mParentNode = ret;
         rhs.mParentNode = ret;
+
+        ret.getDecoratedTree().operator = resolveBinaryOperator(
+                ret.getDecoratedTree().pos(), opcode, AJCForest.getInstance().currentEnvironment, lhs.getNodeType(), rhs.getNodeType());
+        ret.setType(ret.getDecoratedTree().operator.type.getReturnType());
 
         return ret;
     }
@@ -515,6 +578,8 @@ public class AJCTreeFactory implements AJCTree.Factory {
         clazz.mParentNode = ret;
         expr.mParentNode = ret;
 
+        ret.setType(clazz.getNodeType());
+
         return ret;
     }
 
@@ -524,6 +589,8 @@ public class AJCTreeFactory implements AJCTree.Factory {
 
         expr.mParentNode = ret;
         ((AJCTree) clazz).mParentNode = ret;
+
+        ret.setType(symtab.booleanType);
 
         return ret;
     }

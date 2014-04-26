@@ -1,11 +1,14 @@
 package joust.utils.compiler;
 
+import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.CompileStates;
+import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.comp.Todo;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.Pair;
 import joust.JOUST;
 import joust.optimisers.runnables.OptimisationRunnable;
 import joust.utils.logging.LogUtils;
@@ -18,6 +21,7 @@ import java.lang.reflect.Method;
 import java.util.Queue;
 import java.util.logging.Logger;
 
+import static com.sun.tools.javac.tree.JCTree.*;
 import static joust.utils.compiler.StaticCompilerUtils.javaCompiler;
 import static joust.utils.compiler.OptimisationPhaseManager.VirtualPhase.*;
 
@@ -86,6 +90,7 @@ public final class JavacBrutaliser extends OptimisationRunnable {
             OptimisationPhaseManager.beforeVirtual(DESUGAR);
 
             Object desugared = desugarMethod.invoke(javaCompiler, flowed);
+            JOUST.environmentsToProcess = (Queue<Pair<Env<AttrContext>, JCClassDecl>>) desugared;
 
             log.info("PARTY.");
             long t = System.currentTimeMillis();
@@ -158,9 +163,9 @@ public final class JavacBrutaliser extends OptimisationRunnable {
         StaticCompilerUtils.uninit();
         StaticCompilerUtils.initWithContext(finalContext);
 
-        List<JCTree.JCCompilationUnit> compilationUnitList = List.nil();
+        List<JCCompilationUnit> compilationUnitList = List.nil();
 
-        for (JCTree.JCCompilationUnit unit : JOUST.conventionalTrees) {
+        for (JCCompilationUnit unit : JOUST.conventionalTrees) {
             compilationUnitList = compilationUnitList.append(unit);
         }
 

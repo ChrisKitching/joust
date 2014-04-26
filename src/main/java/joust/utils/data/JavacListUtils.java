@@ -46,6 +46,10 @@ public class JavacListUtils {
      * reference node has changed.
      */
     public static<T> List<T> addAtIndex(@NonNull List<T> list, int i, @NonNull List<T> e) {
+        if (e.isEmpty()) {
+            return list;
+        }
+
         if (i < 0) {
             throw new IllegalArgumentException(INSERT_NEGATIVE);
         }

@@ -22,7 +22,6 @@ import static joust.utils.compiler.StaticCompilerUtils.*;
 import static org.junit.Assert.*;
 import static joust.tree.annotatedtree.AJCTree.*;
 import static junitparams.JUnitParamsRunner.$;
-import static tests.unittests.utils.ShorthandExpressionFactory.*;
 import static com.sun.tools.javac.code.Symbol.*;
 import static tests.unittests.utils.UnitTestTreeFactory.*;
 
@@ -95,31 +94,31 @@ public class SwapForTest extends TreeFabricatingTest {
         final Name zName = NameFactory.getName();
 
         // Declaration nodes for three local variables.
-        AJCVariableDecl xEqThree = local(xName, Int(), l(3));  // int x = 3;
+        AJCVariableDecl xEqThree = f.local(xName, f.Int(), f.l(3));  // int x = 3;
         VarSymbol xSym = xEqThree.getTargetSymbol();
 
-        AJCVariableDecl yEqFour = local(yName, Int(), l(4));
+        AJCVariableDecl yEqFour = f.local(yName, f.Int(), f.l(4));
         VarSymbol ySym = yEqFour.getTargetSymbol();
 
-        AJCVariableDecl zDecl = local(zName, Int(), plus(Ident(xSym), Ident(xSym)));
+        AJCVariableDecl zDecl = f.local(zName, f.Int(), f.plus(f.Ident(xSym), f.Ident(xSym)));
         VarSymbol zSym = zDecl.getTargetSymbol();
 
 
-        MethodSymbol fakeMethod = virtualMethod();
+        MethodSymbol fakeMethod = f.virtualMethod();
 
-        AJCIdent xIdent = Ident(xSym);
-        AJCIdent yIdent = Ident(ySym);
-        AJCIdent zIdent = Ident(zSym);
+        AJCIdent xIdent = f.Ident(xSym);
+        AJCIdent yIdent = f.Ident(ySym);
+        AJCIdent zIdent = f.Ident(zSym);
 
-        AJCCall call = Call(Ident(fakeMethod), List.<AJCExpressionTree>of(xIdent, yIdent));
+        AJCCall call = f.Call(f.Ident(fakeMethod), List.<AJCExpressionTree>of(xIdent, yIdent));
 
 
         AJCVariableDecl yQFourCopy = treeCopier.copy(yEqFour);
 
 
-        AJCExpressionStatement xAsgSeven = Exec(Assign(Ident(xSym), l(7)));      // x = 7
+        AJCExpressionStatement xAsgSeven = f.Exec(f.Assign(f.Ident(xSym), f.l(7)));      // x = 7
 
-        AJCBinary yGtFour = gt(Ident(ySym), l(4));  // y > 4
+        AJCBinary yGtFour = f.gt(f.Ident(ySym), f.l(4));  // y > 4
 
         /*
         if (y > 4) {
@@ -129,9 +128,9 @@ public class SwapForTest extends TreeFabricatingTest {
             y = 9;
         }
          */
-        AJCExpressionStatement xEqEight = Exec(Assign(Ident(xSym), l(8)));
-        AJCIf anIf = If(yGtFour, Block(xAsgSeven),
-                Block(xEqEight, Exec(Assign(Ident(ySym), l(9)))));
+        AJCExpressionStatement xEqEight = f.Exec(f.Assign(f.Ident(xSym), f.l(8)));
+        AJCIf anIf = f.If(yGtFour, f.Block(xAsgSeven),
+                f.Block(xEqEight, f.Exec(f.Assign(f.Ident(ySym), f.l(9)))));
 
         return
         $(

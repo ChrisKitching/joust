@@ -5,6 +5,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.util.List;
 import joust.tree.annotatedtree.AJCTreeVisitor;
 import joust.utils.logging.LogUtils;
+import joust.utils.tree.NameFactory;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
@@ -12,6 +13,7 @@ import java.util.logging.Logger;
 
 import static com.sun.tools.javac.code.Symbol.*;
 import static joust.tree.annotatedtree.AJCTree.*;
+import static joust.utils.compiler.StaticCompilerUtils.*;
 
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
@@ -40,6 +42,7 @@ public class FunctionTemplateScanner extends AJCTreeVisitor {
             return;
         }
 
+        that.getDecoratedTree().sym = new VarSymbol(0, names.fromString(nameStr), symtab.noSymbol.type, symtab.noSymbol);
         int paramNum = Integer.parseInt(nameStr.substring(0, nameStr.indexOf('$')));
         if (paramNum < 0 || paramNum >= substitutionPoints.length) {
             log.fatal("Invalid template! Arg index out of bounds: {}", that);

@@ -1,12 +1,17 @@
 package joust.utils.tree;
 
+import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Scope;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.Name;
 import joust.utils.logging.LogUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
 import javax.lang.model.type.TypeKind;
+import java.lang.reflect.Field;
 import java.util.logging.Logger;
 
 import static com.sun.tools.javac.tree.JCTree.*;
@@ -17,9 +22,24 @@ import static joust.tree.annotatedtree.AJCTree.*;
 /**
  * A collection of utility functions for handling JCTree nodes.
  */
-@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 @Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class TreeUtils {
+    // The scope SENTINEL entry is returned when a lookup fails.
+    private static Scope.Entry SENTINEL;
+
+    public static void init() {
+        // Extract the SENTINEL value.
+        try {
+            Class<Scope> scopeClass = Scope.class;
+            Field sentinelField = scopeClass.getDeclaredField("sentinel");
+            sentinelField.setAccessible(true);
+            SENTINEL = (Scope.Entry) sentinelField.get(null);
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            log.fatal("Unable to initialise SENTINEL field!", e);
+        }
+    }
+
     public static boolean isLocalVariable(Symbol sym) {
         return sym.owner instanceof MethodSymbol;
     }
@@ -102,5 +122,73 @@ public class TreeUtils {
         }
 
         return tree;
+    }
+
+    public static MethodSymbol findMethod(String mName, ClassSymbol clazz, Type... paramTypes) {
+        return findMethod(mName, clazz, false, paramTypes);
+    }
+    public static MethodSymbol findMethod(String mName, ClassSymbol clazz, boolean findStatic, Type... paramTypes) {
+        log.debug("Seeking {} on {}", mName, clazz);
+
+        Scope members = clazz.members();
+        final Name methodName = names.fromString(mName);
+
+        // Gets us all the things with the right name, irrespective of type or signature.
+        Scope.Entry scopeEntry = members.lookup(methodName);
+
+        if (scopeEntry == SENTINEL) {
+            log.fatal("Sentinel node encountered looking for {} on {}", mName, clazz);
+            return null;
+        }
+
+        MethodSymbol resultSym = null;
+
+        // Flick through the results to find the one that matches the signature we want.
+        scopeIteration:
+        for (;scopeEntry != SENTINEL; scopeEntry = scopeEntry.next()) {
+            // Not a method - skip!
+            if (!(scopeEntry.sym instanceof MethodSymbol)) {
+                log.debug("Binning: Nonmethod");
+                continue;
+            }
+
+            MethodSymbol mSym = (MethodSymbol) scopeEntry.sym;
+
+            if (findStatic) {
+                // Is this a static function?
+                if ((mSym.flags() & Flags.STATIC) == 0) {
+                    log.debug("Binning: Nonstatic");
+                    continue;
+                }
+            }
+
+            // Check that the parameters match up.
+            List<VarSymbol> realParams = mSym.params();
+            if (realParams.length() != paramTypes.length) {
+                log.debug("Binning: Expected {} args, found {}.", paramTypes.length, realParams.length());
+                continue;
+            }
+
+            log.debug("Got {}", mSym);
+            int pIndex = 0;
+            for (VarSymbol sym : realParams) {
+                if (!types.isSameType(sym.type, paramTypes[pIndex])) {
+                    log.debug("Binning: Argument {} of {} should be {}", pIndex, sym.type, paramTypes[pIndex]);
+                    continue scopeIteration;
+                }
+
+                pIndex++;
+            }
+
+            resultSym = mSym;
+            break;
+        }
+
+        if (resultSym == null) {
+            log.fatal("Failed to find {} on {}", mName, clazz);
+            return null;
+        }
+
+        return resultSym;
     }
 }

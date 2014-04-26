@@ -13,7 +13,6 @@ import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 import static junitparams.JUnitParamsRunner.$;
-import static tests.unittests.utils.ShorthandExpressionFactory.*;
 import static joust.utils.compiler.StaticCompilerUtils.treeMaker;
 
 /**
@@ -46,39 +45,39 @@ class ConstFoldTranslatorTest extends BaseTreeTranslatorTest<ConstFoldTranslator
     public Object[] unaryArgs() {
         return
         $(
-            $(neg(l(1)), l(-1)),
-            $(neg(l(0.0)), l(-0.0)),
-            $(neg(l(Double.NaN)), l(Double.NaN)),
-            $(comp(l(0xDEADBEEF)), l(~0xDEADBEEF)),
-            $(not(l(false)), l(true)),
-            $(not(l(true)), l(false)),
-            $(pos(l(56.3)), l(56.3))
+            $(f.neg(f.l(1)), f.l(-1)),
+            $(f.neg(f.l(0.0)), f.l(-0.0)),
+            $(f.neg(f.l(Double.NaN)), f.l(Double.NaN)),
+            $(f.comp(f.l(0xDEADBEEF)), f.l(~0xDEADBEEF)),
+            $(f.not(f.l(false)), f.l(true)),
+            $(f.not(f.l(true)), f.l(false)),
+            $(f.pos(f.l(56.3)), f.l(56.3))
         );
     }
 
     public Object[] binaryArgs() {
         return
         $(
-            $(bitOr(l(0xABCDE), l(0xFACE)), l(0xABCDE | 0xFACE)),
-            $(bitOr(l('c'), l(Long.MAX_VALUE)), l('c' | Long.MAX_VALUE)),
-            $(bitOr(l(0), l(1)), l(1)),
+            $(f.bitOr(f.l(0xABCDE), f.l(0xFACE)), f.l(0xABCDE | 0xFACE)),
+            $(f.bitOr(f.l('c'), f.l(Long.MAX_VALUE)), f.l('c' | Long.MAX_VALUE)),
+            $(f.bitOr(f.l(0), f.l(1)), f.l(1)),
 
-            $(lShift(l(2), l(4)), l(2 << 4)),
-            $(lShift(l(5), l(6L)), l(5 << 6L)),
-            $(lShift(l('t'), l(1)), l('t' << 1)),
+            $(f.lShift(f.l(2), f.l(4)), f.l(2 << 4)),
+            $(f.lShift(f.l(5), f.l(6L)), f.l(5 << 6L)),
+            $(f.lShift(f.l('t'), f.l(1)), f.l('t' << 1)),
 
-            $(lShift(l(2), l(4)), l(2 << 4)),
-            $(lShift(l(5), l(6L)), l(5 << 6L)),
-            $(lShift(l('t'), l(1)), l('t' << 1)),
+            $(f.lShift(f.l(2), f.l(4)), f.l(2 << 4)),
+            $(f.lShift(f.l(5), f.l(6L)), f.l(5 << 6L)),
+            $(f.lShift(f.l('t'), f.l(1)), f.l('t' << 1)),
 
-            $(plus(l("cake"), l("tacular")), l("caketacular")),
+            $(f.plus(f.l("cake"), f.l("tacular")), f.l("caketacular")),
 
-            $(plus(l(1), l(1)), l(2)),
-            $(plus(l('a'), l('c')), l('a' + 'c')),
-            $(plus(l(Double.NaN), l(Integer.MAX_VALUE)), l(Double.NaN + Integer.MAX_VALUE)),
+            $(f.plus(f.l(1), f.l(1)), f.l(2)),
+            $(f.plus(f.l('a'), f.l('c')), f.l('a' + 'c')),
+            $(f.plus(f.l(Double.NaN), f.l(Integer.MAX_VALUE)), f.l(Double.NaN + Integer.MAX_VALUE)),
 
-            $(mul(urShift(l(2), l('t')), l(6L)), l(6L * (2 >>> 't'))),
-            $(eq(lt(div(l(8), l(2)), l(4)), or(l(true), l(false))), l(((8 / 2) < 4) == (true || false)))
+            $(f.mul(f.urShift(f.l(2), f.l('t')), f.l(6L)), f.l(6L * (2 >>> 't'))),
+            $(f.eq(f.lt(f.div(f.l(8), f.l(2)), f.l(4)), f.or(f.l(true), f.l(false))), f.l(((8 / 2) < 4) == (true || false)))
         );
     }
 }

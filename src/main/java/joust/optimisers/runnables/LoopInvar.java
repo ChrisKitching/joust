@@ -1,8 +1,6 @@
 package joust.optimisers.runnables;
 
-import joust.optimisers.translators.LoopInvarTranslator;
-import joust.optimisers.translators.UnusedAssignmentStripper;
-import joust.tree.annotatedtree.AJCTree;
+import joust.optimisers.invar.LoopInvarTranslator;
 
 /**
  * Loop invariant code motion.

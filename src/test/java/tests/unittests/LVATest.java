@@ -19,7 +19,6 @@ import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 import static junitparams.JUnitParamsRunner.$;
-import static tests.unittests.utils.ShorthandExpressionFactory.*;
 import static  com.sun.tools.javac.code.Symbol.*;
 import static tests.unittests.utils.UnitTestTreeFactory.*;
 
@@ -66,18 +65,18 @@ public class LVATest extends BaseAnalyserTest<Live> {
         final Name zName = NameFactory.getName();
 
         // Declaration nodes for three local variables.
-        AJCVariableDecl xEqThree = local(xName, Int(), l(3));  // int x = 3;
+        AJCVariableDecl xEqThree = f.local(xName, f.Int(), f.l(3));  // int x = 3;
         VarSymbol xSym = xEqThree.getTargetSymbol();
 
-        AJCVariableDecl yEqFour = local(yName, Int(), l(4));
+        AJCVariableDecl yEqFour = f.local(yName, f.Int(), f.l(4));
         VarSymbol ySym = yEqFour.getTargetSymbol();
 
-        AJCVariableDecl zDecl = local(zName, Int(), plus(Ident(xSym), Ident(xSym)));
+        AJCVariableDecl zDecl = f.local(zName, f.Int(), f.plus(f.Ident(xSym), f.Ident(xSym)));
         VarSymbol zSym = zDecl.getTargetSymbol();
 
-        AJCAssign xAsgSeven = Assign(Ident(xSym), l(7));      // x = 7;
+        AJCAssign xAsgSeven = f.Assign(f.Ident(xSym), f.l(7));      // x = 7;
 
-        AJCBinary yGtFour = gt(Ident(ySym), l(4));  // y > 4
+        AJCBinary yGtFour = f.gt(f.Ident(ySym), f.l(4));  // y > 4
 
         /*
         if (y > 4) {
@@ -87,29 +86,29 @@ public class LVATest extends BaseAnalyserTest<Live> {
             y = 9;
         }
          */
-        AJCAssign xEqEight = Assign(Ident(xSym), l(8));
-        AJCIf anIf = If(yGtFour, Block(Assign(Ident(xSym), l(7))),
-                                 Block(xEqEight, Assign(Ident(ySym), l(9))));
+        AJCAssign xEqEight = f.Assign(f.Ident(xSym), f.l(8));
+        AJCIf anIf = f.If(yGtFour, f.Block(f.Assign(f.Ident(xSym), f.l(7))),
+                                   f.Block(xEqEight, f.Assign(f.Ident(ySym), f.l(9))));
 
 
-        AJCBinary xGtFive = gt(Ident(xSym), l(5));
-        AJCUnaryAsg xPlusPlus = postInc(Ident(xSym));
+        AJCBinary xGtFive = f.gt(f.Ident(xSym), f.l(5));
+        AJCUnaryAsg xPlusPlus = f.postInc(f.Ident(xSym));
 
-        AJCForLoop emptyFor = ForLoop(List.<AJCStatement>of(xEqThree), xGtFive, List.of(Exec(xPlusPlus)), Block(0, List.<AJCStatement>nil()));
-
-
-
-        AJCVariableDecl zDeclThree = local(zName, Int(), l(3));
-        AJCVariableDecl yDeclThree = local(yName, Int(), l(3));
-
-        AJCAssign yAsgOne = Assign(Ident(ySym), l(1));
-        AJCAssignOp zPlusEqualsI = Assignop(JCTree.Tag.PLUS_ASG, Ident(zSym), Ident(xSym));
-        AJCBlock forBlock = Block(yAsgOne,  callFor(zSym), zPlusEqualsI);
-        AJCForLoop nonemptyFor = ForLoop(List.<AJCStatement>of(xEqThree), xGtFive, List.of(Exec(xPlusPlus)), forBlock);
+        AJCForLoop emptyFor = f.ForLoop(List.<AJCStatement>of(xEqThree), xGtFive, List.of(f.Exec(xPlusPlus)), f.Block(0, List.<AJCStatement>nil()));
 
 
-        AJCAssign yEqX = Assign(Ident(ySym), Ident(xSym));
-        AJCForLoop yxFor = ForLoop(List.<AJCStatement>of(xEqThree), xGtFive, List.of(Exec(xPlusPlus)), Block(yEqX));
+
+        AJCVariableDecl zDeclThree = f.local(zName, f.Int(), f.l(3));
+        AJCVariableDecl yDeclThree = f.local(yName, f.Int(), f.l(3));
+
+        AJCAssign yAsgOne = f.Assign(f.Ident(ySym), f.l(1));
+        AJCAssignOp zPlusEqualsI = f.Assignop(JCTree.Tag.PLUS_ASG, f.Ident(zSym), f.Ident(xSym));
+        AJCBlock forBlock = f.Block(yAsgOne,  f.callFor(zSym), zPlusEqualsI);
+        AJCForLoop nonemptyFor = f.ForLoop(List.<AJCStatement>of(xEqThree), xGtFive, List.of(f.Exec(xPlusPlus)), forBlock);
+
+
+        AJCAssign yEqX = f.Assign(f.Ident(ySym), f.Ident(xSym));
+        AJCForLoop yxFor = f.ForLoop(List.<AJCStatement>of(xEqThree), xGtFive, List.of(f.Exec(xPlusPlus)), f.Block(yEqX));
 
 
         return
@@ -120,7 +119,7 @@ public class LVATest extends BaseAnalyserTest<Live> {
                 int z = x + x;
                  */
                 $(
-                     MethodFromBlock(Block(xEqThree, xAsgSeven, zDecl)),
+                    f.MethodFromBlock(f.Block(xEqThree, xAsgSeven, zDecl)),
                       $(xEqThree, xAsgSeven),
                       $($v(), $v(xSym))
                 ),
@@ -136,7 +135,7 @@ public class LVATest extends BaseAnalyserTest<Live> {
                 }
                  */
                 $(
-                     MethodFromBlock(Block(yEqFour, xEqThree, anIf)),
+                    f.MethodFromBlock(f.Block(yEqFour, xEqThree, anIf)),
                       $(xEqThree, xEqEight),
                       $($v(ySym), $v())
                 ),
@@ -148,7 +147,7 @@ public class LVATest extends BaseAnalyserTest<Live> {
                     {}
                  */
                 $(
-                    MethodFromBlock(Block(emptyFor)),
+                    f.MethodFromBlock(f.Block(emptyFor)),
                      $(xEqThree, xPlusPlus),
                      $($v(xSym), $v())
                 ),
@@ -158,7 +157,7 @@ public class LVATest extends BaseAnalyserTest<Live> {
                 x++;         <-- Target
                  */
                 $(
-                    MethodFromBlock(Block(xEqThree, xPlusPlus)),
+                    f.MethodFromBlock(f.Block(xEqThree, xPlusPlus)),
                      $(xPlusPlus, xEqThree),
                      $($v(), $($v(xSym)))
                 ),
@@ -173,7 +172,7 @@ public class LVATest extends BaseAnalyserTest<Live> {
                 }
                  */
                 $(
-                     MethodFromBlock(Block(zDeclThree, yDeclThree, nonemptyFor)),
+                    f.MethodFromBlock(f.Block(zDeclThree, yDeclThree, nonemptyFor)),
                        $(yDeclThree, yAsgOne, zPlusEqualsI),
                        $($v(zSym, xSym), $v(zSym, xSym), $v(zSym, xSym))
                 ),
@@ -187,7 +186,7 @@ public class LVATest extends BaseAnalyserTest<Live> {
                 f(y);
                  */
                 $(
-                    MethodFromBlock(Block(yDeclThree, yxFor, callFor(ySym))),
+                    f.MethodFromBlock(f.Block(yDeclThree, yxFor, f.callFor(ySym))),
                       $(yDeclThree, yEqX),
                       $($v(xSym, ySym), $v(xSym, ySym))
                 )

@@ -15,9 +15,7 @@ import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 import static junitparams.JUnitParamsRunner.$;
-import static tests.unittests.utils.ShorthandExpressionFactory.*;
 import static com.sun.tools.javac.code.Symbol.*;
-import static tests.unittests.utils.UnitTestTreeFactory.*;
 import static org.junit.Assert.*;
 
 /**
@@ -43,17 +41,17 @@ public class BlockSplicingTest extends TreeFabricatingTest {
         final Name zName = NameFactory.getName();
 
         // Declaration nodes for three local variables.
-        AJCVariableDecl xEqThree = local(xName, Int(), l(3));  // int x = 3;
+        AJCVariableDecl xEqThree = f.local(xName, f.Int(), f.l(3));  // int x = 3;
         VarSymbol xSym = xEqThree.getTargetSymbol();
 
-        AJCVariableDecl yEqFour = local(yName, Int(), l(4));
+        AJCVariableDecl yEqFour = f.local(yName, f.Int(), f.l(4));
         VarSymbol ySym = yEqFour.getTargetSymbol();
 
-        AJCVariableDecl zDecl = local(zName, Int(), plus(Ident(xSym), Ident(xSym)));
+        AJCVariableDecl zDecl = f.local(zName, f.Int(), f.plus(f.Ident(xSym), f.Ident(xSym)));
 
-        AJCExpressionStatement xAsgSeven = Exec(Assign(Ident(xSym), l(7)));      // x = 7;
+        AJCExpressionStatement xAsgSeven = f.Exec(f.Assign(f.Ident(xSym), f.l(7)));      // x = 7;
 
-        AJCBinary yGtFour = gt(Ident(ySym), l(4));  // y > 4
+        AJCBinary yGtFour = f.gt(f.Ident(ySym), f.l(4));  // y > 4
 
         /*
         if (y > 4) {
@@ -63,40 +61,38 @@ public class BlockSplicingTest extends TreeFabricatingTest {
             y = 9;
         }
          */
-        AJCAssign xEqEight = Assign(Ident(xSym), l(8));
-        AJCIf anIf = If(yGtFour, Block(Assign(Ident(xSym), l(7))),
-                Block(xEqEight, Assign(Ident(ySym), l(9))));
+        AJCAssign xEqEight = f.Assign(f.Ident(xSym), f.l(8));
+        AJCIf anIf = f.If(yGtFour, f.Block(f.Assign(f.Ident(xSym), f.l(7))),
+                f.Block(xEqEight, f.Assign(f.Ident(ySym), f.l(9))));
 
 
-        AJCVariableDecl yEqThree = local(xName, Int(), l(3));  // int x = 3;
+        AJCBinary xGtFive = f.gt(f.Ident(xSym), f.l(5));
+        AJCUnaryAsg xPlusPlus = f.postInc(f.Ident(xSym));
 
-        AJCBinary xGtFive = gt(Ident(xSym), l(5));
-        AJCUnaryAsg xPlusPlus = postInc(Ident(xSym));
-
-        AJCForLoop emptyFor = ForLoop(List.<AJCStatement>of(xEqThree), xGtFive, List.of(Exec(xPlusPlus)), Block(0, List.<AJCStatement>nil()));
+        AJCForLoop emptyFor = f.ForLoop(List.<AJCStatement>of(xEqThree), xGtFive, List.of(f.Exec(xPlusPlus)), f.Block(0, List.<AJCStatement>nil()));
 
 
         return
         $(
             $(
-                Block(xEqThree, zDecl),
+                f.Block(xEqThree, zDecl),
                 List.of(xAsgSeven),
                 1,
-                Block(xEqThree, xAsgSeven, zDecl)
+                f.Block(xEqThree, xAsgSeven, zDecl)
             ),
 
             $(
-                Block(xEqThree, zDecl, emptyFor),
+                f.Block(xEqThree, zDecl, emptyFor),
                 List.of(anIf, yEqFour),
                 3,
-                Block(xEqThree, zDecl, emptyFor, anIf, yEqFour)
+                f.Block(xEqThree, zDecl, emptyFor, anIf, yEqFour)
             ),
 
             $(
-                Block(xEqThree, zDecl, emptyFor),
+                f.Block(xEqThree, zDecl, emptyFor),
                 List.of(anIf, yEqFour),
                 2,
-                Block(xEqThree, zDecl, anIf, yEqFour, emptyFor)
+                f.Block(xEqThree, zDecl, anIf, yEqFour, emptyFor)
             )
         );
     }

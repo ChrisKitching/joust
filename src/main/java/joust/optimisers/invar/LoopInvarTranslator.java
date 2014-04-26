@@ -1,9 +1,10 @@
-package joust.optimisers.translators;
+package joust.optimisers.invar;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.util.Name;
 import joust.optimisers.invar.ExpressionComplexityClassifier;
 import joust.optimisers.invar.InvariantExpressionFinder;
+import joust.optimisers.translators.BaseTranslator;
 import joust.tree.annotatedtree.AJCForest;
 import joust.tree.annotatedtree.treeinfo.EffectSet;
 import joust.utils.logging.LogUtils;

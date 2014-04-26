@@ -11,6 +11,6 @@ public class TreeConverter extends OptimisationRunnable {
     @Override
     public void run() {
         // Build the enhanced tree... (Hopefully they didn't sneakily copy the tree since we stashed the pointer...)
-        AJCForest.init(JOUST.conventionalTrees);
+        AJCForest.init(JOUST.environmentsToProcess);
     }
 }

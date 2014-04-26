@@ -1,19 +1,10 @@
 package joust.optimisers.unbox;
 
-import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Scope;
-import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.List;
-import com.sun.tools.javac.util.Name;
-import joust.tree.annotatedtree.AJCTree;
-import joust.tree.annotatedtree.AJCTree.AJCCall;
-import joust.tree.annotatedtree.AJCTree.AJCExpressionTree;
-import joust.tree.annotatedtree.AJCTree.AJCFieldAccess;
-import joust.tree.annotatedtree.AJCTree.AJCIdent;
 import joust.utils.logging.LogUtils;
 import joust.utils.tree.functiontemplates.FunctionTemplate;
 import lombok.experimental.ExtensionMethod;
@@ -29,6 +20,7 @@ import java.util.logging.Logger;
 import static com.sun.tools.javac.code.Symbol.*;
 import static joust.tree.annotatedtree.AJCTree.*;
 import static joust.utils.compiler.StaticCompilerUtils.*;
+import static joust.utils.tree.TreeUtils.*;
 
 /**
  * Static utility class holding the hard-coded function templates for unboxing.
@@ -42,8 +34,6 @@ public final class UnboxingFunctionTemplates {
 
     // Maps unboxed types to the corresponding BoxedClass.*Value() methods.
     public static Map<Type, MethodSymbol> unboxedValueFunctions;
-
-    private static Scope.Entry SENTINEL;
 
     /**
      * Create the function templates that will be necessary to eliminate calls to methods of boxing classes.
@@ -99,10 +89,6 @@ public final class UnboxingFunctionTemplates {
         // Populate the SENTINEL node so lookups can actually occur...
 
         Scope intMembers = IntegerClass.members();
-
-        // This is returned when a lookup fails.
-        // It'd be really rather helpful if that weren't private...
-        SENTINEL = intMembers.lookup(names.fromString("IT'S TOASTER TIME!"));
 
         // Byte
         putCommonMethods(symtab.byteType, ByteClass, true);
@@ -255,74 +241,6 @@ public final class UnboxingFunctionTemplates {
         ident.setType(type);
 
         return ident;
-    }
-
-    public static MethodSymbol findMethod(String mName, ClassSymbol clazz, Type... paramTypes) {
-        return findMethod(mName, clazz, false, paramTypes);
-    }
-    public static MethodSymbol findMethod(String mName, ClassSymbol clazz, boolean findStatic, Type... paramTypes) {
-        log.debug("Seeking {} on {}", mName, clazz);
-
-        Scope members = clazz.members();
-        final Name methodName = names.fromString(mName);
-
-        // Gets us all the things with the right name, irrespective of type or signature.
-        Scope.Entry scopeEntry = members.lookup(methodName);
-
-        if (scopeEntry == SENTINEL) {
-            log.fatal("Sentinel node encountered looking for {} on {}", mName, clazz);
-            return null;
-        }
-
-        MethodSymbol resultSym = null;
-
-        // Flick through the results to find the one that matches the signature we want.
-        scopeIteration:
-        for (;scopeEntry != SENTINEL; scopeEntry = scopeEntry.next()) {
-            // Not a method - skip!
-            if (!(scopeEntry.sym instanceof MethodSymbol)) {
-                log.debug("Binning: Nonmethod");
-                continue;
-            }
-
-            MethodSymbol mSym = (MethodSymbol) scopeEntry.sym;
-
-            if (findStatic) {
-                // Is this a static function?
-                if ((mSym.flags() & Flags.STATIC) == 0) {
-                    log.debug("Binning: Nonstatic");
-                    continue;
-                }
-            }
-
-            // Check that the parameters match up.
-            List<VarSymbol> realParams = mSym.params();
-            if (realParams.length() != paramTypes.length) {
-                log.debug("Binning: Expected {} args, found {}.", paramTypes.length, realParams.length());
-                continue;
-            }
-
-            log.debug("Got {}", mSym);
-            int pIndex = 0;
-            for (VarSymbol sym : realParams) {
-                if (!types.isSameType(sym.type, paramTypes[pIndex])) {
-                    log.debug("Binning: Argument {} of {} should be {}", pIndex, sym.type, paramTypes[pIndex]);
-                    continue scopeIteration;
-                }
-
-                pIndex++;
-            }
-
-            resultSym = mSym;
-            break;
-        }
-
-        if (resultSym == null) {
-            log.fatal("Failed to find {} on {}", mName, clazz);
-            return null;
-        }
-
-        return resultSym;
     }
 
 }
