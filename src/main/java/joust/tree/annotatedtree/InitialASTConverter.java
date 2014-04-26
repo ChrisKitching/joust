@@ -523,7 +523,9 @@ public class InitialASTConverter extends TreeScanner {
 
     @Override
     public void visitApply(JCMethodInvocation jcMethodInvocation) {
-        super.visitApply(jcMethodInvocation);
+        // Don't visit type parameters.
+        scan(jcMethodInvocation.meth);
+        scan(jcMethodInvocation.args);
 
         AJCCall node = new AJCCall(jcMethodInvocation);
         setFields(node, jcMethodInvocation);
