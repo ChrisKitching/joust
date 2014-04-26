@@ -193,12 +193,15 @@ public class Effects {
                 continue;
             }
 
-            child.rebuildFromChildrenInternal(visited);
+            if (!visited.contains(child)) {
+                child.rebuildFromChildrenInternal(visited);
+            }
+
             newEffectSet = newEffectSet.union(child.effectSet);
         }
         log.trace("New: {}", newEffectSet);
 
-        setEffectSet(newEffectSet);
+        setEffectSetInternal(newEffectSet, visited);
     }
 
     @Override
