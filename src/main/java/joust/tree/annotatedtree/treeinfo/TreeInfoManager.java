@@ -22,11 +22,9 @@ public final class TreeInfoManager {
     // Maps method symbol hashes to the effect sets of their corresponding JCMethodDecl nodes, which
     // may or may not actually *exist* in the parsed code.
     private static HashMap<String, Effects> methodEffectMap;
-    public static HashMap<Effects, String> backwardMethodEffectMap;
 
     public static void init() {
         methodEffectMap = new HashMap<>();
-        backwardMethodEffectMap = new HashMap<>();
     }
 
     /**
@@ -34,7 +32,6 @@ public final class TreeInfoManager {
      */
     public static void registerMethodEffects(MethodSymbol sym, Effects effects, boolean shouldSave) {
         methodEffectMap.put(MethodInfo.getHashForMethod(sym), effects);
-        backwardMethodEffectMap.put(effects, MethodInfo.getHashForMethod(sym));
 
         // Don't safe the set of all effects. No point.
         if (effects.getEffectSet().contains(EffectSet.ALL_EFFECTS)) {

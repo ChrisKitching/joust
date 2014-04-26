@@ -25,13 +25,11 @@ public class Effects {
     EffectSet effectSet;
 
     // Effects depending on this one.
-    Set<Effects> dependantOnThis = new HashSet<>();
+    public Set<Effects> dependantOnThis = new HashSet<>();
 
     // Effects on which this one depends.
-    Set<Effects> deps = new HashSet<>();
+    public Set<Effects> deps = new HashSet<>();
 
-    // Unresolved method dependencies. Null after bootstrapping phase...
-    Set<Symbol.MethodSymbol> needsEffectsFrom;
 
     public Effects(EffectSet computed, EffectSet direct) {
         effectSet = computed.union(direct);
@@ -70,20 +68,11 @@ public class Effects {
     public static Effects unionOf(Effects... es) {
         Effects newEffects = new Effects(EffectSet.NO_EFFECTS);
 
-        Set<Symbol.MethodSymbol> unresolved = new HashSet<>();
         EffectSet[] effectSets = new EffectSet[es.length];
         for (int i = 0; i < es.length; i++) {
             effectSets[i] = es[i].effectSet;
             es[i].dependantOnThis.add(newEffects);
             newEffects.deps.add(es[i]);
-
-            if (es[i].needsEffectsFrom != null) {
-                unresolved.addAll(es[i].needsEffectsFrom);
-            }
-        }
-
-        if (!unresolved.isEmpty()) {
-            newEffects.needsEffectsFrom = unresolved;
         }
 
         newEffects.effectSet = EffectSet.NO_EFFECTS.union(effectSets);
@@ -119,7 +108,7 @@ public class Effects {
         return unionOf(effects);
     }
 
-    public static int numCalls = 0;
+    public static int numCalls;
 
     /**
      * Set the effect set to the given EffectSet and, if necessary, update the dependent effect sets.
@@ -168,7 +157,7 @@ public class Effects {
             if (eS == this) {
                 continue;
             }
-            eS.rebuildFromChildrenInternal(new HashSet<Effects>());
+            eS.rebuildFromChildrenInternal(visited);
         }
     }
 

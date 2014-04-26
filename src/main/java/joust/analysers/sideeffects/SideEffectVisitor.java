@@ -342,7 +342,7 @@ public class SideEffectVisitor extends AJCTreeVisitor {
     public void visitLabelledStatement(AJCLabeledStatement that) {
         super.visitLabelledStatement(that);
 
-        that.effects = that.body.effects;
+        that.effects = Effects.unionOf(that.body.effects);
     }
 
     @Override
@@ -380,7 +380,7 @@ public class SideEffectVisitor extends AJCTreeVisitor {
     public void visitCatch(AJCCatch that) {
         super.visitCatch(that);
 
-        that.effects = that.body.effects;
+        that.effects = Effects.unionOf(that.body.effects);
     }
 
     @Override
@@ -401,7 +401,7 @@ public class SideEffectVisitor extends AJCTreeVisitor {
     public void visitExpressionStatement(AJCExpressionStatement that) {
         super.visitExpressionStatement(that);
 
-        that.effects = that.expr.effects;
+        that.effects = Effects.unionOf(that.expr.effects);
     }
 
     @Override
@@ -422,7 +422,7 @@ public class SideEffectVisitor extends AJCTreeVisitor {
     public void visitReturn(AJCReturn that) {
         super.visitReturn(that);
 
-        that.effects = that.expr.effects;
+        that.effects = Effects.unionOf(that.expr.effects);
     }
 
     @Override
@@ -437,8 +437,6 @@ public class SideEffectVisitor extends AJCTreeVisitor {
      */
     private void handleCallEffects(List<AJCExpressionTree> args, AJCSymbolRefTree<MethodSymbol> that) {
         MethodSymbol calledMethod = that.getTargetSymbol();
-
-        log.debug("Visiting call to: {} within {}", calledMethod, methodBeingVisited);
 
         // The effects of the arguments to the function.
         that.effects = Effects.unionTrees(args);
@@ -558,7 +556,7 @@ public class SideEffectVisitor extends AJCTreeVisitor {
     public void visitUnary(AJCUnary that) {
         super.visitUnary(that);
 
-        that.effects = that.arg.effects;
+        that.effects = Effects.unionOf(that.arg.effects);
     }
 
     @Override
@@ -649,13 +647,13 @@ public class SideEffectVisitor extends AJCTreeVisitor {
     @Override
     public void visitTypeCast(AJCTypeCast that) {
         super.visitTypeCast(that);
-        that.effects = that.expr.effects;
+        that.effects = Effects.unionOf(that.expr.effects);
     }
 
     @Override
     public void visitInstanceOf(AJCInstanceOf that) {
         super.visitInstanceOf(that);
-        that.effects = that.expr.effects;
+        that.effects = Effects.unionOf(that.expr.effects);
     }
 
     @Override

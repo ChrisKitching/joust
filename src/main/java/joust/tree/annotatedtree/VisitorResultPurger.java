@@ -15,6 +15,9 @@ public class VisitorResultPurger extends AJCTreeVisitor {
     public void visit(AJCTree that) {
         if (that instanceof AJCEffectAnnotatedTree) {
             AJCEffectAnnotatedTree cast = (AJCEffectAnnotatedTree) that;
+            // Disconnect it from the effect dependency tree.
+            cast.effects.deps = null;
+            cast.effects.dependantOnThis = null;
             cast.effects = new Effects(EffectSet.ALL_EFFECTS);
         }
 
