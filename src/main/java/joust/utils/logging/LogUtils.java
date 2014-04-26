@@ -12,10 +12,22 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+import static joust.utils.commandline.OptimiserOptions.logLevel;
+
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class LogUtils {
     private static ProcessingEnvironment processingEnv;
+
+    // The values associated with logging levels, to allow us to speedily determine if we can
+    // avoid doing substitutions.
+    private static final int SEVERE_VALUE = 1000;
+    private static final int WARNING_VALUE = 900;
+    private static final int INFO_VALUE = 800;
+    private static final int CONFIG_VALUE = 700;
+    private static final int FINE_VALUE = 500;
+    private static final int FINER_VALUE = 400;
+    private static final int FINEST_VALUE = 300;
 
     public static void init(ProcessingEnvironment env) {
         processingEnv = env;
@@ -74,7 +86,9 @@ public class LogUtils {
         }
 
         public static void trace(Logger logger, String msg, Object... objects) {
-            logger.finest(doSubstitutions(msg, objects));
+            if (logLevel.intValue() <= FINEST_VALUE) {
+                logger.finest(doSubstitutions(msg, objects));
+            }
         }
 
         public static void trace(Logger logger, Object o) {
@@ -82,7 +96,9 @@ public class LogUtils {
         }
 
         public static void debug(Logger logger, String msg, Object... objects) {
-            logger.finer(doSubstitutions(msg, objects));
+            if (logLevel.intValue() <= FINER_VALUE) {
+                logger.finer(doSubstitutions(msg, objects));
+            }
         }
 
         public static void debug(Logger logger, Object o) {
@@ -90,7 +106,9 @@ public class LogUtils {
         }
 
         public static void info(Logger logger, String msg, Object... objects) {
-            logger.info(doSubstitutions(msg, objects));
+            if (logLevel.intValue() <= INFO_VALUE) {
+                logger.info(doSubstitutions(msg, objects));
+            }
         }
 
         public static void info(Logger logger, Object o) {
@@ -98,7 +116,9 @@ public class LogUtils {
         }
 
         public static void warn(Logger logger, String msg, Object... objects) {
-            logger.warning(doSubstitutions(msg, objects));
+            if (logLevel.intValue() <= WARNING_VALUE) {
+                logger.warning(doSubstitutions(msg, objects));
+            }
         }
 
         public static void warn(Logger logger, Object o) {
@@ -106,12 +126,16 @@ public class LogUtils {
         }
 
         public static void error(Logger logger, String msg, Object... objects) {
-            logger.severe(doSubstitutions(msg, objects));
+            if (logLevel.intValue() <= SEVERE_VALUE) {
+                logger.severe(doSubstitutions(msg, objects));
+            }
         }
 
         public static void error(Logger logger, String msg, Throwable thrown) {
-            msg = msg + '\n' + msgFromThrowable(thrown);
-            logger.log(Level.SEVERE, msg, thrown);
+            if (logLevel.intValue() <= SEVERE_VALUE) {
+                msg = msg + '\n' + msgFromThrowable(thrown);
+                logger.log(Level.SEVERE, msg, thrown);
+            }
         }
 
         public static void error(Logger logger, Object o) {
