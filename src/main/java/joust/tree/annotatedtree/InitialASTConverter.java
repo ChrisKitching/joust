@@ -244,7 +244,7 @@ public class InitialASTConverter extends TreeScanner {
             } else if (decl instanceof AJCClassDecl) {
                 classDefs = classDefs.prepend((AJCClassDecl) decl);
             } else {
-                log.fatal("Unknown definition type: " + decl.getClass().getCanonicalName());
+                log.fatal("Definition of unknown type: {}:{}", decl, decl.getClass().getCanonicalName());
                 return;
             }
 

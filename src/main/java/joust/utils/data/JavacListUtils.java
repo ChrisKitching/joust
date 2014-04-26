@@ -182,7 +182,10 @@ public class JavacListUtils {
         // Handle the special case of it being at the front...
         int index = list.indexOf(target);
         if (index == -1) {
-            log.warn("Replacing {} with {} in {} unsuccessful.", target, replacement, Arrays.toString(list.toArray()));
+            log.warn("Replacing {}:{} with {} in {} unsuccessful.", target, target.getClass().getCanonicalName(), replacement, Arrays.toString(list.toArray()));
+            if (!list.isEmpty()) {
+                log.warn("Element type: {}", list.head.getClass().getCanonicalName());
+            }
             throw new NoSuchElementException(REPLACE_NONEXISTENT);
         }
 
