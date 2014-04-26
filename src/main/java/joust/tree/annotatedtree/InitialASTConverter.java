@@ -377,6 +377,9 @@ public class InitialASTConverter extends TreeScanner {
         super.visitForLoop(jcForLoop);
 
         AJCForLoop node = new AJCForLoop(jcForLoop);
+        if (jcForLoop.cond == null) {
+            node.cond = treeMaker.EmptyExpression();
+        }
         node.enclosingBlock = enclosingBlock;
         setFields(node, jcForLoop);
         results.push(node);
