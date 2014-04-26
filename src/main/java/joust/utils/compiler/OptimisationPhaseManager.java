@@ -1,17 +1,26 @@
 package joust.utils.compiler;
 
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.TaskEvent;
 import com.sun.source.util.TaskListener;
+import com.sun.tools.javac.comp.AttrContext;
+import com.sun.tools.javac.comp.Env;
 import joust.optimisers.runnables.OptimisationRunnable;
+import joust.tree.annotatedtree.AJCForest;
 import joust.utils.logging.LogUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import static com.sun.source.util.TaskEvent.Kind;
@@ -25,6 +34,9 @@ import static com.sun.source.util.TaskEvent.Kind;
 public abstract class OptimisationPhaseManager implements Runnable {
     private static final Map<Kind, LinkedList<OptimisationRunnable>> tasksBefore = new EnumMap<>(Kind.class);
     private static final Map<Kind, LinkedList<OptimisationRunnable>> tasksAfter = new EnumMap<>(Kind.class);
+    // Records which trees are yet to have completed which events. We delay the dispatch of the "after" event until all
+    // trees have processed that event.
+    private static final Map<Kind, Set<CompilationUnitTree>> todo = new EnumMap<>(Kind.class);
 
     private static final Map<VirtualPhase, LinkedList<OptimisationRunnable>> tasksBeforeVirtual = new EnumMap<>(VirtualPhase.class);
     private static final Map<VirtualPhase, LinkedList<OptimisationRunnable>> tasksAfterVirtual = new EnumMap<>(VirtualPhase.class);
@@ -68,6 +80,9 @@ public abstract class OptimisationPhaseManager implements Runnable {
 
         tasksBefore.clear();
         tasksAfter.clear();
+        todo.clear();
+        tasksBeforeVirtual.clear();
+        tasksAfterVirtual.clear();
 
         // Initialise the HashMaps with empty lists.
         for (Kind p : Kind.values()) {
@@ -83,15 +98,35 @@ public abstract class OptimisationPhaseManager implements Runnable {
         TaskListener listener = new TaskListener() {
             @Override
             public void finished(TaskEvent taskEvent) {
-                LinkedList<OptimisationRunnable> toRun = tasksAfter.get(taskEvent.getKind());
                 log.trace("finished event: {}", taskEvent);
+                Set<CompilationUnitTree> todoHere = todo.get(taskEvent.getKind());
+                if (todoHere != null) {
+                    todoHere.remove(taskEvent.getCompilationUnit());
+                    if (!todoHere.isEmpty()) {
+                        return;
+                    }
+                }
+
+                LinkedList<OptimisationRunnable> toRun = tasksAfter.get(taskEvent.getKind());
                 runTasks(toRun, taskEvent);
             }
 
             @Override
             public void started(TaskEvent taskEvent) {
-                LinkedList<OptimisationRunnable> toRun = tasksBefore.get(taskEvent.getKind());
                 log.trace("started event: {}", taskEvent);
+                if (AJCForest.getInstance() != null) {
+                    if (todo.containsKey(taskEvent.getKind())) {
+                        return;
+                    }
+
+                    HashSet<CompilationUnitTree> trees = new HashSet<>();
+                    for (Env<AttrContext> env : AJCForest.getInstance().rootEnvironments.values()) {
+                        trees.add(env.toplevel);
+                    }
+                    todo.put(taskEvent.getKind(), trees);
+                }
+
+                LinkedList<OptimisationRunnable> toRun = tasksBefore.get(taskEvent.getKind());
                 runTasks(toRun, taskEvent);
 
                 currentPhase = CompilerPhase.fromKind(taskEvent.getKind());
@@ -112,7 +147,8 @@ public abstract class OptimisationPhaseManager implements Runnable {
             }
 
             log.trace("Running {}", r.getClass().getName());
-            r.currentEvent = taskEvent;
+
+
             r.run();
         }
     }

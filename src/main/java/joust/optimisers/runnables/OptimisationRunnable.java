@@ -17,8 +17,6 @@ import java.util.logging.Logger;
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public abstract class OptimisationRunnable implements Runnable {
-    public TaskEvent currentEvent;
-
     @Override
     public abstract void run();
 

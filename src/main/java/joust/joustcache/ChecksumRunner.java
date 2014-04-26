@@ -6,6 +6,7 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.List;
 import joust.joustcache.data.TransientClassInfo;
 import joust.optimisers.runnables.OptimisationRunnable;
+import joust.tree.annotatedtree.AJCForest;
 import joust.tree.annotatedtree.AJCTree;
 import joust.utils.logging.LogUtils;
 import lombok.experimental.ExtensionMethod;
@@ -29,16 +30,6 @@ public class ChecksumRunner extends OptimisationRunnable {
     @Override
     public void run() {
         log.info("ChecksumRunner started.");
-
-        List<String> keysToProcess = List.nil();
-
-        List<JCTree> trees = ((JCTree.JCCompilationUnit) currentEvent.getCompilationUnit()).defs;
-        for (JCTree t : trees) {
-            if (t instanceof JCTree.JCClassDecl) {
-                JCTree.JCClassDecl cast = (JCTree.JCClassDecl) t;
-                keysToProcess = keysToProcess.prepend(cast.sym.flatName().toString());
-            }
-        }
 
         long s = System.currentTimeMillis();
 
