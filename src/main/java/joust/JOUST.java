@@ -5,6 +5,7 @@ import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Pair;
 import joust.joustcache.ChecksumRunner;
+import joust.joustcache.JOUSTCache;
 import joust.optimisers.runnables.AssertionStrip;
 import joust.optimisers.runnables.CSE;
 import joust.optimisers.runnables.ConstFold;
@@ -68,6 +69,11 @@ public class JOUST extends AbstractProcessor {
             return;
         }
 
+        if (OptimiserOptions.dumpingEffectKeys) {
+            JOUSTCache.dumpKeys();
+            return;
+        }
+
         // So we can log those fatal errors...
         LogUtils.init(processingEnv);
 
@@ -99,6 +105,11 @@ public class JOUST extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> typeElements, RoundEnvironment roundEnvironment) {
+        // Nothing to process if dumping effect keys.
+        if (OptimiserOptions.dumpingEffectKeys) {
+            return false;
+        }
+
         if (!roundEnvironment.processingOver()) {
             return false;
         }
