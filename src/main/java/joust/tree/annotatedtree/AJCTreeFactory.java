@@ -512,7 +512,7 @@ public class AJCTreeFactory implements AJCTree.Factory {
         rhs.mParentNode = ret;
 
         ret.getDecoratedTree().operator = resolveBinaryOperator(
-                ret.getDecoratedTree().pos(), opcode, AJCForest.getInstance().currentEnvironment, lhs.getNodeType(), rhs.getNodeType());
+                ret.getDecoratedTree().pos(), opcode, AJCForest.currentEnvironment, lhs.getNodeType(), rhs.getNodeType());
         ret.setType(ret.getDecoratedTree().operator.type.getReturnType());
 
         return ret;
@@ -525,7 +525,7 @@ public class AJCTreeFactory implements AJCTree.Factory {
         arg.mParentNode = ret;
 
         ret.getDecoratedTree().operator = resolveUnaryOperator(
-                ret.getDecoratedTree().pos(), opcode, AJCForest.getInstance().currentEnvironment, arg.getNodeType());
+                ret.getDecoratedTree().pos(), opcode, AJCForest.currentEnvironment, arg.getNodeType());
         ret.setType(ret.getDecoratedTree().operator.type.getReturnType());
 
         return ret;
@@ -542,7 +542,7 @@ public class AJCTreeFactory implements AJCTree.Factory {
             arg.mParentNode = ret;
 
             ret.getDecoratedTree().operator = resolveUnaryOperator(
-                    ret.getDecoratedTree().pos(), opcode, AJCForest.getInstance().currentEnvironment, arg.getNodeType());
+                    ret.getDecoratedTree().pos(), opcode, AJCForest.currentEnvironment, arg.getNodeType());
             ret.setType(ret.getDecoratedTree().operator.type.getReturnType());
 
             return ret;
@@ -560,7 +560,11 @@ public class AJCTreeFactory implements AJCTree.Factory {
         rhs.mParentNode = ret;
 
         ret.getDecoratedTree().operator = resolveBinaryOperator(
-                ret.getDecoratedTree().pos(), opcode, AJCForest.getInstance().currentEnvironment, lhs.getNodeType(), rhs.getNodeType());
+                ret.getDecoratedTree().pos(),
+                opcode,
+                AJCForest.currentEnvironment,
+                lhs.getNodeType(),
+                rhs.getNodeType());
         ret.setType(ret.getDecoratedTree().operator.type.getReturnType());
 
         return ret;

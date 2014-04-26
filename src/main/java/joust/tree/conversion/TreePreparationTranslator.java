@@ -100,7 +100,7 @@ public class TreePreparationTranslator extends TreeTranslator {
                         continue;
                     }
 
-                    // Add blocks to either the constructor code or the <clinit> code.
+                    // Add blocks to either the constructor code or TODO: the <clinit> code.
                     if ((block.flags & STATIC) == 0) {
                         initCode.append(block);
                     } else {
@@ -129,17 +129,12 @@ public class TreePreparationTranslator extends TreeTranslator {
                         continue;
                     }
 
-                    // So we're going to need to put an initialiser for it somewhere, so let's make it.
-                    JCStatement init;
-
-                    if (vdef.init != null) {
-                        // Create an assignment equivalent to the action of the initialiser of vdef.
-                        init = javacTreeMaker.at(vdef.pos()).Assignment(sym, vdef.init);
-                    } else {
-                        // Create an assignment for this symbol to the appropriate default value.
-                        JCExpression literalValue = getDefaultLiteralValueForType(sym.type);
-                        init = javacTreeMaker.at(vdef.pos()).Assignment(sym, literalValue);
+                    if (vdef.init == null) {
+                        continue;
                     }
+
+                    // Create an assignment equivalent to the action of the initialiser of vdef.
+                    JCStatement init = javacTreeMaker.at(vdef.pos()).Assignment(sym, vdef.init);
 
                     // Drop the real initialiser to prevent the *actual* normalisation step from processing it.
                     vdef.init = null;

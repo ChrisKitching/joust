@@ -40,6 +40,7 @@ public class AJCForest {
 
     private static AJCForest instance;
 
+    public static Env<AttrContext> currentEnvironment;
     // TODO: Something something context.
     public static AJCForest getInstance() {
         return instance;
@@ -49,7 +50,6 @@ public class AJCForest {
     public final List<AJCTree> rootNodes;
 
     public final HashMap<AJCTree, Env<AttrContext>> rootEnvironments;
-    public Env<AttrContext> currentEnvironment;
 
     // Maps method symbols to their corresponding declaration nodes.
     public final HashMap<MethodSymbol, AJCMethodDecl> methodTable;
@@ -66,6 +66,8 @@ public class AJCForest {
             throw new UnsupportedOperationException("Attempt to reassign AJCForest!");
         }
 
+        currentEnvironment = null;
+
         long t = System.currentTimeMillis();
 
         List<AJCTree> prospectiveRootNodes = List.nil();
@@ -79,10 +81,12 @@ public class AJCForest {
 
         InitialASTConverter.init();
         for (Pair<Env<AttrContext>, JCClassDecl> env : rootElements) {
+            currentEnvironment = env.fst;
             JCClassDecl classTree = env.snd;
-            log.trace("Got tree: {}", classTree);
+            log.trace("Input tree: {}", classTree);
             // Perform the sanity translations on the tree that are more convenient to do before the translation step...
             classTree.accept(sanity);
+            log.trace("Prepared tree: {}", classTree);
 
             // Translate the tree to our tree representation...
             InitialASTConverter converter = new InitialASTConverter();
@@ -121,7 +125,6 @@ public class AJCForest {
         TreeInfoManager.init();
         JOUSTCache.init();
         TreeUtils.init();
-        AJCTreeFactory.init();
 
         AJCForest ret = new AJCForest(trees, mTable, environMap);
 

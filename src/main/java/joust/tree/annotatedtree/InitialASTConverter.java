@@ -39,6 +39,7 @@ public class InitialASTConverter extends TreeScanner {
      * Populate the field mappings. Allows us to ensure we only keep the structure in memory while it remains useful.
      */
     public static void init() {
+        AJCTreeFactory.init();
         FIELD_MAPPINGS = new HashMap<Class<? extends AJCTree>, String[]>() {
             {
                 put(AJCConditional.class, new String[] {"falsepart", "truepart", "cond"});

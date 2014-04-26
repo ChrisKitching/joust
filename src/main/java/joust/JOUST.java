@@ -53,7 +53,7 @@ public class JOUST extends AbstractProcessor {
     public static Queue<Pair<Env<AttrContext>, JCClassDecl>> environmentsToProcess;
 
     public static JavacProcessingEnvironment environ;
-    public static HashSet<JCCompilationUnit> conventionalTrees = new HashSet<>();
+    public static HashSet<JCCompilationUnit> conventionalTrees;
 
     @Override
     public synchronized void init(ProcessingEnvironment env) {
@@ -62,6 +62,7 @@ public class JOUST extends AbstractProcessor {
         AJCForest.uninit();
 
         environ = (JavacProcessingEnvironment) env;
+        conventionalTrees = new HashSet<>();
 
         // Parse command line options.
         if (!OptimiserOptions.configureFromProcessingEnvironment(env)) {
