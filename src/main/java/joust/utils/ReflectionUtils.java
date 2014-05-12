@@ -1,8 +1,17 @@
 package joust.utils;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
+import joust.utils.logging.LogUtils;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.logging.Logger;
+
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class ReflectionUtils {
     /**
      * Get an array of all fields, irrespective of modifier, of a given Class.
@@ -38,5 +47,29 @@ public class ReflectionUtils {
         }
 
         throw new NoSuchFieldException("Unable to find field " + fieldName + " on class " + pClass.getCanonicalName());
+    }
+
+    public static Method getAccessibleMethod(Class<?> pClass, String name, Class<?>... args) {
+        Method method = null;
+        try {
+            method = pClass.getDeclaredMethod(name, args);
+            method.setAccessible(true);
+        } catch (NoSuchMethodException e) {
+            log.fatal("Failed to get method {} on {} for {}", name, pClass, Arrays.toString(args), e);
+        }
+
+        return method;
+    }
+
+    public static Field getAccessibleField(Class<?> pClass, String name) {
+        Field field = null;
+        try {
+            field = pClass.getDeclaredField(name);
+            field.setAccessible(true);
+        } catch (NoSuchFieldException e) {
+            log.fatal("Failed to get field {} on {}", name, pClass, e);
+        }
+
+        return field;
     }
 }
