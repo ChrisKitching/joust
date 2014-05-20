@@ -1,8 +1,10 @@
+package testinputs;
+
 import testutils.BaseIntegrationTestCase;
 
 public class testMathMin extends BaseIntegrationTestCase {
     private static final int INITSIZE = 10000;
-    private static final int MAXSIZE = 1000000000;
+    private static final int MAXSIZE = 100;
     private static final double TARGETTIME = 10.0;
 
     @Override
@@ -33,10 +35,12 @@ public class testMathMin extends BaseIntegrationTestCase {
 
             // try to defeat dead code elimination
             if (d1 == -1.0D) {
-                System.out.println(d1);
+                print(d1);
             }
 
             size *=2;
         }
+
+        print(d1);
     }
 }
