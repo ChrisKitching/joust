@@ -35,7 +35,9 @@ public class UnrollTranslator extends BaseTranslator {
     public void visitMethodDef(AJCMethodDecl tree) {
         super.visitMethodDef(tree);
 
-        log.debug("After unrolling method:\n{}", tree);
+        if (mHasMadeAChange) {
+            log.info("After unrolling method:\n{}", tree);
+        }
     }
 
     @Override
@@ -129,6 +131,7 @@ public class UnrollTranslator extends BaseTranslator {
         tree.getEnclosingBlock().insertBefore(tree, statements);
         tree.getEnclosingBlock().remove(tree);
         AJCForest.getInstance().initialAnalysis();
+        mHasMadeAChange = true;
     }
 
     /**
