@@ -51,8 +51,8 @@ public class TreeUtils {
         return opcode == Tag.BITOR
             || opcode == Tag.BITXOR
             || opcode == Tag.BITAND
-            || opcode == Tag.OR
-            || opcode == Tag.AND
+//            || opcode == Tag.OR   Short-circuit semantics.
+//            || opcode == Tag.AND
             || opcode == Tag.EQ
             || opcode == Tag.NE
             || opcode == Tag.PLUS
