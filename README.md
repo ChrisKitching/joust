@@ -16,8 +16,11 @@ classpath. The ensuing javac command will be something like:
 javac -cp .:joust/\* -processor joust.JOUST -AJOUSTStripAssertions -AJOUSTLogLevel=INFO ...
 
 -cp                       adds all the jars in the joust directory to the classpath.
+
 -procesor joust.JOUST     selects JOUST as an annotation processor to run
+
 -AJOUSTStripAssertions    Has JOUST strip assertions
+
 -AJOUSTLogLevel=INFO      Sets the logging level of JOST to "INFO". Valid values are "SEVERE", 
                           "WARNING", "INFO", "FINE", "FINER", "FINEST".
 
