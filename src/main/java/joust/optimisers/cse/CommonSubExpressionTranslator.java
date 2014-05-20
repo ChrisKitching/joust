@@ -307,6 +307,13 @@ public class CommonSubExpressionTranslator extends BaseTranslator {
     }
 
     @Override
+    protected void visitConditional(AJCConditional that) {
+        visitUpdate(that);
+        visitExpression(new ComparableAJCConditional(that));
+        super.visitConditional(that);
+    }
+
+    @Override
     protected void visitSwitch(AJCSwitch that) {
         // Because of the stupid scoping rules, this needs special treatment.
         // You enter a scope when you hit the first case, and you leave it when you hit a break.
