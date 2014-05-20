@@ -36,7 +36,7 @@ import static joust.tree.annotatedtree.AJCComparableExpressionTree.*;
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class CommonSubExpressionTranslator extends BaseTranslator {
     // The minimum score for an expression to have to qualify for consideration.
-    public static int MINIMUM_CSE_SCORE = 4;
+    public static int MINIMUM_CSE_SCORE = 6;
 
     // A stack of maps for available expressions. Maps are pushed and popped as we enter/leave scopes.
     StackMap<AJCComparableExpressionTree, AvailableExpression> availableExpressions = new StackMap<AJCComparableExpressionTree, AvailableExpression>();

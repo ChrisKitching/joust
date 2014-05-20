@@ -29,7 +29,7 @@ import static joust.utils.compiler.StaticCompilerUtils.treeCopier;
 public class UnrollTranslator extends BaseTranslator {
     // The number of iterations to attempt to unroll before giving up. Set too low and nothing gets unrolled, too
     // high and too much gets unrolled and the binary becomes huge and the JIT becomes hindered.
-    public static final int UNROLL_LIMIT = 16;
+    public static final int UNROLL_LIMIT = 18;
 
     @Override
     public void visitMethodDef(AJCMethodDecl tree) {

@@ -87,7 +87,7 @@ public class ExpressionComplexityClassifier extends AJCRecursionResistantTreeVis
                 put(TYPETEST, 2);
                 put(SELECT, 2);
 
-                put(TYPECAST, 2);
+                put(TYPECAST, 1);
 
                 // Cost of accessing a local variable.
                 put(IDENT, IDENT_COST);

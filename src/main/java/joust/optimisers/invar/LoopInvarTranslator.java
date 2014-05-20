@@ -29,7 +29,7 @@ import static joust.utils.compiler.StaticCompilerUtils.treeMaker;
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class LoopInvarTranslator extends BaseTranslator {
     // The minimum complexity value for an invariant expression to be moved outside of the loop.
-    private static final int INVAR_COMPLEXITY_THRESHOLD = 0;
+    private static final int INVAR_COMPLEXITY_THRESHOLD = 4;
 
     private Set<AJCExpressionTree> getInvariants(AJCEffectAnnotatedTree loop) {
         log.debug("Invar for: {}", loop);
