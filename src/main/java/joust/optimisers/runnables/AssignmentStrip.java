@@ -7,6 +7,6 @@ import joust.optimisers.translators.UnusedAssignmentStripper;
  */
 public class AssignmentStrip extends OptimisationRunnable.OneShot {
     public AssignmentStrip() {
-        super(UnusedAssignmentStripper.class);
+        super(new UnusedAssignmentStripper());
     }
 }

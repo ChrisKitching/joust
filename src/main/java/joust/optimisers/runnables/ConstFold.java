@@ -7,6 +7,6 @@ import joust.optimisers.translators.ConstFoldTranslator;
  */
 public class ConstFold extends OptimisationRunnable.BluntForce {
     public ConstFold() {
-        super(ConstFoldTranslator.class);
+        super(new ConstFoldTranslator());
     }
 }

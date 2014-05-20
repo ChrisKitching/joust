@@ -3,7 +3,6 @@ package joust.optimisers.translators;
 import joust.tree.annotatedtree.AJCTree;
 import joust.tree.annotatedtree.AJCTreeVisitor;
 
-
 /**
  * The superclass of all TreeTranslators in JOUST.
  */

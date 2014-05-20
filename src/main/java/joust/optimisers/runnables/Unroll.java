@@ -8,6 +8,6 @@ import joust.optimisers.unroll.UnrollTranslator;
  */
 public class Unroll extends OptimisationRunnable.OneTwo {
     public Unroll() {
-        super(UnrollTranslator.class, ConstFoldTranslator.class);
+        super(new UnrollTranslator(), new ConstFoldTranslator());
     }
 }

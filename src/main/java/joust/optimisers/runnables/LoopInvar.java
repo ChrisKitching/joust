@@ -7,6 +7,6 @@ import joust.optimisers.invar.LoopInvarTranslator;
  */
 public class LoopInvar extends OptimisationRunnable.BluntForce {
     public LoopInvar() {
-        super(LoopInvarTranslator.class);
+        super(new LoopInvarTranslator());
     }
 }

@@ -4,10 +4,10 @@ import joust.optimisers.translators.BaseTranslator;
 import joust.tree.annotatedtree.AJCForest;
 import joust.tree.annotatedtree.AJCTree;
 import joust.utils.logging.LogUtils;
+import lombok.AllArgsConstructor;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Logger;
 
 /**
@@ -22,10 +22,17 @@ public abstract class OptimisationRunnable implements Runnable {
     abstract static class TreeProcessing extends OptimisationRunnable {
         @Override
         public void run() {
-            log.info("Applying to {} nodes", AJCForest.getInstance().rootNodes.size());
+            log.info("Applying {} to {} nodes", getClass().getSimpleName(), AJCForest.getInstance().rootNodes.size());
             for (AJCTree tree : AJCForest.getInstance().rootNodes) {
                 AJCForest.getInstance().setEnvironment(tree);
                 processRootNode(tree);
+            }
+        }
+
+        protected void logExecution(AJCTree node) {
+            if (node instanceof AJCTree.AJCClassDecl) {
+                AJCTree.AJCClassDecl clazz = (AJCTree.AJCClassDecl) node;
+                log.info("Running {} on {}", getClass().getSimpleName(), clazz.getSym());
             }
         }
 
@@ -36,34 +43,17 @@ public abstract class OptimisationRunnable implements Runnable {
      * Base class for runnables that involve the use of a single translator instance (To be created in the constructor and
      * reused thereafter).
      */
+    @AllArgsConstructor
     abstract static class SingleTranslatorInstance extends TreeProcessing {
-        protected BaseTranslator translatorInstance;
-
-        public SingleTranslatorInstance(Class<? extends BaseTranslator> clazz) {
-            try {
-                translatorInstance = clazz.getConstructor().newInstance();
-            } catch (InstantiationException e) {
-                log.fatal("Exception thrown from OneShot while instantiating translator: ", e);
-            } catch (IllegalAccessException e) {
-                log.fatal("Exception thrown from OneShot while instantiating translator: ", e);
-            } catch (NoSuchMethodException e) {
-                log.fatal("Exception thrown from OneShot while instantiating translator: ", e);
-            } catch (InvocationTargetException e) {
-                log.fatal("Exception thrown from OneShot while instantiating translator: ", e);
-            }
-        }
-
-        protected void logExecution(AJCTree node) {
-            if (node instanceof AJCTree.AJCClassDecl) {
-                AJCTree.AJCClassDecl clazz = (AJCTree.AJCClassDecl) node;
-                log.info("Running {} on {}", translatorInstance.getClass().getSimpleName(), clazz.getSym());
-            }
-        }
+        protected final BaseTranslator translatorInstance;
     }
 
+    /**
+     * A translator that applies the translator instance once to every tree.
+     */
     abstract static class OneShot extends SingleTranslatorInstance {
-        public OneShot(Class<? extends BaseTranslator> clazz) {
-            super(clazz);
+        public OneShot(BaseTranslator translator) {
+            super(translator);
         }
 
         @Override
@@ -75,9 +65,12 @@ public abstract class OptimisationRunnable implements Runnable {
         }
     }
 
+    /**
+     * A translator that repeatedly applies the translator instance until it ceases to make changes.
+     */
     abstract static class BluntForce extends SingleTranslatorInstance {
-        public BluntForce(Class<? extends BaseTranslator> clazz) {
-            super(clazz);
+        public BluntForce(BaseTranslator translator) {
+            super(translator);
         }
 
         @Override
@@ -99,24 +92,10 @@ public abstract class OptimisationRunnable implements Runnable {
     /**
      * Blunt-force apply the primary, then the secondaryTranslatorInstance, then the primary again...
      */
-    abstract static class OneTwo extends SingleTranslatorInstance {
-        private BaseTranslator secondaryTranslatorInstance;
-
-        public OneTwo(Class<? extends BaseTranslator> primary, Class<? extends BaseTranslator> secondary) {
-            super(primary);
-
-            try {
-                secondaryTranslatorInstance = secondary.getConstructor().newInstance();
-            } catch (InstantiationException e) {
-                log.fatal("Exception thrown from OneTwo while instantiating secondaryTranslatorInstance translator: ", e);
-            } catch (IllegalAccessException e) {
-                log.fatal("Exception thrown from OneTwo while instantiating secondaryTranslatorInstance translator: ", e);
-            } catch (NoSuchMethodException e) {
-                log.fatal("Exception thrown from OneTwo while instantiating secondaryTranslatorInstance translator: ", e);
-            } catch (InvocationTargetException e) {
-                log.fatal("Exception thrown from OneTwo while instantiating secondaryTranslatorInstance translator: ", e);
-            }
-        }
+    @AllArgsConstructor
+    abstract static class OneTwo extends TreeProcessing {
+        private final BaseTranslator primaryTranslatorInstance;
+        private final BaseTranslator secondaryTranslatorInstance;
 
         @Override
         protected void processRootNode(AJCTree node) {
@@ -129,7 +108,7 @@ public abstract class OptimisationRunnable implements Runnable {
                     AJCForest.getInstance().statisticsManager.touchedFile(AJCForest.currentEnvironment);
                 }
 
-                translatorInstance.visitTree(node);
+                primaryTranslatorInstance.visitTree(node);
 
                 if (node instanceof AJCTree.AJCClassDecl) {
                     AJCTree.AJCClassDecl clazz = (AJCTree.AJCClassDecl) node;
@@ -145,7 +124,7 @@ public abstract class OptimisationRunnable implements Runnable {
 
                     modified = true;
                 } while (secondaryTranslatorInstance.makingChanges());
-            } while (translatorInstance.makingChanges());
+            } while (primaryTranslatorInstance.makingChanges());
         }
     }
 }

@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class ShortFunc extends OptimisationRunnable.OneTwo {
     public ShortFunc() {
-        super(ShortFuncTranslator.class, ConstFoldTranslator.class);
+        super(new ShortFuncTranslator(), new ConstFoldTranslator());
     }
 
     @Override

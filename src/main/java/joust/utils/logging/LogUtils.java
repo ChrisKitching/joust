@@ -52,12 +52,9 @@ public class LogUtils {
         joustDir.mkdirs();
 
         File logFile = new File(joustDir + "/.JOUSTLOG");
-        if (logFile.exists()) {
-            logFile.delete();
-        }
 
         try {
-            fos = new BufferedOutputStream(new FileOutputStream(logFile), 8192);
+            fos = new BufferedOutputStream(new FileOutputStream(logFile, true), 8192);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
