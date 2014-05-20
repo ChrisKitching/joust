@@ -13,6 +13,7 @@ import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -33,6 +34,7 @@ public class InvariantExpressionFinderTest extends BaseAnalyserTest<InvariantExp
         super(InvariantExpressionFinder.class, "invariantExpressions", new SymbolSet(), new SymbolSet());
     }
 
+    @Ignore
     @Test
     @Parameters(method = "invarFinderArgs")
     public void findInvariants(AJCEffectAnnotatedTree inputTree, Set<AJCExpressionTree> expectedInvariants) {
