@@ -97,6 +97,9 @@ public class ExpressionComplexityClassifier extends AJCRecursionResistantTreeVis
 
                 // Conditional expression.
                 put(CONDEXPR, 4);
+
+                put(INDEXED, 2);
+                put(ASSIGN, ASSIGNMENT_COST);
             }
         };
         operationCosts = Collections.unmodifiableMap(map);
@@ -148,6 +151,18 @@ public class ExpressionComplexityClassifier extends AJCRecursionResistantTreeVis
         }
 
         super.visitIdent(that);
+    }
+
+    @Override
+    protected void visitAssign(AJCAssign that) {
+        score += operationCosts.get(that.getTag());
+        super.visitAssign(that);
+    }
+
+    @Override
+    protected void visitArrayAccess(AJCArrayAccess that) {
+        score += operationCosts.get(that.getTag());
+        super.visitArrayAccess(that);
     }
 
     @Override
