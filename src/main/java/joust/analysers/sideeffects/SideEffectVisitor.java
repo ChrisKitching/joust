@@ -436,11 +436,23 @@ public class SideEffectVisitor extends AJCTreeVisitor {
     /**
      * In this, the first stage of the bootstrapping pass, we neglect call side effects entirely.
      */
-    private void handleCallEffects(List<AJCExpressionTree> args, AJCSymbolRefTree<MethodSymbol> that) {
+    private void handleCallEffects(List<AJCExpressionTree> args, AJCSymbolRefTree<MethodSymbol> that, AJCEffectAnnotatedTree extra) {
         MethodSymbol calledMethod = that.getTargetSymbol();
 
-        // The effects of the arguments to the function.
-        that.effects = Effects.unionTrees(args);
+        if (extra != null) {
+            int i = 0;
+            AJCEffectAnnotatedTree[] trees = new AJCEffectAnnotatedTree[args.size() + 1];
+            for (AJCEffectAnnotatedTree t : args) {
+                trees[i] = t;
+                i++;
+            }
+            trees[i] = extra;
+
+            // The effects of the arguments to the function and the method reference tree.
+            that.effects = Effects.unionTrees(trees);
+        } else {
+            that.effects = Effects.unionTrees(args);
+        }
 
         // Add to the list of calls needing to be fixed up.
         incompleteCalls.listAdd(calledMethod, that);
@@ -457,7 +469,7 @@ public class SideEffectVisitor extends AJCTreeVisitor {
     @Override
     public void visitCall(AJCCall that) {
         super.visitCall(that);
-        handleCallEffects(that.args, that);
+        handleCallEffects(that.args, that, that.meth);
     }
 
     @Override
@@ -467,7 +479,7 @@ public class SideEffectVisitor extends AJCTreeVisitor {
             return;
         }
         super.visitNewClass(that);
-        handleCallEffects(that.args, that);
+        handleCallEffects(that.args, that, null);
     }
 
     @Override
@@ -589,10 +601,10 @@ public class SideEffectVisitor extends AJCTreeVisitor {
     public void visitFieldAccess(AJCFieldAccess that) {
         super.visitFieldAccess(that);
 
-        // If it's a field access to a method, we don't care.
+        // If it's a field access to an instance method, we read that symbol.
         Symbol targetSym  = that.getTargetSymbol();
         if (!(targetSym instanceof VarSymbol)) {
-            that.effects = new Effects(NO_EFFECTS);
+            that.effects = Effects.unionWithDirect(NO_EFFECTS, ((AJCEffectAnnotatedTree) that.selected).effects);
             return;
         }
 
