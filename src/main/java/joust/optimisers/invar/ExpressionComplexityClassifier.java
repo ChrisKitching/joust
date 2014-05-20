@@ -5,11 +5,15 @@ import joust.tree.annotatedtree.AJCForest;
 import joust.tree.annotatedtree.AJCRecursionResistantTreeVisitor;
 import joust.tree.annotatedtree.AJCTree;
 import joust.tree.annotatedtree.AJCTreeVisitor;
+import joust.utils.logging.LogUtils;
 import lombok.Getter;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
 
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import static com.sun.tools.javac.tree.JCTree.Tag.*;
 import static joust.tree.annotatedtree.AJCTree.*;
@@ -20,6 +24,8 @@ import static com.sun.tools.javac.tree.JCTree.Tag;
  * evaluating that expression. Used to determine when it is beneficial to perform
  * certain transformations.
  */
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class ExpressionComplexityClassifier extends AJCRecursionResistantTreeVisitor {
     // The additional price to associate with an operation if it involves an assignment.
     public static final int ASSIGNMENT_COST = 2;
@@ -55,6 +61,7 @@ public class ExpressionComplexityClassifier extends AJCRecursionResistantTreeVis
                 put(LT, 2);
                 put(GT, 2);
                 put(EQ, 2);
+                put(NULLCHK, 2);
                 put(NE, 2);
                 put(NOT, 1);
                 put(AND, 2);
@@ -177,4 +184,12 @@ public class ExpressionComplexityClassifier extends AJCRecursionResistantTreeVis
             visitTree(decl.body);
         }
     }
+
+    @Override
+    protected void visitConditional(AJCConditional that) {
+        score += operationCosts.get(that.getTag());
+        super.visitConditional(that);
+    }
+
+
 }

@@ -477,16 +477,18 @@ public class AJCTreeFactory implements AJCTree.Factory {
     }
 
     @Override
-    public AJCNewClass NewClass(AJCSymbolRefTree<ClassSymbol> clazz, List<AJCExpressionTree> args, AJCClassDecl def) {
+    public AJCNewClass NewClass(AJCSymbolRefTree<ClassSymbol> clazz, List<AJCExpressionTree> args) {
         AJCNewClass ret = new AJCNewClass(javacTreeMaker.NewClass(null, List.<JCExpression>nil(),
-                clazz.getDecoratedTree(), AJCTree.<JCExpression, AJCExpressionTree>unwrap(args), def.getDecoratedTree()),
-                clazz, args, def);
+                clazz.getDecoratedTree(),
+                AJCTree.<JCExpression,
+                AJCExpressionTree>unwrap(args),
+                null),
+                clazz, args);
 
         clazz.mParentNode = ret;
         for (AJCExpressionTree arg : args) {
             arg.mParentNode = ret;
         }
-        def.mParentNode = ret;
 
         return ret;
     }

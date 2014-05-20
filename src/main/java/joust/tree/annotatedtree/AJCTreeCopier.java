@@ -3,10 +3,17 @@ package joust.tree.annotatedtree;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
+import joust.utils.logging.LogUtils;
+import lombok.experimental.ExtensionMethod;
+import lombok.extern.java.Log;
+
+import java.util.logging.Logger;
 
 import static joust.tree.annotatedtree.AJCTree.*;
 import static joust.utils.compiler.StaticCompilerUtils.*;
 
+@Log
+@ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public class AJCTreeCopier {
     protected static final Context.Key<AJCTreeCopier> AJCTreeCopierKey = new Context.Key<AJCTreeCopier>();
 
@@ -337,12 +344,16 @@ public class AJCTreeCopier {
 
     
     public AJCNewClass copyNewClass(AJCNewClass that) {
+        log.info("Copying: {}", that);
+
         AJCNewClass node = treeMaker.NewClass(
                 copy(that.clazz),
-                copy(that.args),
-                copy(that.def));
+                copy(that.args));
 
         node.getDecoratedTree().type = that.getDecoratedTree().type;
+        node.getDecoratedTree().constructor = that.getDecoratedTree().constructor;
+        node.getDecoratedTree().varargsElement = that.getDecoratedTree().varargsElement;
+        node.getDecoratedTree().constructorType = that.getDecoratedTree().constructorType;
         return node;
     }
 

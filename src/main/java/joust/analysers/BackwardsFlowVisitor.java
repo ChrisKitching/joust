@@ -111,7 +111,6 @@ public class BackwardsFlowVisitor extends AJCTreeVisitor {
 
     @Override
     public void visitNewClass(AJCNewClass jcNewClass) {
-        visit(jcNewClass.def);
         visitBackwards(jcNewClass.args);
         visit(jcNewClass.clazz);
     }

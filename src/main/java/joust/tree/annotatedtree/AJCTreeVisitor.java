@@ -251,7 +251,6 @@ public abstract class AJCTreeVisitor {
     protected void visitNewClass(AJCNewClass that) {
         visit(that.clazz);
         visit(that.args);
-        visit(that.def);
     }
 
     protected void visitNewArray(AJCNewArray that) {

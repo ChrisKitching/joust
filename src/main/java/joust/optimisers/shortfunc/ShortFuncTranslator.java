@@ -101,13 +101,11 @@ public class ShortFuncTranslator extends BaseTranslator {
         log.info("After shortfunc: \n{}", that.getEnclosingBlock());
 
         for (AJCEffectAnnotatedTree t : startupCopy) {
-            log.info("Repeat: {}", t);
             if (!AJCForest.getInstance().repeatAnalysis(t)) {
                 return;
             }
         }
 
         AJCForest.getInstance().repeatAnalysis(instance.body);
-        log.info("Done.");
     }
 }

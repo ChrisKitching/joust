@@ -45,7 +45,7 @@ public class InitialASTConverter extends TreeScanner {
             {
                 put(AJCConditional.class, new String[] {"falsepart", "truepart", "cond"});
                 put(AJCCall.class, new String[] {"args", "meth"});
-                put(AJCNewClass.class, new String[] {"def", "args", "clazz"});
+                put(AJCNewClass.class, new String[] {"args", "clazz"});
                 put(AJCClassDecl.class, new String[] {"implementing", "extending", "mods"});
                 put(AJCMethodDecl.class, new String[] {"body", "defaultValue", "thrown", "params", "recvparam", "mods"});
                 put(AJCVariableDecl.class, new String[] {"init", "mods"});
@@ -534,7 +534,8 @@ public class InitialASTConverter extends TreeScanner {
 
     @Override
     public void visitNewClass(JCNewClass jcNewClass) {
-        super.visitNewClass(jcNewClass);
+        scan(jcNewClass.clazz);
+        scan(jcNewClass.args);
 
         AJCNewClass node = new AJCNewClass(jcNewClass);
         setFields(node, jcNewClass);

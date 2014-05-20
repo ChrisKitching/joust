@@ -478,6 +478,7 @@ public class SideEffectVisitor extends AJCTreeVisitor {
         if (methodBeingVisited == null) {
             return;
         }
+
         super.visitNewClass(that);
         handleCallEffects(that.args, that, null);
     }

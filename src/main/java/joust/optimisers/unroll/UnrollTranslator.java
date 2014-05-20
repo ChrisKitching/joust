@@ -36,18 +36,22 @@ public class UnrollTranslator extends BaseTranslator {
     // extremely complicated loops for targets that have JIT, or when you care about binaries becoming enormous.
     private static final int UNROLLABLE_BODY_THRESHOLD = 15;
 
+    private boolean justPrinted = false;
+
     @Override
     public void visitMethodDef(AJCMethodDecl tree) {
         super.visitMethodDef(tree);
 
-        if (mHasMadeAChange) {
+        if (mHasMadeAChange && !justPrinted) {
             log.info("After unrolling method:\n{}", tree);
+            justPrinted = true;
         }
     }
 
     @Override
     public void visitForLoop(AJCForLoop tree) {
         super.visitForLoop(tree);
+        log.debug("unroll consideration for {}", tree);
 
         EffectSet condEffects = tree.cond.effects.getEffectSet();
         SymbolSet condReads = condEffects.readInternal;
@@ -147,6 +151,7 @@ public class UnrollTranslator extends BaseTranslator {
         tree.getEnclosingBlock().remove(tree);
         AJCForest.getInstance().initialAnalysis();
         mHasMadeAChange = true;
+        justPrinted = false;
         AJCForest.getInstance().increment("Loops Unrolled:");
     }
 

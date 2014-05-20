@@ -191,6 +191,16 @@ public class UnboxingTranslator extends BaseTranslator {
     }
 
     @Override
+    protected void visitReturn(AJCReturn that) {
+        super.visitReturn(that);
+
+        // Make sure we're not returning a boxed object...
+        if (that.expr instanceof AJCSymbolRef) {
+            killInstanceReferencedByTree((AJCSymbolRef) that.expr);
+        }
+    }
+
+    @Override
     protected void visitBinary(AJCBinary that) {
         log.debug("Visiting binary: {}", that);
         super.visitBinary(that);

@@ -137,8 +137,7 @@ public class AJCComparableExpressionTree<T extends AJCTree & AJCExpression> {
             ComparableAJCNewClass cast = (ComparableAJCNewClass) obj;
 
             return wrappedNode.clazz.getTargetSymbol().equals(cast.wrappedNode.clazz.getTargetSymbol())
-                && wrap(wrappedNode.args).equals(wrap(cast.wrappedNode.args))
-                && wrappedNode.def == cast.wrappedNode.def;
+                && wrap(wrappedNode.args).equals(wrap(cast.wrappedNode.args));
 
         }
     }

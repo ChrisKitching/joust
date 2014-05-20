@@ -12,6 +12,7 @@ import jdbm.PrimaryTreeMap;
 import jdbm.RecordManager;
 import jdbm.RecordManagerFactory;
 import jdbm.helper.StoreReference;
+import jdbm.recman.TransactionManager;
 import joust.analysers.sideeffects.Effects;
 import joust.joustcache.data.ClassInfo;
 import joust.joustcache.data.MethodInfo;
@@ -62,7 +63,12 @@ public class JOUSTCache {
 
     public static void init() {
         log.info("Init JOUSTCache!");
+
+        // Dirty dirty hack to cause these classes to be loaded. The classloader present in annotation processing mode
+        // is... weird.
         Class<StoreReference> sRef = StoreReference.class;
+        Class<TransactionManager.BlockIoComparator> tbRef = TransactionManager.BlockIoComparator.class;
+        Class<TransactionManager> tmRef = TransactionManager.class;
 
         varSymbolTable.clear();
         methodSymbolTable.clear();

@@ -310,7 +310,6 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
 
         public AJCSymbolRefTree<ClassSymbol> clazz;
         public List<AJCExpressionTree> args;
-        public AJCClassDecl def;
 
         protected AJCNewClass(JCNewClass tree) {
             super(tree);
@@ -318,12 +317,10 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         }
 
         protected AJCNewClass(JCNewClass tree, AJCSymbolRefTree<ClassSymbol> clasz,
-                             List<AJCExpressionTree> arg, AJCClassDecl defn) {
+                             List<AJCExpressionTree> arg) {
             this(tree);
             clazz = clasz;
             args = arg;
-            def = defn;
-
         }
 
         @Override
@@ -1532,7 +1529,7 @@ public abstract class AJCTree implements Tree, Cloneable, JCDiagnostic.Diagnosti
         AJCReturn Return(AJCExpressionTree expr);
         AJCThrow Throw(AJCExpressionTree expr);
         AJCCall Call(AJCSymbolRefTree<MethodSymbol> fn, List<AJCExpressionTree> args);
-        AJCNewClass NewClass(AJCSymbolRefTree<ClassSymbol> clazz, List<AJCExpressionTree> args, AJCClassDecl def);
+        AJCNewClass NewClass(AJCSymbolRefTree<ClassSymbol> clazz, List<AJCExpressionTree> args);
         AJCNewArray NewArray(AJCTypeExpression elemtype, List<AJCExpressionTree> dims, List<AJCExpressionTree> elems);
         AJCAssign Assign(AJCSymbolRefTree<VarSymbol> lhs, AJCExpressionTree rhs);
         AJCAssignOp Assignop(Tag opcode, AJCSymbolRefTree<VarSymbol> lhs, AJCExpressionTree rhs, boolean resolveOperator);
