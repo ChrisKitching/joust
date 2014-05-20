@@ -1,6 +1,7 @@
 package joust.optimisers.translators;
 
 import joust.tree.annotatedtree.AJCComparableExpressionTree;
+import joust.tree.annotatedtree.AJCForest;
 import joust.tree.annotatedtree.AJCTree;
 import joust.utils.logging.LogUtils;
 import lombok.experimental.ExtensionMethod;
@@ -47,6 +48,8 @@ public class ConstFoldTranslator extends BaseTranslator {
         } catch (NoSuchElementException e) {
             // The way javac constructs literal arrays wil lcause us to get here. No matter.
         }
+
+        AJCForest.getInstance().increment("Constants Folded: ");
         log.info("{}:{} -> {}:{}", tree, tree.getClass().getCanonicalName(), replacement, replacement.getClass().getCanonicalName());
     }
 
@@ -77,6 +80,7 @@ public class ConstFoldTranslator extends BaseTranslator {
             // The way javac constructs literal arrays wil lcause us to get here. No matter.
         }
 
+        AJCForest.getInstance().increment("Constants Folded: ");
         log.info("{} {} {} -> {}", leftOperand, nodeTag, rightOperand, replacement);
     }
 
@@ -99,6 +103,7 @@ public class ConstFoldTranslator extends BaseTranslator {
             } else {
                 that.swapFor(that.falsepart);
             }
+            AJCForest.getInstance().increment("Conditionals Folded: ");
         }
     }
 
@@ -120,6 +125,7 @@ public class ConstFoldTranslator extends BaseTranslator {
             } else {
                 that.swapFor(that.elsepart);
             }
+            AJCForest.getInstance().increment("Conditionals Folded: ");
         }
     }
 }

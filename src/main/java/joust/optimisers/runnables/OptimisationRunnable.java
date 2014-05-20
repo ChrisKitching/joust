@@ -84,8 +84,14 @@ public abstract class OptimisationRunnable implements Runnable {
         protected void processRootNode(AJCTree node) {
             logExecution(node);
 
+            boolean modified = false;
             do {
+                if (modified) {
+                    AJCForest.getInstance().statisticsManager.touchedFile(AJCForest.currentEnvironment);
+                }
+
                 translatorInstance.visitTree(node);
+                modified = true;
             } while(translatorInstance.makingChanges());
         }
     }
@@ -116,15 +122,28 @@ public abstract class OptimisationRunnable implements Runnable {
         protected void processRootNode(AJCTree node) {
             logExecution(node);
 
+            boolean modified = false;
+
             do {
+                if (modified) {
+                    AJCForest.getInstance().statisticsManager.touchedFile(AJCForest.currentEnvironment);
+                }
+
                 translatorInstance.visitTree(node);
 
                 if (node instanceof AJCTree.AJCClassDecl) {
                     AJCTree.AJCClassDecl clazz = (AJCTree.AJCClassDecl) node;
-                    log.debug("Running {} on {}", secondaryTranslatorInstance.getClass().getSimpleName(), clazz.getSym());
+                    log.info("Running {} on {}", secondaryTranslatorInstance.getClass().getSimpleName(), clazz.getSym());
                 }
+
                 do {
+                    if (modified) {
+                        AJCForest.getInstance().statisticsManager.touchedFile(AJCForest.currentEnvironment);
+                    }
+
                     secondaryTranslatorInstance.visitTree(node);
+
+                    modified = true;
                 } while (secondaryTranslatorInstance.makingChanges());
             } while (translatorInstance.makingChanges());
         }

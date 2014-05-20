@@ -60,6 +60,8 @@ public class ShortFuncTranslator extends BaseTranslator {
 
         mayEdit = false;
         mHasMadeAChange = true;
+
+        AJCForest.getInstance().increment("Calls to " + targetSym.owner + "." + targetSym.name + " Inlined: ");
         FunctionTemplateInstance instance;
         if (template.isStatic) {
             instance = template.instantiateWithTemps(enclosingMethod, that.args.toArray(new AJCExpressionTree[that.args.size()]));

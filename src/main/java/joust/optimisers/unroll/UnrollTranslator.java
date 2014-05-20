@@ -132,6 +132,7 @@ public class UnrollTranslator extends BaseTranslator {
         tree.getEnclosingBlock().remove(tree);
         AJCForest.getInstance().initialAnalysis();
         mHasMadeAChange = true;
+        AJCForest.getInstance().increment("Loops Unrolled:");
     }
 
     /**

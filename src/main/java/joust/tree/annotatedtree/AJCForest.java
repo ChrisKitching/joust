@@ -15,9 +15,11 @@ import joust.optimisers.unbox.UnboxingTranslator;
 import joust.tree.conversion.TreePreparationTranslator;
 import joust.tree.annotatedtree.treeinfo.TreeInfoManager;
 import joust.utils.logging.LogUtils;
+import joust.utils.logging.StatisticsManager;
 import joust.utils.tree.CallDetector;
 import joust.utils.tree.JCTreeStructurePrinter;
 import joust.utils.tree.TreeUtils;
+import lombok.Delegate;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
 
@@ -56,6 +58,9 @@ public class AJCForest {
     public final HashMap<MethodSymbol, AJCMethodDecl> methodTable;
 
     public SideEffectVisitor effectVisitor = new SideEffectVisitor(analysisPerformed);
+
+    @Delegate
+    public StatisticsManager statisticsManager = new StatisticsManager();
 
     /**
      * Init the forest from the given set of root elements.

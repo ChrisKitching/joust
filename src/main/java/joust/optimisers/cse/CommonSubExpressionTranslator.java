@@ -114,6 +114,7 @@ public class CommonSubExpressionTranslator extends BaseTranslator {
 
         // Replace uses of the expression with a reference to the new temporary variable.
         for (AJCComparableExpressionTree use : targetExpr.usages) {
+            AJCForest.getInstance().increment("Common Subexpressions Eliminated:");
             use.wrappedNode.swapFor(treeMaker.Ident(newSym));
         }
 

@@ -66,6 +66,7 @@ public class UnboxingTranslator extends BaseTranslator {
 
         for (VarSymbol sym : fixableUsages.keySet()) {
             mHasMadeAChange = true;
+            AJCForest.getInstance().increment("Variables Unboxed:");
             changedMethod = true;
             log.info("Fixing: {}", sym);
             Set<AJCTree> fixableHere = fixableUsages.get(sym);
@@ -92,6 +93,7 @@ public class UnboxingTranslator extends BaseTranslator {
 
             // Fix up all usages, including the init...
             for (AJCTree usage : fixableHere) {
+                AJCForest.getInstance().increment("Boxed Usages Removed:");
                 log.info("Fixing usage: {}", usage);
                 AJCTree replacement = mapper.replacementTree(usage);
                 log.info("Swapping {} for {}", usage, replacement);

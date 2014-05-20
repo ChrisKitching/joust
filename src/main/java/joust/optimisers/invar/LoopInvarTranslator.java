@@ -75,6 +75,7 @@ public class LoopInvarTranslator extends BaseTranslator {
             AJCIdent ref = treeMaker.Ident(newSym);
             expr.swapFor(ref);
 
+            AJCForest.getInstance().increment("Loop Invariants Hoisted: ");
             mHasMadeAChange = true;
             AJCForest.getInstance().initialAnalysis();
         }
