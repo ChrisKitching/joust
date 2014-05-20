@@ -11,6 +11,7 @@ import com.esotericsoftware.kryo.serializers.FieldSerializer;
 import jdbm.PrimaryTreeMap;
 import jdbm.RecordManager;
 import jdbm.RecordManagerFactory;
+import jdbm.helper.StoreReference;
 import joust.analysers.sideeffects.Effects;
 import joust.joustcache.data.ClassInfo;
 import joust.joustcache.data.MethodInfo;
@@ -56,8 +57,13 @@ public class JOUSTCache {
     public static final HashMap<String, VarSymbol> varSymbolTable = new HashMap<String, VarSymbol>();
     public static final HashMap<String, MethodSymbol> methodSymbolTable = new HashMap<String, MethodSymbol>();
 
+    // Used for mutex on the key-value store in the case of multiple instances of the optimiser.
+    private static File lockFile;
+
     public static void init() {
         log.info("Init JOUSTCache!");
+        Class<StoreReference> sRef = StoreReference.class;
+
         varSymbolTable.clear();
         methodSymbolTable.clear();
         transientClassInfo.clear();
@@ -96,6 +102,8 @@ public class JOUSTCache {
         } catch (IOException e) {
             log.fatal("Error closing database record manager: ", e);
         }
+
+        lockFile.delete();
     }
 
     /**
@@ -161,14 +169,26 @@ public class JOUSTCache {
     private static RecordManager getOrCreateRecordManager() throws IOException {
         String homeDirectory = System.getProperty("user.home");
         File joustDir = new File(homeDirectory + "/.joust/");
+        joustDir.mkdirs();
 
-        if (!joustDir.exists()) {
-            if (!joustDir.mkdir()) {
-                log.fatal("Unable to create directory: " + joustDir + " for local data cache.");
-                return null;
+        // Obtain lock on database...
+        lockFile = new File(joustDir + "/db.lck");
+
+        int waitCycles = 0;
+        while (lockFile.exists()) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                log.error("Interrupted waiting for lock!", e);
             }
-            log.info("Created directory {}", joustDir);
+
+            waitCycles++;
+            if (waitCycles == 15) {
+                log.info("Waiting on database lockfile for a long time... If no other instance of JOUST is running, delete {}", joustDir + "/db.lck");
+            }
         }
+
+        lockFile.createNewFile();
 
         databasePath = homeDirectory + "/.joust/" + DATABASE_FILE_NAME;
 
@@ -246,7 +266,7 @@ public class JOUSTCache {
 
         cInfo.setHash(hash);
 
-        log.warn("Serialising {} for {}", cInfo, className);
+        log.debug("Serialising {} for {}", cInfo, className);
 
         // Serialise the ClassInfo object.
         @Cleanup UnsafeOutput serialisedOutput = new UnsafeOutput(INITIAL_BUFFER_SIZE);

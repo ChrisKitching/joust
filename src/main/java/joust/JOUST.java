@@ -8,6 +8,7 @@ import joust.joustcache.ChecksumRunner;
 import joust.joustcache.JOUSTCache;
 import joust.optimisers.runnables.AssertionStrip;
 import joust.optimisers.runnables.CSE;
+import joust.optimisers.runnables.CleanupRunner;
 import joust.optimisers.runnables.ConstFold;
 import joust.optimisers.runnables.FinalFolder;
 import joust.optimisers.runnables.LoopInvar;
@@ -69,13 +70,15 @@ public class JOUST extends AbstractProcessor {
             return;
         }
 
-        if (OptimiserOptions.dumpingEffectKeys) {
-            JOUSTCache.dumpKeys();
-            return;
-        }
-
         // So we can log those fatal errors...
         LogUtils.init(processingEnv);
+
+        if (OptimiserOptions.dumpingEffectKeys) {
+            JOUSTCache.init();
+            JOUSTCache.dumpKeys();
+            JOUSTCache.closeDatabase();
+            return;
+        }
 
         OptimisationPhaseManager.init();
         if (OptimiserOptions.stripAssertions) {
@@ -107,6 +110,9 @@ public class JOUST extends AbstractProcessor {
         // during this job. Needs to happen here so we can compute a checksum over the bytecode and
         // spot when things get sneakily changed when we weren't looking.
         OptimisationPhaseManager.register(new ChecksumRunner(), AFTER_GENERATE);
+
+        // Close any resources that need closing...
+        OptimisationPhaseManager.register(new CleanupRunner(), AFTER_GENERATE);
 
         StaticCompilerUtils.init(env);
     }
