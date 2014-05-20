@@ -24,12 +24,17 @@ javac -cp .:joust/\* -processor joust.JOUST -AJOUSTStripAssertions -AJOUSTLogLev
 -AJOUSTLogLevel=INFO      Sets the logging level of JOST to "INFO". Valid values are "SEVERE", 
                           "WARNING", "INFO", "FINE", "FINER", "FINEST".
 
+
 Other options supported by JOUST:
+
 -AJOUSTMinCSEScore=X      Set the minimum expression complexity threshold for CSE to X.
+
 -AJOUSTHelp               Print a usage message and exit.
+
 -AJOUSTAnnotateLib         Activates library annotation mode. JOUST performs effect analysis on
                           the input and writes the results to the effect cache, but does not
                           perform any optimisation.
+
 -AJOUSTPrintEffectCacheKeys Prints the current contents of the effect cache and exits.
 
 The effect cache is stored at ~/.joust. If it becomes annoyingly big, delete it.
