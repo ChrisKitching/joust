@@ -75,6 +75,6 @@ public class ChecksumRunner extends OptimisationRunnable {
         long e = System.currentTimeMillis();
 
         JOUSTCache.closeDatabase();
-        log.info("Done in " + (e - s) + "ms");
+        log.debug("Done in " + (e - s) + "ms");
     }
 }

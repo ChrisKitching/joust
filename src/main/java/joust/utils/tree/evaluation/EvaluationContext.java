@@ -48,9 +48,14 @@ class EvaluationContext {
     }
 
     /**
-     * Evaluate statements. The only sort of statement allowed are variable declarations.
+     * Evaluate statements.
      */
     public void evaluate(AJCStatement statement) {
+        if (statement instanceof AJCExpressionStatement) {
+            evaluate((AJCExpressionStatement) statement);
+            return;
+        }
+
         log.debug("Evaluating: {}", statement);
         AJCVariableDecl cast = (AJCVariableDecl) statement;
         currentAssignments.put(cast.getTargetSymbol(), Value.UNKNOWN);

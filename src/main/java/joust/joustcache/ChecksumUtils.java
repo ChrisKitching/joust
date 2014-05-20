@@ -115,7 +115,7 @@ public class ChecksumUtils {
             while (lastRead != -1) {
                 // Read as many bytes as are currently available into the buffer.
                 lastRead = inputStream.read(buffer, bPointer, buffer.length-bPointer);
-                log.info("Read: {}", lastRead);
+                log.trace("Read: {}", lastRead);
                 bPointer += lastRead;
 
                 // If buffer has overflowed, double its size and carry on.

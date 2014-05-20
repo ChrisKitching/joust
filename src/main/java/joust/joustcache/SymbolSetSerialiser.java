@@ -27,7 +27,7 @@ import static com.sun.tools.javac.code.Symbol.*;
 public class SymbolSetSerialiser extends Serializer<SymbolSet> {
     @Override
     public void write(Kryo kryo, Output output, SymbolSet object) {
-        log.info("Writing: {}", object);
+        log.trace("Writing: {}", object);
         // Record if this is the universal set or not.
         if (object == SymbolSet.UNIVERSAL_SET) {
             output.writeByte(1);

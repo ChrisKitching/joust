@@ -208,7 +208,7 @@ public class UnboxingTranslator extends BaseTranslator {
     @Override
     protected void visitAssign(AJCAssign that) {
         super.visitAssign(that);
-        log.info("Assignment: {}", that);
+        log.debug("Assignment: {}", that);
         VarSymbol assignee = that.lhs.getTargetSymbol();
         // Bloody unconventional array accesses.
         if (assignee == null) {
@@ -340,7 +340,7 @@ public class UnboxingTranslator extends BaseTranslator {
 
         // We can't identify the callee, so continue as if it were an unknown method.
         if (callee == null || !fixableUsages.containsKey(callee)) {
-            log.info("Dropped - callee unidentified.");
+            log.debug("Dropped - callee unidentified.");
             scanUnfixableMethod(that);
             return;
         }
@@ -349,7 +349,7 @@ public class UnboxingTranslator extends BaseTranslator {
         // can only transform it (and hence this tracked boxed instance) if the argument contains no reference to a
         // non-tracked boxed instance.
         if (UnboxingFunctionTemplates.functionTemplatesNeedingArgCheck.contains(template)) {
-            log.info("Needs args check....");
+            log.debug("Needs args check....");
             // This one has been marked as requiring the argument check.
             // This means it's a template taking a reference type as an argument which cannot safely be ignored by the
             // template. If any of the argument expressions can possibly be null, the symbol must be failed.

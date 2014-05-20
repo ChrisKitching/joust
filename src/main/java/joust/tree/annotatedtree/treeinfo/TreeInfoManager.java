@@ -35,7 +35,7 @@ public final class TreeInfoManager {
 
         // Don't save the set of all effects. No point.
         if (effects.getEffectSet().contains(EffectSet.ALL_EFFECTS)) {
-            log.info("Declining to save all-effects set for {}", sym);
+            log.trace("Declining to save all-effects set for {}", sym);
             return;
         }
 
