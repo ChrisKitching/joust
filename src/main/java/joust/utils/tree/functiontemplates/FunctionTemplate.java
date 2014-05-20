@@ -91,7 +91,7 @@ public class FunctionTemplate {
                  ExpressionComplexityClassifier classifier = new ExpressionComplexityClassifier();
                  classifier.visitTree(args[i]);
 
-                 if (classifier.getScore() * refsToArg.size() < ARGUMENT_EXTRACTION_THRESHOLD) {
+                 if (classifier.getScore() < ARGUMENT_EXTRACTION_THRESHOLD) {
                      continue;
                  }
             }
