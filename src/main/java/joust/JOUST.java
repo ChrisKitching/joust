@@ -64,14 +64,15 @@ public class JOUST extends AbstractProcessor {
         environ = (JavacProcessingEnvironment) env;
         conventionalTrees = new HashSet<JCCompilationUnit>();
 
+        // So we can log those fatal errors...
+        LogUtils.init(processingEnv);
+
         // Parse command line options.
         if (!OptimiserOptions.configureFromProcessingEnvironment(env)) {
             log.fatal("JOUST aborted by command line argument processor.");
             return;
         }
 
-        // So we can log those fatal errors...
-        LogUtils.init(processingEnv);
 
         if (OptimiserOptions.dumpingEffectKeys) {
             JOUSTCache.init();
