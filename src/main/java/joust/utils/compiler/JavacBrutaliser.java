@@ -80,7 +80,9 @@ public final class JavacBrutaliser extends OptimisationRunnable {
             OptimisationPhaseManager.dispatchEvent(AFTER_GENERATE);
 
             log.info("Done.");
-        } catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException e) {
+            log.fatal("Unable to run compiler phases early!", e);
+        } catch (InvocationTargetException e) {
             log.fatal("Unable to run compiler phases early!", e);
         }
     }
