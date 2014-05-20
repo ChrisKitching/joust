@@ -1,5 +1,6 @@
 package joust.optimisers.invar;
 
+import joust.tree.annotatedtree.AJCTree;
 import joust.tree.annotatedtree.AJCTreeVisitor;
 import joust.tree.annotatedtree.treeinfo.EffectSet;
 import joust.utils.logging.LogUtils;
@@ -102,5 +103,14 @@ public class InvariantExpressionFinder extends AJCTreeVisitor {
         addIfInvariant(that);
 
         super.visitUnary(that);
+    }
+
+    // Overridden loop visitors to prevent initialisers being taken as invariants.
+
+    @Override
+    protected void visitForLoop(AJCForLoop that) {
+        visit(that.cond);
+        visit(that.step);
+        visit(that.body);
     }
 }
