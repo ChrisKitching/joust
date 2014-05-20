@@ -1,6 +1,7 @@
 package joust.optimisers.unroll;
 
 import com.sun.tools.javac.util.List;
+import joust.optimisers.invar.ExpressionComplexityClassifier;
 import joust.utils.tree.evaluation.EvaluationContext;
 import joust.utils.tree.evaluation.Value;
 import joust.optimisers.translators.BaseTranslator;
@@ -30,6 +31,10 @@ public class UnrollTranslator extends BaseTranslator {
     // The number of iterations to attempt to unroll before giving up. Set too low and nothing gets unrolled, too
     // high and too much gets unrolled and the binary becomes huge and the JIT becomes hindered.
     public static final int UNROLL_LIMIT = 18;
+
+    // The maximum body complexity for a loop to be considered for unrolling. It is not worthwhile to unroll
+    // extremely complicated loops for targets that have JIT, or when you care about binaries becoming enormous.
+    private static final int UNROLLABLE_BODY_THRESHOLD = 15;
 
     @Override
     public void visitMethodDef(AJCMethodDecl tree) {
@@ -107,6 +112,14 @@ public class UnrollTranslator extends BaseTranslator {
             return;
         }
 
+        // Don't unroll loops with very complicated bodies.
+        ExpressionComplexityClassifier classifier = new ExpressionComplexityClassifier();
+        classifier.visitTree(tree.body);
+        if (classifier.getScore() > UNROLLABLE_BODY_THRESHOLD) {
+            log.info("Skipping unrollable loop because complexity {} too high: {}", classifier.getScore(), tree);
+            return;
+        }
+
         // Replace the for loop with its initialiser, then iterations-many repeats of the body inlining variables that
         // are known in the EvaluationContext as we go.
 
@@ -117,6 +130,10 @@ public class UnrollTranslator extends BaseTranslator {
         context = new EvaluationContext();
         // Now we replay the loop evaluation that we know terminates nicely and make substitutions as we go...
         context.evaluateStatements(tree.init);
+
+        // Strip everything that isn't a loop condition variable from the context.
+        final HashMap<VarSymbol, Value> currentAssignments = context.getCurrentAssignments();
+        currentAssignments.keySet().retainAll(condReads);
 
         // The condition is now true. Time for a loop body.
         while (iterations > 0) {
