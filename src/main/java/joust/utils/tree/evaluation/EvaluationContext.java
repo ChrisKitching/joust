@@ -96,6 +96,10 @@ class EvaluationContext {
         Value rhs = evaluate(assignOp.rhs);
         Value currentValue = currentAssignments.get(targetSym);
 
+        if (currentValue == null) {
+            return Value.UNKNOWN;
+        }
+
         Tag opcode = OPASG_TO_OP.get(assignOp.getTag());
         Value newValue = Value.binary(opcode, currentValue, rhs);
         currentAssignments.put(targetSym, newValue);
