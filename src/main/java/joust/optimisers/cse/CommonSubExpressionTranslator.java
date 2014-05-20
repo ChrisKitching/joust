@@ -93,8 +93,6 @@ public class CommonSubExpressionTranslator extends BaseTranslator {
             return;
         }
 
-        log.info("CSE visit for: {}", that);
-
         AvailableExpression targetExpr = everAvailInMethod.get(0);
         log.info("Most valuable expression: {} with score {}", targetExpr, targetExpr.getComplexityScore());
 
@@ -108,8 +106,6 @@ public class CommonSubExpressionTranslator extends BaseTranslator {
         AJCVariableDecl newDecl = treeMaker.VarDef(newSym, treeCopier.copy(expr));
 
         // Insert the new declaration before the first use.
-        log.info("Need enclosing statement for: {}:{}", expr, expr.getClass().getCanonicalName());
-
         expr.getEnclosingBlock().insertBefore(expr.getEnclosingStatement(), newDecl);
 
         // Replace uses of the expression with a reference to the new temporary variable.

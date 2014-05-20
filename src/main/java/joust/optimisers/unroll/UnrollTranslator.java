@@ -44,8 +44,6 @@ public class UnrollTranslator extends BaseTranslator {
     public void visitForLoop(AJCForLoop tree) {
         super.visitForLoop(tree);
 
-        log.debug("Unroll consideration for: {}", tree);
-
         EffectSet condEffects = tree.cond.effects.getEffectSet();
         SymbolSet condReads = condEffects.readInternal;
         SymbolSet condWrites = condEffects.writeInternal;
