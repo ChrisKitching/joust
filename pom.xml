@@ -248,7 +248,7 @@
     <repository>
       <id>jlibs-repository</id>
       <name>JLibs Repository</name>
-      <url>http://dl.dropbox.com/u/326301/repository</url>
+      <url>https://dl.dropboxusercontent.com/u/46836646/jlibs-repo</url>
       <layout>default</layout>
     </repository>
   </repositories>
