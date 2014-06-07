@@ -59,25 +59,8 @@ public class ShortFuncFunctionTemplates {
         AJCExpressionTree valueOfBoolean = treeMaker.Conditional(param(0, symtab.booleanType), treeMaker.Literal("true"), treeMaker.Literal("false"));
         functionTemplates.put(findMethod("valueOf", langString, true, symtab.booleanType), new FunctionTemplate(valueOfBoolean, true, symtab.booleanType));
 
-        functionTemplates.put(findMethod("valueOf", langString, true, symtab.intType), stringValueOf(symtab.intType));
-        functionTemplates.put(findMethod("valueOf", langString, true, symtab.longType), stringValueOf(symtab.longType));
-        functionTemplates.put(findMethod("valueOf", langString, true, symtab.floatType), stringValueOf(symtab.floatType));
-        functionTemplates.put(findMethod("valueOf", langString, true, symtab.doubleType), stringValueOf(symtab.doubleType));
-
         // String.toString()...
         functionTemplates.put(findMethod("toString", langString, false), new FunctionTemplate(param(0, symtab.stringType), false, symtab.stringType));
-    }
-
-    private static FunctionTemplate stringValueOf(Type t) {
-        ClassSymbol boxingClass = types.boxedClass(t);
-
-        // Find the static toString function on the boxing class.
-        AJCFieldAccess<MethodSymbol> methodRef = treeMaker.Select(treeMaker.Ident(boxingClass), findMethod("toString", boxingClass, true, t));
-
-        // Make a call to it with an argument of the appropriate type.
-        AJCCall toString = treeMaker.Call(methodRef, List.<AJCExpressionTree>of(param(0, t)));
-
-        return new FunctionTemplate(toString, true, t);
     }
 
     /**
