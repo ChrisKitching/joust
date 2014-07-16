@@ -28,7 +28,6 @@ public class ProxyDetectVisitor extends BaseTranslator {
         }
 
         AJCBlock body = that.body;
-        log.info("Body: {}", body);
 
         for (AJCStatement stat : body.stats) {
             if (stat instanceof AJCReturn) {

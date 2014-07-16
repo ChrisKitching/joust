@@ -141,7 +141,7 @@ public class ChecksumUtils {
             hash = unsafeHasher.hash(buffer, 0, bPointer, HASH_SEED);
         }
 
-        log.info("Done in {}ms", System.currentTimeMillis() - t);
+        log.trace("Done in {}ms", System.currentTimeMillis() - t);
 
         return hash;
     }

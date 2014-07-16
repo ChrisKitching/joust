@@ -62,7 +62,7 @@ public class ChecksumRunner extends OptimisationRunnable {
 
                 JOUSTCache.writeSymbolToDisk(className, hash);
                 transientInfo.setFlushed(true);
-                log.info("Flush: {}", className);
+                log.trace("Flush: {}", className);
             } catch (FileNotFoundException e) {
                 // Probably just called too soon...
                 log.error("Can't find file for: {}", className, e);
@@ -75,7 +75,7 @@ public class ChecksumRunner extends OptimisationRunnable {
         long e = System.currentTimeMillis();
 
         JOUSTCache.closeDatabase();
-        log.debug("Done in " + (e - s) + "ms");
+        log.trace("Done in " + (e - s) + "ms");
     }
 
     @Override

@@ -206,7 +206,7 @@ public class JOUSTCache {
     private static ClassInfo loadCachedInfoByName(String name) {
         byte[] payload = databaseMap.get(name);
         if (payload == null) {
-            log.info("No cached info for class {} seems to exist.", name);
+            log.trace("No cached info for class {} seems to exist.", name);
             return null;
         }
 
@@ -238,7 +238,7 @@ public class JOUSTCache {
         ClassInfo cInfo = loadCachedInfoByName(sym.fullname.toString());
 
         if (cInfo == null) {
-            log.warn("Unable to load cached info - got null - for class {}", sym);
+            log.warn("No side effect information found on disk for {}", sym);
             return;
         }
 

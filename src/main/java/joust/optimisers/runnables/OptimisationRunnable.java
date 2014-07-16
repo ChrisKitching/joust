@@ -53,7 +53,7 @@ public abstract class OptimisationRunnable implements Runnable {
 
         @Override
         public String getName() {
-            return translatorInstance.getClass().getName();
+            return translatorInstance.getClass().getSimpleName();
         }
     }
 
@@ -138,7 +138,7 @@ public abstract class OptimisationRunnable implements Runnable {
 
         @Override
         public String getName() {
-            return primaryTranslatorInstance.getClass().getName();
+            return primaryTranslatorInstance.getClass().getSimpleName();
         }
     }
 }
