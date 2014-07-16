@@ -77,4 +77,9 @@ public class ChecksumRunner extends OptimisationRunnable {
         JOUSTCache.closeDatabase();
         log.debug("Done in " + (e - s) + "ms");
     }
+
+    @Override
+    public String getName() {
+        return NAME_CORE;
+    }
 }

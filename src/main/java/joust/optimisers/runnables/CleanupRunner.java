@@ -11,4 +11,9 @@ public class CleanupRunner extends OptimisationRunnable {
         AJCForest.getInstance().printStatistics();
         LogUtils.unInit();
     }
+
+    @Override
+    public String getName() {
+        return NAME_CORE;
+    }
 }

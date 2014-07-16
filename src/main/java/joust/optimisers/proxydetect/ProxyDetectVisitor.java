@@ -28,12 +28,14 @@ public class ProxyDetectVisitor extends BaseTranslator {
         }
 
         AJCBlock body = that.body;
+        log.info("Body: {}", body);
+
         for (AJCStatement stat : body.stats) {
             if (stat instanceof AJCReturn) {
-                // This is a field getter.
+                // This is a field getter/setter.
                 AJCReturn ret = (AJCReturn) stat;
 
-                Symbol sym = ((AJCSymbolRefTree) ret.expr).getTargetSymbol();
+                Symbol sym = ((AJCSymbolRef) ret.expr).getTargetSymbol();
                 log.warn("Field: {}.{}", sym.owner, sym);
             } else if (stat instanceof AJCExpressionStatement) {
                 AJCCall exTree = (AJCCall) ((AJCExpressionStatement) stat).expr;

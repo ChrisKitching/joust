@@ -16,8 +16,12 @@ import java.util.logging.Logger;
 @Log
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 public abstract class OptimisationRunnable implements Runnable {
+    public static final String NAME_CORE = "Toast";
+
     @Override
     public abstract void run();
+
+    public abstract String getName();
 
     abstract static class TreeProcessing extends OptimisationRunnable {
         @Override
@@ -46,6 +50,11 @@ public abstract class OptimisationRunnable implements Runnable {
     @AllArgsConstructor
     abstract static class SingleTranslatorInstance extends TreeProcessing {
         protected final BaseTranslator translatorInstance;
+
+        @Override
+        public String getName() {
+            return translatorInstance.getClass().getName();
+        }
     }
 
     /**
@@ -125,6 +134,11 @@ public abstract class OptimisationRunnable implements Runnable {
                     modified = true;
                 } while (secondaryTranslatorInstance.makingChanges());
             } while (primaryTranslatorInstance.makingChanges());
+        }
+
+        @Override
+        public String getName() {
+            return primaryTranslatorInstance.getClass().getName();
         }
     }
 }

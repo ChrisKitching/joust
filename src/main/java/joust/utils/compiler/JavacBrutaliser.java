@@ -112,4 +112,9 @@ public final class JavacBrutaliser extends OptimisationRunnable {
         // annotation processing.
         javaCompiler.shouldStopPolicyIfNoError = CompileStates.CompileState.INIT;
     }
+
+    @Override
+    public String getName() {
+        return NAME_CORE;
+    }
 }

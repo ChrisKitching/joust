@@ -20,4 +20,9 @@ public class AssertionStrip extends OptimisationRunnable {
             tree.accept(stripper);
         }
     }
+
+    @Override
+    public String getName() {
+        return "AssertionStrip";
+    }
 }

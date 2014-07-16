@@ -32,4 +32,9 @@ public class FinalFolder extends OptimisationRunnable {
             AJCForest.getInstance().initialAnalysis();
         }
     }
+
+    @Override
+    public String getName() {
+        return "FinalFolder";
+    }
 }

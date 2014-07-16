@@ -7,6 +7,7 @@ import com.sun.tools.javac.util.Pair;
 import joust.joustcache.ChecksumRunner;
 import joust.joustcache.JOUSTCache;
 import joust.optimisers.runnables.AssertionStrip;
+import joust.optimisers.runnables.AssignmentStrip;
 import joust.optimisers.runnables.CSE;
 import joust.optimisers.runnables.CleanupRunner;
 import joust.optimisers.runnables.ConstFold;
@@ -48,7 +49,8 @@ import static joust.utils.compiler.StaticCompilerUtils.javaElements;
 @ExtensionMethod({Logger.class, LogUtils.LogExtensions.class})
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedAnnotationTypes("*")
-@SupportedOptions({"JOUSTLogLevel", "JOUSTStripAssertions", "JOUSTMinCSEScore", "JOUSTHelp", "JOUSTAnnotateLib", "JOUSTPrintEffectCacheKeys"})
+@SupportedOptions({"JOUSTLogLevel", "JOUSTStripAssertions", "JOUSTMinCSEScore", "JOUSTHelp", "JOUSTAnnotateLib",
+                   "JOUSTPrintEffectCacheKeys", "JOUSTEnabledOptimisations", "JOUSTDisabledOptimisations"})
 public class JOUST extends AbstractProcessor {
     // The untranslated input JCTrees. The route to the AST prior to the desugaring step.
     public static Queue<Pair<Env<AttrContext>, JCClassDecl>> environmentsToProcess;
@@ -98,16 +100,16 @@ public class JOUST extends AbstractProcessor {
         // Don't optimise in library annotation mode - we just need one pass of the SideEffectVisitor (via TreeConverter)
         // and we're done,
         if (!OptimiserOptions.annotatingLibrary) {
-//            OptimisationPhaseManager.register(new FinalFolder(), AFTER_DESUGAR);
-//            OptimisationPhaseManager.register(new ConstFold(), AFTER_DESUGAR);
-//            OptimisationPhaseManager.register(new ShortFunc(), AFTER_DESUGAR);
-//            OptimisationPhaseManager.register(new Unbox(), AFTER_DESUGAR);
+            OptimisationPhaseManager.register(new FinalFolder(), AFTER_DESUGAR);
+            OptimisationPhaseManager.register(new ConstFold(), AFTER_DESUGAR);
+            OptimisationPhaseManager.register(new ShortFunc(), AFTER_DESUGAR);
+            OptimisationPhaseManager.register(new Unbox(), AFTER_DESUGAR);
 
             // TODO: Repair and re-enable this.
-            // OptimisationPhaseManager.register(new AssignmentStrip(), AFTER, DESUGAR);
-//            OptimisationPhaseManager.register(new LoopInvar(), AFTER_DESUGAR);
-//            OptimisationPhaseManager.register(new Unroll(), AFTER_DESUGAR);
-//            OptimisationPhaseManager.register(new CSE(), AFTER_DESUGAR);
+//            OptimisationPhaseManager.register(new AssignmentStrip(), AFTER_DESUGAR);
+            OptimisationPhaseManager.register(new LoopInvar(), AFTER_DESUGAR);
+            OptimisationPhaseManager.register(new Unroll(), AFTER_DESUGAR);
+            OptimisationPhaseManager.register(new CSE(), AFTER_DESUGAR);
         }
 
         // The post-compilation pass to populate the disk cache with the results of classes processed

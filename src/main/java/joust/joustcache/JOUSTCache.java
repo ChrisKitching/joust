@@ -101,13 +101,14 @@ public class JOUSTCache {
             return;
         }
 
-        log.info("Closing database.");
+        log.info("Closing database...");
         try {
             databaseRecordManager.close();
             databaseRecordManager = null;
         } catch (IOException e) {
             log.fatal("Error closing database record manager: ", e);
         }
+        log.info("Done.");
 
         lockFile.delete();
     }

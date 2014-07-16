@@ -27,6 +27,11 @@ public class testProxyMethods extends BaseIntegrationTestCase {
                 System.out.println(protectedField);
                 System.out.println(privateField);
                 System.out.println(packageField);
+
+                publicField++;
+                protectedField++;
+                privateField++;
+                packageField++;
             }
         };
 

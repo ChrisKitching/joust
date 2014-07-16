@@ -1,6 +1,7 @@
 package joust.utils.compiler;
 
 import joust.optimisers.runnables.OptimisationRunnable;
+import joust.utils.commandline.OptimiserOptions;
 import joust.utils.logging.LogUtils;
 import lombok.experimental.ExtensionMethod;
 import lombok.extern.java.Log;
@@ -67,6 +68,12 @@ public abstract class OptimisationPhaseManager implements Runnable {
     }
 
     public static void register(OptimisationRunnable task, EventType runWhen) {
+        if (!OptimiserOptions.shouldRun(task)) {
+            log.info("Not running {}", task.getName());
+            return;
+        }
+
+        log.info("Running {}", task.getName());
         Map<EventType, LinkedList<OptimisationRunnable>> tasks =
                 eventMappings;
         tasks.get(runWhen).add(task);
