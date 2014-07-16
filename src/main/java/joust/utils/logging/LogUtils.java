@@ -51,23 +51,27 @@ public class LogUtils {
         File joustDir = new File(homeDirectory + "/.joust/");
         joustDir.mkdirs();
 
-        File logFile = new File(joustDir + "/.JOUSTLOG");
+        if (OptimiserOptions.logToFile) {
+            File logFile = new File(joustDir + "/.JOUSTLOG");
 
-        try {
-            fos = new BufferedOutputStream(new FileOutputStream(logFile, true), 8192);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            try {
+                fos = new BufferedOutputStream(new FileOutputStream(logFile, true), 8192);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     public static void unInit() {
-        try {
-            fos.flush();
-            fos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (fos != null) {
+            try {
+                fos.flush();
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            fos = null;
         }
-        fos = null;
     }
 
     /**

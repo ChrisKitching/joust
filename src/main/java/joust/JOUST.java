@@ -50,7 +50,7 @@ import static joust.utils.compiler.StaticCompilerUtils.javaElements;
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedAnnotationTypes("*")
 @SupportedOptions({"JOUSTLogLevel", "JOUSTStripAssertions", "JOUSTMinCSEScore", "JOUSTHelp", "JOUSTAnnotateLib",
-                   "JOUSTPrintEffectCacheKeys", "JOUSTEnabledOptimisations", "JOUSTDisabledOptimisations"})
+                   "JOUSTPrintEffectCacheKeys", "JOUSTEnabledOptimisations", "JOUSTDisabledOptimisations", "JOUSTLogToFile"})
 public class JOUST extends AbstractProcessor {
     // The untranslated input JCTrees. The route to the AST prior to the desugaring step.
     public static Queue<Pair<Env<AttrContext>, JCClassDecl>> environmentsToProcess;
