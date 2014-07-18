@@ -10,6 +10,7 @@ import lombok.extern.java.Log;
 
 import java.util.logging.Logger;
 
+import static com.sun.tools.javac.code.Symbol.MethodSymbol;
 import static joust.tree.annotatedtree.AJCTree.*;
 
 @Log
@@ -35,11 +36,16 @@ public class ProxyDetectVisitor extends BaseTranslator {
                 AJCReturn ret = (AJCReturn) stat;
 
                 Symbol sym = ((AJCSymbolRef) ret.expr).getTargetSymbol();
-                log.warn("Field: {}.{}", sym.owner, sym);
+
+                if (sym instanceof MethodSymbol) {
+                    log.warn("Method: {}.{}", sym.owner, sym);
+                } else {
+                    log.warn("Field: {}.{}", sym.owner, sym);
+                }
             } else if (stat instanceof AJCExpressionStatement) {
                 AJCCall exTree = (AJCCall) ((AJCExpressionStatement) stat).expr;
 
-                Symbol.MethodSymbol mSym = exTree.getTargetSymbol();
+                MethodSymbol mSym = exTree.getTargetSymbol();
 
                 log.warn("Method: {}.{}", mSym.owner, mSym);
             }
