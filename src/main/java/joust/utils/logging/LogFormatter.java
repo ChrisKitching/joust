@@ -1,7 +1,7 @@
 package joust.utils.logging;
 
-import jlibs.core.lang.Ansi;
-import jlibs.core.util.logging.AnsiFormatter;
+import joust.utils.logging.ansi.Ansi;
+import joust.utils.logging.ansi.AnsiFormatter;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
