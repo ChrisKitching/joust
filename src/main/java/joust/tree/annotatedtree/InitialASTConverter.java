@@ -160,10 +160,8 @@ public class InitialASTConverter extends TreeScanner {
                     continue;
                 }
 
-                log.debug("Field {} : {}", fieldName, fieldType.getCanonicalName());
                 if (!"com.sun.tools.javac.util.List".equals(fieldType.getCanonicalName())) {
                     AJCTree value = results.pop();
-                    log.debug("Assigning: {}:{}", value, value.getClass().getCanonicalName());
                     value.mParentNode = destinationTree;
                     destField.set(destinationTree, value);
                     continue;
@@ -174,8 +172,6 @@ public class InitialASTConverter extends TreeScanner {
 
                 int neededElements = thatList.size();
 
-                log.debug("List size: {}", neededElements);
-
                 // The easy way out.
                 if (neededElements == 0) {
                     destField.set(destinationTree, List.nil());
@@ -185,7 +181,6 @@ public class InitialASTConverter extends TreeScanner {
                 // Is this not a list of lists?
                 if (!"com.sun.tools.javac.util.List".equals(thatList.get(0).getClass().getCanonicalName())) {
                     List<?> targetList = listFromIntermediatesWithParent(neededElements, destinationTree);
-                    log.debug("-> {}  ({})", Arrays.toString(targetList.toArray()), neededElements);
 
                     // Finally, assign the list to the field.
                     destField.set(destinationTree, targetList);

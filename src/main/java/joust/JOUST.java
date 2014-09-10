@@ -12,6 +12,7 @@ import joust.optimisers.runnables.CSE;
 import joust.optimisers.runnables.CleanupRunner;
 import joust.optimisers.runnables.ConstFold;
 import joust.optimisers.runnables.FinalFolder;
+import joust.optimisers.runnables.IllegalOverrideDetector;
 import joust.optimisers.runnables.LoopInvar;
 import joust.optimisers.runnables.ProxyDetector;
 import joust.optimisers.runnables.ShortFunc;
@@ -93,6 +94,7 @@ public class JOUST extends AbstractProcessor {
         OptimisationPhaseManager.register(new TreeConverter(), AFTER_DESUGAR);
 
         OptimisationPhaseManager.register(new ProxyDetector(), AFTER_DESUGAR);
+        OptimisationPhaseManager.register(new IllegalOverrideDetector(), AFTER_DESUGAR);
 
         // As it happens, almost all our phases operate in the AFTER_DESUGAR phase (as this turns out to be
         // very much more convenient than working on the actual tree if you don't care about the desugared things.)
